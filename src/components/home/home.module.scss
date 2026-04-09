@@ -1,0 +1,242 @@
+$primary-color: #280071;
+$secondary-color: #3d0087;
+$accent-color: #f4780b;
+$white: #fff;
+$light-bg: #f8f9fa;
+
+// ===== Banner Section =====
+.banner {
+  padding: 0;
+  overflow: hidden;
+
+  .bannerImg {
+    min-height: 480px;
+    align-items: center;
+  }
+}
+
+.bannerTxt {
+  position: relative;
+  height: 100%;
+}
+
+.desktopBanner {
+  display: block;
+
+  @media (max-width: 767px) {
+    display: none;
+  }
+}
+
+.mobileBanner {
+  display: none;
+
+  @media (max-width: 767px) {
+    display: block;
+  }
+}
+
+// ===== Registration Form =====
+.mobileForm {
+  background: $white;
+  border-radius: 16px;
+  padding: 32px 28px;
+  box-shadow: 0 4px 24px rgba(40, 0, 113, 0.1);
+
+  @media (max-width: 767px) {
+    border-radius: 0;
+    box-shadow: none;
+    padding: 24px 16px;
+  }
+
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: $primary-color;
+    margin-bottom: 24px;
+    line-height: 1.3;
+  }
+
+  div {
+    margin-bottom: 16px;
+  }
+}
+
+.btnAlign {
+  margin-top: 8px;
+
+  .btn_cls {
+    width: 100%;
+  }
+}
+
+// ===== Why Open Demat Section =====
+.whyOpenDemat {
+  background: $light-bg;
+  padding: 60px 0;
+}
+
+.ezdemat {
+  padding: 60px 0;
+}
+
+.align {
+  text-align: center;
+
+  h2 {
+    font-size: 26px;
+    font-weight: 700;
+    color: $primary-color;
+    margin-bottom: 36px;
+  }
+}
+
+.cardAlign {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 24px;
+  align-items: center;
+}
+
+.cardCls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+  background: $white;
+  border-radius: 12px;
+  padding: 20px 16px;
+  min-width: 140px;
+  max-width: 160px;
+  box-shadow: 0 2px 12px rgba(40, 0, 113, 0.07);
+
+  img {
+    width: 56px;
+    height: 56px;
+    object-fit: contain;
+  }
+
+  p,
+  h6 {
+    font-size: 13px;
+    color: $primary-color;
+    font-weight: 600;
+    margin: 0;
+  }
+
+  // Testimonial variant
+  &:has(> span) {
+    max-width: 100%;
+    text-align: left;
+    gap: 8px;
+
+    p {
+      font-size: 15px;
+      font-weight: 400;
+      color: #444;
+      line-height: 1.6;
+    }
+
+    span {
+      font-weight: 600;
+      color: $primary-color;
+    }
+  }
+}
+
+.cardClsArrow {
+  display: flex;
+  align-items: center;
+
+  @media (max-width: 767px) {
+    display: none;
+  }
+}
+
+.cardSubheading {
+  font-size: 14px;
+  font-weight: 700;
+  color: $primary-color;
+  margin-bottom: 4px;
+}
+
+// ===== Videos / Carousel Section =====
+.benefitsSection {
+  padding: 60px 0;
+  background: $light-bg;
+}
+
+.trustCss {
+  h2 {
+    font-size: 26px;
+    font-weight: 700;
+    color: $primary-color;
+    margin-bottom: 32px;
+  }
+}
+
+.carouselCls {
+  padding: 0 8px;
+}
+
+.item {
+  iframe {
+    width: 100%;
+    border-radius: 12px;
+  }
+
+  h6 {
+    margin-top: 12px;
+    font-size: 14px;
+    color: #444;
+    line-height: 1.4;
+  }
+}
+
+// ===== Testimonial Section =====
+.trustSection {
+  padding: 60px 0;
+
+  h2 {
+    font-size: 26px;
+    font-weight: 700;
+    color: $primary-color;
+    margin-bottom: 8px;
+  }
+
+  h6 {
+    font-size: 15px;
+    color: #666;
+    margin-bottom: 32px;
+  }
+}
+
+// ===== What is Demat Section =====
+.dematSection {
+  padding: 60px 0;
+  background: $light-bg;
+
+  p {
+    font-size: 15px;
+    color: #555;
+    line-height: 1.7;
+    margin-bottom: 16px;
+  }
+}
+
+// ===== FAQ Section =====
+.faqSection {
+  padding: 60px 0;
+
+  .accordion-button {
+    font-weight: 600;
+    color: $primary-color;
+
+    &:not(.collapsed) {
+      color: $primary-color;
+      background-color: rgba(40, 0, 113, 0.05);
+    }
+  }
+}

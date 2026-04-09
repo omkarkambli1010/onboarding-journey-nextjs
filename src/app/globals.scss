@@ -1,0 +1,1100 @@
+// Global styles — equivalent to Angular styles.css
+// Node_modules CSS is imported via next.config / layout, not here
+
+// ===== Variables =====
+$primary-color: #280071;
+$secondary-color: #3d0087;
+$accent-color: #f4780b;
+$text-color: #333;
+$border-color: #ddd;
+$error-color: #dc3545;
+$success-color: #28a745;
+$white: #ffffff;
+$light-bg: #f8f9fa;
+$font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+
+// ===== Reset & Base =====
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  font-size: 16px;
+}
+
+body {
+  font-family: $font-family;
+  color: $text-color;
+  background-color: $white;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  user-select: none;
+}
+
+a {
+  text-decoration: none;
+  color: $primary-color;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+// ===== Common Button Styles =====
+.btn_cls {
+  background-color: $primary-color;
+  color: $white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  width: 100%;
+  cursor: pointer;
+  transition: background-color 0.2s ease, opacity 0.2s ease;
+  display: block;
+  text-align: center;
+
+  &:hover:not(:disabled) {
+    background-color: $secondary-color;
+    color: $white;
+  }
+
+  &:disabled,
+  &[aria-disabled='true'] {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background-color: $primary-color;
+    color: $white;
+  }
+}
+
+.btn_cls_outline {
+  background-color: transparent;
+  color: $primary-color;
+  border: 2px solid $primary-color;
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  width: 100%;
+  cursor: pointer;
+  display: block;
+  text-align: center;
+
+  &:hover {
+    background-color: rgba($primary-color, 0.06);
+  }
+}
+
+// ===== Form Controls =====
+.otp_field {
+  border: 1px solid $border-color;
+  border-radius: 8px;
+  padding: 14px 16px;
+  font-size: 16px;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.2s ease;
+  margin-bottom: 8px;
+
+  &:focus {
+    border-color: $primary-color;
+    box-shadow: 0 0 0 2px rgba(40, 0, 113, 0.1);
+  }
+}
+
+// ===== Validation Messages =====
+.red_warning {
+  color: $error-color;
+  font-size: 13px;
+  display: block;
+  margin-top: 4px;
+  margin-bottom: 8px;
+}
+
+// ===== Section Common =====
+section {
+  padding: 40px 0;
+}
+
+// ===== Responsive helpers =====
+.mobile_css {
+  display: block;
+
+  @media (min-width: 992px) {
+    display: none !important;
+  }
+}
+
+.desktop_css {
+  display: none !important;
+
+  @media (min-width: 992px) {
+    display: block !important;
+  }
+}
+
+// ===== Sticky bottom button (mobile) =====
+.stickybtn {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 16px;
+  background: $white;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+}
+
+.stickybtn_desk {
+  padding: 16px 0;
+}
+
+// ===== OTP Section =====
+.otp_cls {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 8px;
+
+  img {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .alert_msg {
+    color: $error-color;
+    font-size: 13px;
+  }
+}
+
+// ===== Line separator =====
+.line_css {
+  height: 1px;
+  background-color: #e0e0e0;
+  margin: 16px 0;
+}
+
+// ===== Page heading =====
+.page-heading {
+  font-size: 28px;
+  font-weight: 700;
+  color: $primary-color;
+  margin-bottom: 24px;
+}
+
+// ===== Terms CSS =====
+.terms_css {
+  font-size: 12px;
+  color: #666;
+  margin-top: 12px;
+  text-align: center;
+
+  a {
+    color: $primary-color;
+    text-decoration: underline;
+  }
+}
+
+// ===== OTP confirmation resend =====
+.otp_confirmation {
+  color: $primary-color;
+  cursor: pointer;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+// ===== Edit label =====
+.edit {
+  color: $primary-color;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+// ===== Sub title =====
+.sub_title {
+  color: #666;
+  font-size: 14px;
+}
+
+// ===== PrimeReact OTP Input overrides =====
+.p-inputotp {
+  gap: 8px;
+  justify-content: flex-start;
+
+  .p-inputotp-input {
+    width: 44px;
+    height: 44px;
+    text-align: center;
+    border: 1px solid $border-color;
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: 600;
+    color: $primary-color;
+
+    &:focus {
+      border-color: $primary-color;
+      box-shadow: 0 0 0 2px rgba(40, 0, 113, 0.15);
+    }
+  }
+
+  &.is-error .p-inputotp-input {
+    border-color: $error-color;
+  }
+
+  &.is-success .p-inputotp-input {
+    border-color: $success-color;
+  }
+}
+
+// ===== Modal styles =====
+.modal-backdrop {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.btn-horizontal-line {
+  display: block;
+  width: 40px;
+  height: 4px;
+  background-color: #ddd;
+  border: none;
+  border-radius: 2px;
+  margin: 0 auto 12px;
+  cursor: pointer;
+}
+
+// ===== Review section =====
+.review_section {
+  background: rgba($primary-color, 0.05);
+  border-radius: 12px;
+  padding: 16px;
+  margin: 16px 0;
+  text-align: center;
+}
+
+// ===== File type info =====
+.file_type_css {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #888;
+  margin-top: 8px;
+}
+
+// ===== Image upload =====
+.img_upload {
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+  margin: 24px 0;
+}
+
+// ===== Image preview =====
+.img_preview {
+  text-align: center;
+
+  img {
+    max-height: 250px;
+    border-radius: 8px;
+  }
+}
+
+// ===== Reupload =====
+.reupload_css {
+  color: $primary-color;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+// ===== Scrollbar =====
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: $primary-color;
+  border-radius: 4px;
+}
+
+// ===== PrimeReact Carousel =====
+.p-carousel .p-carousel-indicators {
+  display: none;
+}
+
+// ===== Accordion =====
+.accordion-button:not(.collapsed) {
+  color: $primary-color;
+  background-color: rgba($primary-color, 0.05);
+  box-shadow: none;
+}
+
+.accordion-button:focus {
+  box-shadow: 0 0 0 2px rgba($primary-color, 0.2);
+}
+
+// ===== Group buttons =====
+.group_btn {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+// ===== Back button =====
+.back_cls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: $primary-color;
+}
+
+// Spacer used when back button is hidden (reject flow)
+.back_cls2 {
+  height: 24px;
+  width: 24px;
+  flex-shrink: 0;
+}
+
+// ===== Header padding inside panels =====
+.header_padding {
+  padding: 20px 16px 0;
+}
+
+// ===== Help FAQ =====
+.help_faq_css {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.help_btn {
+  background: transparent;
+  border: 1.5px solid $primary-color;
+  color: $primary-color;
+  border-radius: 20px;
+  padding: 6px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+// ===== Figma onboarding card (PersonalDetails steps) =====
+.figma-card {
+  background: $white;
+  border: 1px solid #d9d9d9;
+  border-radius: 24px;
+  box-shadow: 0 2px 10px 0 rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.figma-card-header {
+  background: $white;
+  border-bottom: 1px solid #d9d9d9;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+}
+
+.figma-card-title-row {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.figma-card-back {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2px;
+}
+
+.figma-card-title-text {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  h5 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #222;
+    margin: 0;
+  }
+
+  p {
+    font-size: 14px;
+    color: #666;
+    margin: 0;
+  }
+}
+
+.figma-card-body {
+  background: $white;
+  padding: 24px;
+  min-height: 400px;
+}
+
+.figma-option-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+
+.figma-option-btn {
+  border: 1px solid $primary-color;
+  border-radius: 8px;
+  height: 56px;
+  min-width: 166px;
+  padding: 0 16px;
+  background: $white;
+  color: $primary-color;
+  font-size: 14px;
+  font-family: inherit;
+  text-align: center;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+  white-space: nowrap;
+
+  &:hover {
+    background: rgba(40, 0, 113, 0.05);
+  }
+
+  &.selected {
+    background: $primary-color;
+    color: $white;
+  }
+}
+
+// ===== Mobile section =====
+.mobile_section {
+  padding: 16px;
+}
+
+// ===== pan_details_form: desktop/mobile toggle at 768px (not 992px global) =====
+@media (min-width: 768px) {
+  .pan_details_form .desktop_css {
+    display: block !important;
+  }
+
+  .pan_details_form .mobile_css {
+    display: none !important;
+  }
+}
+
+// ===== Mobile responsive — Figma onboarding card (≤767px) =====
+@media (max-width: 767px) {
+  // Section: gray background, no padding, no margin
+  section.pan_details_form {
+    padding: 0 !important;
+    margin: 0 !important;
+    background: #f8f8f8 !important;
+    min-height: calc(100vh - 60px);
+  }
+
+  // Strip Bootstrap gutters
+  .pan_details_form .container {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    max-width: 100% !important;
+  }
+
+  .pan_details_form .row {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  .pan_details_form [class*='col-'] {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+  }
+
+  // Show mobile block, hide desktop block
+  .pan_details_form .desktop_css {
+    display: none !important;
+  }
+
+  .pan_details_form .mobile_css {
+    display: block !important;
+  }
+
+  // Mobile header: back btn + title on gray background
+  // Figma: flex-col, gap-12px, px-16px, py-12px, rounded-bottom-20px
+  .pan_details_form .back_cls {
+    display: flex !important;
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px 16px 20px;
+    background: #f8f8f8;
+    border-radius: 0 0 20px 20px;
+
+    h5 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #2b2b2b;
+      margin: 0;
+    }
+
+    .sub_title {
+      font-size: 12px;
+      color: #666;
+      margin: 0;
+    }
+  }
+
+  // figma-card: transparent wrapper on mobile (header is hidden via desktop_css)
+  .figma-card {
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    border-radius: 0 !important;
+    overflow: visible !important;
+    max-width: 100%;
+    margin: 0 !important;
+  }
+
+  // figma-card-body: white card with rounded top corners — Figma: rounded-tl/tr-[24px], p-[24px]
+  .figma-card-body {
+    background: #fff;
+    border-radius: 24px 24px 0 0 !important;
+    box-shadow: 0 3px 10px 0 rgba(0, 0, 0, 0.05) !important;
+    min-height: 0 !important;
+    padding: 24px !important;
+  }
+
+  // Option grid — Figma: gap-[16px]
+  .figma-option-grid {
+    gap: 16px;
+  }
+
+  // Option buttons — Figma: w-[148px], h-[56px], border #694d9c, text #2b2b2b
+  // Card body inner width: 360 - 2×24 = 312px → 148 + 16 + 148 = 312 ✓
+  .figma-option-btn {
+    flex: 0 0 148px;
+    width: 148px;
+    min-width: unset;
+    min-height: 56px;
+    height: auto;
+    border-color: #694d9c;
+    color: #2b2b2b;
+    font-size: 14px;
+    font-weight: 400;
+    white-space: normal;
+    word-break: break-word;
+    padding: 8px 12px;
+
+    &.selected {
+      background: #280071;
+      border-color: #280071;
+      color: #fff;
+    }
+  }
+
+  // Sticky proceed button (step 5 mobile) — Figma: fixed bottom, gray bg, w-[328px] centered
+  .pan_details_form .stickybtn {
+    display: block;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 16px;
+    background: #f8f8f8;
+    box-shadow: none;
+    z-index: 100;
+  }
+
+  .pan_details_form .stickybtn .btn_cls {
+    max-width: 328px;
+    height: 48px;
+    padding: 0;
+    margin: 0 auto;
+    display: block;
+    border-radius: 8px;
+  }
+
+  // Mobile form card spacing
+  .pan_details_form form {
+    margin: 20px 0 80px 0;
+  }
+
+  // Mobile declaration back_cls alignment
+  .pan_details_form .back_cls > div:nth-child(1) {
+    font-size: 16px;
+    font-weight: 600;
+    color: #222;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .pan_details_form .back_cls img {
+    width: 15px;
+  }
+}
+
+// ===== pan_details_form — base desktop layout (shared across all form steps) =====
+.pan_details_form {
+  display: flex;
+  flex-direction: column;
+  margin: 50px 0;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+}
+
+.pan_details_form form {
+  background: #fff;
+  padding: 24px;
+  border-radius: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+
+  &::-webkit-scrollbar {
+    width: 7px;
+  }
+  &::-webkit-scrollbar-track {
+    background: #c3c7ed;
+    border-radius: 10px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: #280071;
+    border-radius: 10px;
+  }
+}
+
+.pan_details_form .stickybtn_desk {
+  position: relative;
+
+  button {
+    padding: 15px 0;
+    max-width: 350px;
+    margin: 0 auto;
+  }
+}
+
+// ===== Declaration checkbox rows =====
+.pan_details_form .declaration-box {
+  width: 100%;
+  position: relative;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  padding: 16px 0;
+  gap: 20px;
+  cursor: pointer;
+}
+
+.declaration-box img {
+  width: 20px;
+  height: 20px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+// ===== Checkbox custom styles =====
+.pan_details_form input[type='checkbox']:checked {
+  background-color: #6750a4;
+  border-color: unset;
+}
+
+.pan_details_form input[type='checkbox']:checked:focus {
+  box-shadow: unset;
+}
+
+// ===== pan_details_align — shared flex row (checkbox + content) =====
+.pan_details_form .pan_details_align {
+  display: flex;
+  width: 100%;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 24px;
+}
+
+.pan_details_form .pan_details_align .upload_css {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+
+  h5 {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 0;
+    color: #2b2b2b;
+
+    span {
+      color: #280071;
+      font-size: 14px;
+      font-weight: 700;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+  }
+
+  span {
+    font-size: 12px;
+    font-weight: 400;
+    color: #666;
+  }
+
+  p {
+    font-size: 12px;
+    color: #666;
+    margin: 0;
+  }
+}
+
+// ===== Custom radio button =====
+.pan_details_form input[type='radio'] {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 1px solid #694d9c;
+  border-radius: 50%;
+  outline: none;
+  box-shadow: 0 0 5px #999;
+  transition: box-shadow 0.3s ease;
+  position: relative;
+  flex: none;
+
+  &::before {
+    content: '';
+    display: block;
+    width: 60%;
+    height: 60%;
+    margin: 20% auto;
+    border-radius: 50%;
+  }
+
+  &:checked::before {
+    background: #694d9c;
+  }
+}
+
+// ===== Fund cycle dropdown =====
+.dropdown_cls {
+  .dropdown-toggle::after {
+    display: inline-block;
+    margin-left: 0.255em;
+    vertical-align: 0.255em;
+    content: '';
+    border-top: 0.3em solid;
+    border-right: 0.3em solid transparent;
+    border-bottom: 0;
+    border-left: 0.3em solid transparent;
+    color: #000;
+  }
+
+  button {
+    padding: 0 10px;
+    color: #280071;
+    font-weight: 600;
+    font-size: 14px;
+
+    &:first-child:active {
+      border-color: transparent;
+    }
+  }
+}
+
+// ===== pan_details — radio card container (fund cycle modal) =====
+.pan_details {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+
+  label {
+    display: block;
+  }
+
+  .pan_details_align {
+    display: flex;
+    width: 100%;
+    justify-content: flex-start;
+    gap: 24px;
+  }
+}
+
+// ===== square-box — radio card =====
+.pan_details_form .square-box {
+  width: 100%;
+  border: 1px solid #d9d9d9;
+  position: relative;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 30px 24px;
+
+  &.selected {
+    background: rgba(236, 238, 255, 0.5);
+  }
+}
+
+// ===== pan_confirmation — note/info box =====
+.pan_details_form .pan_confirmation {
+  background: rgba(236, 238, 255, 0.5);
+  border: 1px solid #c3c7ed;
+  padding: 16px;
+  border-radius: 12px;
+  margin: 20px 0;
+
+  span {
+    font-weight: 600;
+  }
+
+  p {
+    background: rgba(241, 241, 246, 0.5);
+    padding: 8px;
+    font-size: 12px;
+    margin: 0;
+  }
+}
+
+// ===== uploadPan modal overrides =====
+.uploadPan {
+  .modal-body {
+    max-height: 400px;
+    overflow: auto;
+
+    &::-webkit-scrollbar {
+      width: 7px;
+    }
+    &::-webkit-scrollbar-track {
+      background: #c3c7ed;
+      border-radius: 10px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: #280071;
+      border-radius: 10px;
+    }
+
+    h5 {
+      color: #2b2b2b;
+      font-size: 20px;
+      font-weight: 600;
+      text-align: left;
+    }
+
+    p {
+      font-size: 14px;
+      margin-bottom: 0;
+      font-weight: 400;
+    }
+
+    // Trading preference Q&A
+    .trading_qna {
+      border: 1px solid rgba(128, 128, 128, 0.22);
+      margin-bottom: 20px;
+      border-radius: 15px;
+
+      h4 {
+        background: rgba(236, 238, 255, 0.5);
+        color: #2b2b2b;
+        font-size: 18px;
+        font-weight: 600;
+        padding: 15px;
+        margin: 0;
+      }
+
+      p {
+        color: #666;
+        font-weight: 400;
+        font-size: 14px;
+        padding: 15px;
+      }
+
+      .trading_qna_align {
+        display: flex;
+        gap: 40px;
+        padding: 15px;
+        flex-wrap: wrap;
+
+        .pan_details_align {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+
+          input[type='radio'] {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border: 1px solid #694d9c;
+            border-radius: 50%;
+            outline: none;
+            box-shadow: 0 0 5px #999;
+            transition: box-shadow 0.3s ease;
+            position: relative;
+            top: 0;
+
+            &::before {
+              content: '';
+              display: block;
+              width: 60%;
+              height: 60%;
+              margin: 20% auto;
+              border-radius: 50%;
+            }
+
+            &:checked::before {
+              background: #694d9c;
+            }
+          }
+        }
+      }
+    }
+
+    // easi/Ideas note section
+    .note_css {
+      h4 {
+        font-size: 20px;
+        font-weight: 600;
+      }
+
+      h6 {
+        font-weight: 600;
+        margin: 8px 0;
+      }
+
+      ul {
+        padding-left: 0;
+        list-style: none;
+
+        li {
+          position: relative;
+          font-size: 14px;
+          margin: 10px 0;
+          padding-left: 30px;
+
+          &::before {
+            content: '';
+            background-image: url('/assets/images/diy/blue-dot.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            position: absolute;
+            top: 5px;
+            left: 0;
+            width: 10px;
+            height: 10px;
+          }
+        }
+      }
+    }
+  }
+
+  .modal-footer {
+    .btn_align {
+      display: flex;
+      width: 100%;
+      justify-content: space-between;
+      gap: 20px;
+      margin: 0;
+
+      .changePan-btn {
+        background: #fff;
+        border: 1px solid #280071;
+        padding: 16px;
+        border-radius: 8px;
+        flex: 1;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      .confirm-btn {
+        background: #280071;
+        color: #fff;
+        padding: 16px;
+        border-radius: 8px;
+        flex: 1;
+        font-weight: 600;
+        cursor: pointer;
+      }
+    }
+  }
+}
+
+// ===== Confirm preference modal btn_align (outside uploadPan) =====
+.btn_align {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+// ===== pan_details + upload_css reuse in modals (outside pan_details_form) =====
+// Fund cycle modal, etc.
+.pan_details {
+  .square-box {
+    width: 100%;
+    border: 1px solid #d9d9d9;
+    position: relative;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 16px;
+
+    &.selected {
+      background: rgba(236, 238, 255, 0.5);
+    }
+  }
+
+  .pan_details_align {
+    display: flex;
+    width: 100%;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .upload_css {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    h5 {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 0;
+      color: #2b2b2b;
+    }
+
+    span {
+      font-size: 12px;
+      color: #666;
+    }
+  }
+}

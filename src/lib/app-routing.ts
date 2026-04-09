@@ -1,0 +1,51 @@
+// app-routing.ts — equivalent to Angular AppRoutingModule
+// In Next.js App Router, routing is file-based (no route config needed).
+// This file documents the route mapping between Angular routes and Next.js file paths.
+//
+// Angular Route                      → Next.js File Path
+// -------------------------------------------------------------------
+// ''                                 → src/app/page.tsx
+// 'home'                             → src/app/home/page.tsx
+// 'mobile-home-otp'                  → src/app/mobile-home-otp/page.tsx
+// 'email'                            → src/app/email/page.tsx
+// 'email-home-textpage'              → src/app/email-home-textpage/page.tsx
+// 'email-home-otp'                   → src/app/email-home-otp/page.tsx
+// 'digilocker-screen'                → src/app/digilocker-screen/page.tsx
+// 'msf-sso/:refno'                   → src/app/msf-sso/[refno]/page.tsx
+// 'yono-sso/:refno'                  → src/app/yono-sso/[refno]/page.tsx
+// 'yono-mobile'                      → src/app/yono-mobile/page.tsx
+// 'yono-email'                       → src/app/yono-email/page.tsx
+// 'uploadProcess/:formNumber'        → src/app/uploadProcess/[formNumber]/page.tsx
+// 'aadhar'                           → src/app/aadhar/page.tsx
+// 'personalDetailsForm/1'            → src/app/personalDetailsForm/1/page.tsx
+// 'personalDetailsForm/2'            → src/app/personalDetailsForm/2/page.tsx
+// 'personalDetailsForm/3'            → src/app/personalDetailsForm/3/page.tsx
+// 'personalDetailsForm/4'            → src/app/personalDetailsForm/4/page.tsx
+// 'personalDetailsForm/5'            → src/app/personalDetailsForm/5/page.tsx
+// 'personalDetailsForm/6'            → src/app/personalDetailsForm/6/page.tsx
+// 'PennyDrop/:formNumber'            → src/app/PennyDrop/[formNumber]/page.tsx
+// 'reversePennyDrop/:formNumber'     → src/app/reversePennyDrop/[formNumber]/page.tsx
+// 'reversePennyDropRpd/:formNumber'  → src/app/reversePennyDropRpd/[formNumber]/page.tsx
+// 'planprocess/1'                    → src/app/planprocess/1/page.tsx
+// 'planprocess/2'                    → src/app/planprocess/2/page.tsx
+// 'planprocess/3'                    → src/app/planprocess/3/page.tsx
+// 'CaptureSelfie/:formNumber'        → src/app/CaptureSelfie/[formNumber]/page.tsx
+// 'uploadSignature'                  → src/app/uploadSignature/page.tsx
+// 'uploadPan'                        → src/app/uploadPan/page.tsx
+// 'nameChange'                       → src/app/nameChange/page.tsx
+// 'support-document'                 → src/app/support-document/page.tsx
+// 'additional-document'              → src/app/additional-document/page.tsx
+// 'aadhaar-front'                    → src/app/aadhaar-front/page.tsx
+// 'aadhaar-back'                     → src/app/aadhaar-back/page.tsx
+// 'addNominee/:formNumber'           → src/app/addNominee/[formNumber]/page.tsx
+// 'esign'                            → src/app/esign/page.tsx
+// 'fnoesign'                         → src/app/fnoesign/page.tsx
+// 'aacallback'                       → src/app/aacallback/page.tsx
+// 'bp-sso/:formNumber'               → src/app/bp-sso/[formNumber]/page.tsx
+// 'thankyou'                         → src/app/thankyou/page.tsx
+// 'fno-thankyou'                     → src/app/fno-thankyou/page.tsx
+// 'faq'                              → src/app/faq/page.tsx
+// 'page-not-found'                   → src/app/page-not-found/page.tsx
+// '**' (catch-all)                   → src/app/not-found.tsx
+
+export {};

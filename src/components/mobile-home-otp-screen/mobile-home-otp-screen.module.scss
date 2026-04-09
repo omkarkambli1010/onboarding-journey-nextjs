@@ -1,0 +1,92 @@
+$primary-color: #280071;
+
+.panDetailsForm {
+  padding-bottom: 80px;
+
+  @media (min-width: 992px) {
+    padding-bottom: 0;
+  }
+}
+
+.mobileCss {
+  padding: 20px 16px;
+}
+
+.backCls {
+  margin-bottom: 16px;
+
+  h5 {
+    font-size: 20px;
+    font-weight: 700;
+    color: $primary-color;
+  }
+}
+
+.headerPadding {
+  padding: 20px 16px 0;
+}
+
+.helpFaqCss {
+  margin-bottom: 12px;
+}
+
+.mobileSection {
+  padding: 16px;
+}
+
+.desktopAlign {
+  display: flex;
+  justify-content: center;
+}
+
+.mobileOtpScreen {
+  width: 100%;
+  max-width: 420px;
+}
+
+.otpSection {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.mobileInput {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  h6 {
+    font-size: 17px;
+    font-weight: 700;
+    color: #222;
+    margin: 0;
+  }
+
+  p {
+    margin: 0;
+    font-size: 14px;
+    color: $primary-color;
+  }
+}
+
+.otpInputBox {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  span {
+    font-size: 14px;
+    font-weight: 600;
+    color: #444;
+  }
+}
+
+.otpAlign {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: #555;
+  flex-wrap: wrap;
+  gap: 4px;
+}

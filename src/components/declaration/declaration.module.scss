@@ -1,0 +1,679 @@
+// Declaration Component — Pixel-perfect styles matching Figma design
+// Figma ref: Onboarding / Step 4 / Declaration (0:23154)
+// Mobile: 0:25471 | Desktop: 0:25592
+
+// ─── Design Tokens ─────────────────────────────────────────────
+$primary: #280071;
+$primary-20: rgba(40, 0, 113, 0.2);
+$primary-secondary: #3d0087;
+$bg-page: #f8f8f8;
+$bg-white: #ffffff;
+$border-card: #d9d9d9;
+$text-dark: #2b2b2b;
+$text-heading-desk: #222222;
+$text-body: #666666;
+$checkbox-border: #666666;
+$shadow-card-mobile: 0px 3px 10px 0px rgba(0, 0, 0, 0.05);
+$shadow-card-desk: 0px 2px 10px 0px rgba(0, 0, 0, 0.05);
+
+// ─── Preference Denied Screen ───────────────────────────────────
+.preferenceDeniedWrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 40px 20px;
+  background-color: $bg-page;
+}
+
+.preferenceDeniedInner {
+  text-align: center;
+  max-width: 360px;
+
+  img {
+    max-width: 200px;
+    margin-bottom: 24px;
+  }
+
+  h5 {
+    font-size: 16px;
+    font-weight: 600;
+    color: $text-dark;
+    margin-bottom: 12px;
+    line-height: 1.5;
+  }
+
+  p {
+    font-size: 14px;
+    color: $text-body;
+    line-height: 1.6;
+
+    a {
+      color: $primary;
+      text-decoration: underline;
+    }
+
+    span {
+      color: $primary;
+    }
+  }
+}
+
+// ─── Mobile Layout ──────────────────────────────────────────────
+.mobilePage {
+  display: flex;
+  flex-direction: column;
+  background-color: $bg-page;
+  // Do NOT use min-height: 100vh here — the AppShell Header sits above this
+  // component, so 100vh would push the bottom button off screen.
+
+  @media (min-width: 992px) {
+    display: none;
+  }
+}
+
+// Gray header area — Figma: rounded-bl-[20px] rounded-br-[20px]
+.mobileHeader {
+  background-color: $bg-page;
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+  overflow: hidden;
+  flex-shrink: 0;
+  width: 100%;
+}
+
+.mobileHeaderInner {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px 16px 16px;
+}
+
+.mobileTopRow {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mobileBackBtn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.mobileTitleBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+}
+
+// Figma mobile: 16px SemiBold #2b2b2b
+.mobileTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: $text-dark;
+  margin: 0;
+  line-height: normal;
+}
+
+// Figma mobile: 12px Regular #666
+.mobileSubtitle {
+  font-size: 12px;
+  font-weight: 400;
+  color: $text-body;
+  margin: 0;
+  line-height: normal;
+}
+
+// White card — Figma: rounded-tl-[24px] rounded-tr-[24px] shadow p-[24px] gap-[36px]
+// Extra padding-bottom so content is never hidden behind the fixed proceed button
+.mobileCard {
+  background: $bg-white;
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  box-shadow: $shadow-card-mobile;
+  padding: 24px 24px 88px; // 88px = button height (48) + gap (24) + safe area (16)
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+  overflow-x: hidden;
+}
+
+// Fixed at bottom of viewport — always visible regardless of scroll position
+.mobileProceedArea {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: $bg-white;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.08);
+  padding: 12px 24px env(safe-area-inset-bottom, 16px);
+  display: flex;
+  justify-content: center;
+  z-index: 200;
+}
+
+// Figma mobile: w-[328px] h-[48px] rounded-[8px]
+.mobileProceedBtn {
+  width: 328px;
+  height: 48px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 20px;
+  color: $bg-white;
+  cursor: pointer;
+  background-color: $primary-20;
+  transition: background-color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:not(:disabled) {
+    background-color: $primary;
+
+    &:hover {
+      background-color: $primary-secondary;
+    }
+  }
+
+  &:disabled,
+  &[aria-disabled='true'] {
+    cursor: not-allowed;
+    background-color: $primary-20;
+  }
+}
+
+// ─── Desktop Layout ─────────────────────────────────────────────
+.desktopPage {
+  display: none;
+
+  @media (min-width: 992px) {
+    display: block;
+    min-height: calc(100vh - 80px);
+    background-color: $bg-page;
+  }
+}
+
+.desktopContent {
+  min-height: calc(100vh - 80px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+}
+
+// Figma desktop: w-[800px] border border-[#d9d9d9] rounded-[24px] shadow
+.desktopCard {
+  width: 100%;
+  max-width: 800px;
+  border: 1px solid $border-card;
+  border-radius: 24px;
+  box-shadow: $shadow-card-desk;
+  background: $bg-white;
+  overflow: hidden;
+}
+
+// Figma desktop card header: bg-white border-b-[0.5px] p-[24px] gap-[8px]
+.desktopCardHeader {
+  background: $bg-white;
+  border-bottom: 0.5px solid $border-card;
+  padding: 24px;
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.desktopBackBtn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2px;
+}
+
+.desktopTitleBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+// Figma desktop: 18px SemiBold #222
+.desktopCardTitle {
+  font-size: 18px;
+  font-weight: 600;
+  color: $text-heading-desk;
+  margin: 0;
+  line-height: normal;
+}
+
+// Figma desktop: 14px Regular #666
+.desktopCardSubtitle {
+  font-size: 14px;
+  font-weight: 400;
+  color: $text-body;
+  margin: 0;
+  line-height: normal;
+}
+
+// Figma desktop card body: bg-white p-[24px] rounded-b-[24px] flex-between
+.desktopCardBody {
+  background: $bg-white;
+  padding: 24px;
+  border-bottom-left-radius: 24px;
+  border-bottom-right-radius: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 32px;
+  min-height: 400px;
+}
+
+.desktopProceedWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+// Figma desktop: w-[350px] h-[56px] rounded-[8px]
+.desktopProceedBtn {
+  width: 350px;
+  height: 56px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 20px;
+  color: $bg-white;
+  cursor: pointer;
+  background-color: $primary-20;
+  transition: background-color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:not(:disabled) {
+    background-color: $primary;
+
+    &:hover {
+      background-color: $primary-secondary;
+    }
+  }
+
+  &:disabled,
+  &[aria-disabled='true'] {
+    cursor: not-allowed;
+    background-color: $primary-20;
+  }
+}
+
+// ─── Shared Declaration Items ────────────────────────────────────
+// Desktop gap-24 (mobile gap-36 applied on .mobileCard directly)
+.declarationItems {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  flex: 1;
+}
+
+// Each row: checkbox (24px) + label + optional info icon (18px)
+.declarationRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  cursor: pointer;
+}
+
+.declarationRowLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+// Fund settlement has an inner nested flex structure
+.fundSettlementLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.fundSettlementTextGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+// Figma: size-[24px] p-[4px] checkbox wrapper
+.checkboxWrap {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+}
+
+// Figma custom checkbox: 18×18 border-2 border-#666 rounded-[2px]
+.customCheckbox {
+  width: 18px;
+  height: 18px;
+  border: 2px solid $checkbox-border;
+  border-radius: 2px;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  position: relative;
+  background-color: $bg-white;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+  margin: 0;
+
+  &:checked {
+    background-color: $primary;
+    border-color: $primary;
+
+    &::after {
+      content: '';
+      position: absolute;
+      left: 3px;
+      top: 0;
+      width: 6px;
+      height: 10px;
+      border: 2px solid $bg-white;
+      border-top: none;
+      border-left: none;
+      transform: rotate(40deg);
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid rgba(40, 0, 113, 0.4);
+    outline-offset: 2px;
+  }
+}
+
+// Item label: 14px Regular #666 (Figma)
+.itemLabel {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 400;
+  color: $text-body;
+  line-height: normal;
+  margin: 0;
+  min-width: 0;
+}
+
+// Select All label desktop: 14px SemiBold #280071 (Figma)
+.selectAllLabelDesk {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 600;
+  color: $primary;
+  line-height: normal;
+  margin: 0;
+}
+
+// Select All label mobile: 14px Regular #666 (Figma)
+.selectAllLabelMob {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 400;
+  color: $text-body;
+  line-height: normal;
+  margin: 0;
+}
+
+// Bold link within label (e.g., "Preferences", "Terms & Conditions")
+.labelLink {
+  font-weight: 600;
+  color: $primary;
+  cursor: pointer;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+// Fund settlement body text: 14px mobile / desktop, 12px on small screens
+.fundLabelText {
+  font-size: 14px;
+  font-weight: 400;
+  color: $text-body;
+  line-height: normal;
+  margin: 0;
+
+  @media (max-width: 991px) {
+    font-size: 12px;
+  }
+}
+
+// "90 Days ⌄" button
+.fundDropdownBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.fundDaysText {
+  font-size: 14px;
+  font-weight: 600;
+  color: $primary;
+  white-space: nowrap;
+  line-height: normal;
+}
+
+// Info circle button: 18×18 (Figma: size-[18px])
+.infoBtn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+
+  svg {
+    display: block;
+  }
+}
+
+// ─── Modal-specific styles ───────────────────────────────────────
+.tradingQnaGroup {
+  margin-bottom: 20px;
+
+  h4 {
+    font-size: 15px;
+    font-weight: 600;
+    color: $text-dark;
+    margin-bottom: 6px;
+  }
+
+  p {
+    font-size: 13px;
+    color: $text-body;
+    margin-bottom: 0;
+  }
+}
+
+.tradingQnaAnswers {
+  display: flex;
+  gap: 24px;
+  margin-top: 8px;
+  margin-bottom: 4px;
+}
+
+.radioItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  color: $text-dark;
+
+  input[type='radio'] {
+    width: 18px;
+    height: 18px;
+    accent-color: $primary;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+}
+
+.noteBox {
+  background-color: rgba(40, 0, 113, 0.05);
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 16px;
+
+  h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: $text-dark;
+    margin-bottom: 6px;
+  }
+
+  h6 {
+    font-size: 13px;
+    font-weight: 600;
+    color: $text-dark;
+    margin-bottom: 4px;
+  }
+
+  ul {
+    padding-left: 18px;
+    margin: 0;
+
+    li {
+      font-size: 12px;
+      color: $text-body;
+      margin-bottom: 4px;
+
+      a {
+        color: $primary;
+        text-decoration: underline;
+      }
+    }
+  }
+}
+
+.fundOptionLabel {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 16px;
+  border: 1px solid $border-card;
+  border-radius: 8px;
+  cursor: pointer;
+  width: 100%;
+  margin-bottom: 8px;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+
+  &:hover {
+    background-color: rgba(40, 0, 113, 0.04);
+  }
+
+  input[type='radio'] {
+    width: 18px;
+    height: 18px;
+    accent-color: $primary;
+    cursor: pointer;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+}
+
+.fundOptionText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: left;
+
+  h5 {
+    font-size: 14px;
+    font-weight: 600;
+    color: $text-dark;
+    margin: 0;
+  }
+
+  span {
+    font-size: 12px;
+    color: $text-body;
+  }
+}
+
+.fundNote {
+  background-color: rgba(40, 0, 113, 0.05);
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 12px;
+  color: $text-body;
+  line-height: 1.5;
+  margin-top: 8px;
+
+  span {
+    font-weight: 600;
+    color: $text-dark;
+  }
+}
+
+.confirmPrefBody {
+  padding: 20px;
+
+  h5 {
+    font-size: 16px;
+    font-weight: 600;
+    color: $text-dark;
+    margin-bottom: 12px;
+  }
+
+  p {
+    font-size: 14px;
+    color: $text-body;
+    line-height: 1.6;
+  }
+}
+
+.btnAlign {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+
+  button {
+    flex: 1;
+  }
+}
