@@ -1,7 +1,9 @@
 'use client';
 
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from './passport-upload.module.scss';
+import PassportUploadSheet from './PassportUploadSheet';
 
 // PassportFront — Upload Passport Front screen
 // Figma: Onboarding-Mob-Passport-Front (0:37551) + desktop (0:37656)
@@ -102,10 +104,12 @@ function ExtractedDataCard({ onEdit }: { onEdit: () => void }) {
 // ─── Main component ──────────────────────────────────────────────────────────
 export default function PassportFront() {
   const router = useRouter();
+  const [showUploadSheet, setShowUploadSheet] = useState(false);
 
   const handleBack = () => router.back();
   const handleReupload = () => { /* TODO: trigger file picker */ };
-  const handleNext = () => router.push('/passportUpload/upload-back');
+  // Show the back-upload sheet inline over this screen
+  const handleNext = () => setShowUploadSheet(true);
   const handleEdit = () => router.push('/passportUpload/front-edit');
 
   return (
@@ -213,6 +217,15 @@ export default function PassportFront() {
 
         </div>
       </div>
+
+      {/* ── Upload back sheet modal — renders inline over this screen ────── */}
+      {showUploadSheet && (
+        <PassportUploadSheet
+          side="back"
+          onClose={() => setShowUploadSheet(false)}
+          onProceed={() => router.push('/passportUpload/back')}
+        />
+      )}
     </>
   );
 }

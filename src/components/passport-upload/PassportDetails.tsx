@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from './passport-upload.module.scss';
+import PassportUploadSheet from './PassportUploadSheet';
 
 // PassportDetails — Passport type selection screen
 // Figma: Onboarding-Mob-Passportdetails (0:35835) + desktop (0:35923)
@@ -58,12 +59,14 @@ function RadioOption({
 export default function PassportDetails() {
   const router = useRouter();
   const [selected, setSelected] = useState<PassportType>('');
+  const [showUploadSheet, setShowUploadSheet] = useState(false);
 
   const handleBack = () => router.back();
 
+  // Show the bottom-sheet modal inline over this page (not a navigation)
   const handleProceed = () => {
     if (!selected) return;
-    router.push('/passportUpload/upload-front');
+    setShowUploadSheet(true);
   };
 
   const isDisabled = selected === '';
@@ -164,6 +167,15 @@ export default function PassportDetails() {
 
         </div>
       </div>
+
+      {/* ── Upload sheet modal — rendered inline so previous page dims behind it ── */}
+      {showUploadSheet && (
+        <PassportUploadSheet
+          side="front"
+          onClose={() => setShowUploadSheet(false)}
+          onProceed={() => router.push('/passportUpload/front')}
+        />
+      )}
     </>
   );
 }

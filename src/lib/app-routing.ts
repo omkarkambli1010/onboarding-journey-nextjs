@@ -53,6 +53,12 @@
 // 'passportUpload/back'              → src/app/passportUpload/back/page.jsx
 // 'passportUpload/front-edit'        → src/app/passportUpload/front-edit/page.jsx
 // 'passportUpload/back-edit'         → src/app/passportUpload/back-edit/page.jsx
+// 'oci'                              → src/app/oci/page.jsx
+// 'oci/front'                        → src/app/oci/front/page.jsx
+// 'oci/back'                         → src/app/oci/back/page.jsx
+// 'fatca'                            → src/app/fatca/page.jsx
+// 'fatca/document'                   → src/app/fatca/document/page.jsx
+// 'foreignAddress'                   → src/app/foreignAddress/page.jsx
 // 'page-not-found'                   → src/app/page-not-found/page.tsx
 // '**' (catch-all)                   → src/app/not-found.tsx
 

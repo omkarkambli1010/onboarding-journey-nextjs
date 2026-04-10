@@ -1,0 +1,698 @@
+// ─── Design Tokens ───────────────────────────────────────────────────────────
+// Figma: Onboarding / Step 15 / FACTA Details (0:47384)
+
+$primary:      #280071;
+$primary-hover:#1a004d;
+$bg-page:      #f8f8f8;
+$bg-white:     #ffffff;
+$border:       #d9d9d9;
+$text-dark:    #222222;
+$text-dark-2:  #2b2b2b;
+$text-body:    #666666;
+$chip-bg:      #f3f1ff;
+$chip-border:  #e1e8f1;
+$shadow-mob:   0px 3px 10px 0px rgba(0, 0, 0, 0.05);
+$shadow-desk:  0px 2px 10px 0px rgba(0, 0, 0, 0.05);
+
+// ═══════════════════════════════════════════════════════════════════════════
+// MOBILE LAYOUT
+// ═══════════════════════════════════════════════════════════════════════════
+
+.mobilePage {
+  display: flex;
+  flex-direction: column;
+  background: $bg-page;
+  min-height: 100vh;
+
+  @media (min-width: 768px) { display: none; }
+}
+
+// ── Gray rounded-bottom header ─────────────────────────────────────────────
+.mobileHeader {
+  background: $bg-page;
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+  overflow: hidden;
+  flex-shrink: 0;
+  width: 100%;
+}
+
+.mobileHeaderInner {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px 16px 16px;
+}
+
+.mobileTopRow {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mobileBackBtn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+}
+
+.mobileTitleBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+// Figma: 18px SemiBold #2b2b2b
+.mobileTitle {
+  font-size: 18px;
+  font-weight: 600;
+  color: $text-dark;
+  margin: 0;
+  line-height: normal;
+}
+
+// Figma: 12px Regular #2b2b2b
+.mobileSubtitle {
+  font-size: 12px;
+  font-weight: 400;
+  color: $text-dark-2;
+  margin: 0;
+  line-height: 1.5;
+}
+
+// ── White card (form) ───────────────────────────────────────────────────────
+// Figma: rounded-tl-24 rounded-tr-24, shadow, p-24, gap-24
+.mobileCard {
+  background: $bg-white;
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  box-shadow: $shadow-mob;
+  padding: 24px 24px 88px; // extra bottom room for fixed button
+  display: flex;
+  flex-direction: column;
+  gap: 0; // fields use margin-top between them
+  flex: 1;
+  overflow-y: auto;
+}
+
+// ── White card (document preview) ──────────────────────────────────────────
+.mobileCardUpload {
+  background: $bg-white;
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  box-shadow: $shadow-mob;
+  padding: 24px 24px 120px; // room for two stacked fixed buttons
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+// ── Form field ─────────────────────────────────────────────────────────────
+// Figma: Input (Standart) — label 22px height + 8px gap + input 40px
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  margin-bottom: 24px; // gap between fields matches Figma 94px spacing (70+24)
+
+  &:last-child { margin-bottom: 0; }
+}
+
+// Figma: 16px Regular #666 — "Label" node (node 0:48466)
+.fieldLabel {
+  font-size: 16px;
+  font-weight: 400;
+  color: $text-body;
+  line-height: normal;
+  // TAX Identification Number label is two lines in Figma
+}
+
+// Select wrapper for caret icon
+.fieldSelectWrap {
+  position: relative;
+  width: 100%;
+}
+
+// Figma: h-40, border #d9d9d9, rounded-8, px-16, 14px Regular #2b2b2b
+.fieldSelect {
+  width: 100%;
+  height: 40px;
+  border: 1px solid $border;
+  border-radius: 8px;
+  padding: 0 36px 0 16px;
+  font-size: 14px;
+  font-weight: 400;
+  color: $text-dark-2;
+  background: $bg-white;
+  appearance: none;
+  outline: none;
+  cursor: pointer;
+
+  &:focus { border-color: $primary; }
+}
+
+.fieldSelectPlaceholder {
+  color: #999;
+}
+
+.fieldSelectCaret {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  line-height: 0;
+}
+
+// Figma: same dimensions as select but no caret, type=text
+.fieldInput {
+  width: 100%;
+  height: 40px;
+  border: 1px solid $border;
+  border-radius: 8px;
+  padding: 0 16px;
+  font-size: 14px;
+  font-weight: 400;
+  color: $text-dark-2;
+  background: $bg-white;
+  outline: none;
+
+  &::placeholder { color: #999; }
+  &:focus { border-color: $primary; }
+}
+
+// ── Fixed bottom — single button ────────────────────────────────────────────
+.mobileProceedArea {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: $bg-white;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.08);
+  padding: 12px 16px env(safe-area-inset-bottom, 16px);
+  display: flex;
+  justify-content: center;
+  z-index: 200;
+}
+
+// Figma: w-328, h-48, bg #280071, rounded-8, 16px SemiBold white
+.mobileProceedBtn {
+  width: calc(100% - 32px);
+  max-width: 328px;
+  height: 48px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: $bg-white;
+  background: $primary;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  &:hover { background: $primary-hover; }
+}
+
+.mobileProceedBtnDisabled {
+  background: rgba(40, 0, 113, 0.2) !important;
+  cursor: not-allowed;
+  &:hover { background: rgba(40, 0, 113, 0.2) !important; }
+}
+
+// ── Fixed bottom — two stacked buttons ─────────────────────────────────────
+// Figma: Frame 48096379 — gap-[12px] between buttons
+.mobileDoubleButtonArea {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: $bg-white;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.08);
+  padding: 12px 16px env(safe-area-inset-bottom, 16px);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+  z-index: 200;
+}
+
+// Outline / secondary button
+.mobileOutlineBtn {
+  width: calc(100% - 32px);
+  max-width: 328px;
+  height: 48px;
+  border: 1.5px solid $primary;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: $primary;
+  background: $bg-white;
+  cursor: pointer;
+
+  &:hover { background: rgba(40, 0, 113, 0.05); }
+}
+
+// ── File chip ──────────────────────────────────────────────────────────────
+// Figma: Group 12 — h-47, bg #f3f1ff, border dashed #e1e8f1, rounded-8
+.fileChip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: 47px;
+  background: $chip-bg;
+  border: 1px dashed $chip-border;
+  border-radius: 8px;
+  padding: 0 16px;
+  flex-shrink: 0;
+}
+
+.fileChipName {
+  flex: 1;
+  font-size: 12px;
+  font-weight: 600;
+  color: $text-dark-2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fileChipRemove {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  line-height: 0;
+}
+
+// ── Dashed image preview zone ───────────────────────────────────────────────
+// Figma: Frame 48095853 — border dashed #d9d9d9, rounded-16, py-16
+.previewZone {
+  width: 100%;
+  border: 1px dashed $border;
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.previewImg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// DESKTOP LAYOUT
+// ═══════════════════════════════════════════════════════════════════════════
+
+.desktopPage {
+  display: none;
+
+  @media (min-width: 768px) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: $bg-page;
+    min-height: calc(100vh - 80px);
+    padding: 40px 20px;
+  }
+}
+
+.desktopCard {
+  width: 100%;
+  max-width: 800px;
+  border: 1px solid $border;
+  border-radius: 24px;
+  box-shadow: $shadow-desk;
+  background: $bg-white;
+  overflow: hidden;
+}
+
+.desktopCardHeader {
+  background: $bg-white;
+  border-bottom: 0.5px solid $border;
+  padding: 24px;
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.desktopBackBtn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2px;
+  line-height: 0;
+}
+
+.desktopTitleBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.desktopCardTitle {
+  font-size: 18px;
+  font-weight: 600;
+  color: $text-dark;
+  margin: 0;
+}
+
+.desktopCardSubtitle {
+  font-size: 14px;
+  font-weight: 400;
+  color: $text-body;
+  margin: 0;
+}
+
+.desktopCardBody {
+  background: $bg-white;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-bottom-left-radius: 24px;
+  border-bottom-right-radius: 24px;
+}
+
+.desktopContentArea {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+// Two-column field grid for desktop
+.desktopFieldGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px 24px;
+  width: 100%;
+}
+
+.desktopFieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+// Full-width field (TIN number spans both columns)
+.desktopFieldGroupFull {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  grid-column: 1 / -1;
+}
+
+.desktopProceedWrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 32px;
+}
+
+.desktopProceedBtn {
+  width: 350px;
+  height: 56px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: $bg-white;
+  background: $primary;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  &:hover { background: $primary-hover; }
+}
+
+.desktopProceedBtnDisabled {
+  background: rgba(40, 0, 113, 0.2) !important;
+  cursor: not-allowed;
+  &:hover { background: rgba(40, 0, 113, 0.2) !important; }
+}
+
+.desktopDoubleButtonWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+  margin-top: 32px;
+}
+
+.desktopOutlineBtn {
+  width: 350px;
+  height: 56px;
+  border: 1.5px solid $primary;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: $primary;
+  background: $bg-white;
+  cursor: pointer;
+
+  &:hover { background: rgba(40, 0, 113, 0.05); }
+}
+
+.desktopUploadPreviewRow {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  width: 100%;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// UPLOAD SHEET MODAL (position:fixed overlay)
+// Figma: 0:48051 (choose) + 0:47718 (uploading)
+// ═══════════════════════════════════════════════════════════════════════════
+
+// Covers full viewport including AppShell header
+.sheetOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  background: rgba(0, 0, 0, 0.4);
+
+  @media (min-width: 768px) {
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+// White card rising from bottom
+.sheetCard {
+  background: $bg-white;
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  padding: 12px 24px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  @media (min-width: 768px) {
+    border-radius: 16px;
+    width: 100%;
+    max-width: 480px;
+  }
+}
+
+// Drag handle row
+.sheetHandleRow {
+  display: flex;
+  justify-content: center;
+  padding-bottom: 4px;
+}
+
+// 40×4px grey bar
+.sheetHandle {
+  width: 40px;
+  height: 4px;
+  background: $border;
+  border-radius: 2px;
+}
+
+// Title row: title left, close right
+.sheetTitleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+// Figma: 20px SemiBold #2b2b2b (node 0:47740 — "Upload TIN Document")
+.sheetTitle {
+  font-size: 20px;
+  font-weight: 600;
+  color: $text-dark-2;
+  margin: 0;
+}
+
+.sheetCloseBtn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+}
+
+// Centered title (uploading state — no close button)
+.sheetTitleCenter {
+  font-size: 20px;
+  font-weight: 600;
+  color: $text-dark-2;
+  margin: 0;
+  text-align: center;
+  width: 100%;
+}
+
+// ── Choose state ──────────────────────────────────────────────────────────
+
+// Two 80×80 icon boxes, gap-48 (Figma: Frame 48096390)
+.sheetIconRow {
+  display: flex;
+  gap: 48px;
+  justify-content: center;
+}
+
+// 80×80 box, bg #f3f1ff, border dashed #e1e8f1
+.sheetIconBox {
+  width: 80px;
+  height: 80px;
+  background: $chip-bg;
+  border: 1px dashed $chip-border;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+// Disclaimer block (three lines)
+.sheetDisclaimerBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+// Figma: 12px Regular #666
+.sheetDisclaimerLine {
+  font-size: 12px;
+  font-weight: 400;
+  color: $text-body;
+  line-height: normal;
+  margin: 0;
+}
+
+// ── Uploading state ────────────────────────────────────────────────────────
+
+// Upload cloud icon row (single icon, left-aligned)
+.sheetUploadIconRow {
+  display: flex;
+  align-items: flex-start;
+}
+
+.sheetUploadIconBox {
+  width: 48px;
+  height: 48px;
+  background: $chip-bg;
+  border: 1px dashed $chip-border;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+// File chip + progress bar stacked
+.sheetProgressBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.progressTrack {
+  width: 100%;
+  height: 8px; // Figma: Rectangle 8 — 8px height progress bar
+  background: rgba(40, 0, 113, 0.15);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: $primary;
+  border-radius: 4px;
+  transition: width 1.8s ease;
+}
+
+// Reupload + Proceed row
+.sheetButtonRow {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+}
+
+// Reupload — border #999, text #999
+.reuploadBtn {
+  flex: 1;
+  height: 48px;
+  border: 1.5px solid #999999;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #999999;
+  background: $bg-white;
+  cursor: pointer;
+
+  &:hover { background: rgba(0,0,0,0.02); }
+}
+
+// Proceed — primary bg, disabled state
+.sheetProceedBtn {
+  flex: 1;
+  height: 48px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: $bg-white;
+  background: $primary;
+  cursor: pointer;
+
+  &:hover { background: $primary-hover; }
+}
+
+.sheetProceedBtnDisabled {
+  background: rgba(40, 0, 113, 0.2) !important;
+  cursor: not-allowed;
+  &:hover { background: rgba(40, 0, 113, 0.2) !important; }
+}

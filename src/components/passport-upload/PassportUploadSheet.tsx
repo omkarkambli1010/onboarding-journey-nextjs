@@ -4,49 +4,30 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from './passport-upload.module.scss';
 
-// PassportUploadSheet — bottom-sheet upload UI (choose → uploading → done states)
+// PassportUploadSheet — bottom-sheet modal overlay
 // Figma: Onboarding-Mob-Passport-Upload (0:38143) — choose state
 //        Onboarding-Mob-Passport-Upload-Front (0:37918) — uploading state
-// Rendered as a full-page route with a fixed overlay; works for both front and back.
+//
+// Usage A — inline modal (renders over the parent page, previous content visible behind dim):
+//   <PassportUploadSheet side="front" onClose={() => setOpen(false)} onProceed={() => router.push('/passportUpload/front')} />
+//
+// Usage B — standalone page route (upload-front/page.jsx, upload-back/page.jsx):
+//   <PassportUploadSheet side="front" />   ← falls back to router.back() / router.push()
 
 type Side = 'front' | 'back';
 type SheetState = 'choose' | 'uploading';
 
-// ─── SVG: Camera icon ────────────────────────────────────────────────────────
-function IconCamera() {
-  return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <path
-        d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2v11Z"
-        stroke="#280071" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
-      />
-      <circle cx="12" cy="13" r="4" stroke="#280071" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
+interface PassportUploadSheetProps {
+  side: Side;
+  onClose?: () => void;   // override default router.back()
+  onProceed?: () => void; // override default route navigation
 }
 
-// ─── SVG: Upload cloud icon ──────────────────────────────────────────────────
-function IconUploadCloud() {
-  return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <polyline points="16 16 12 12 8 16" stroke="#280071" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-      <line x1="12" y1="12" x2="12" y2="21" stroke="#280071" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-      <path
-        d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"
-        stroke="#280071" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-// ─── SVG: Close × icon ───────────────────────────────────────────────────────
-function IconClose() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <path d="M12 4L4 12M4 4L12 12" stroke="#2B2B2B" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
-  );
-}
+// ─── Asset URLs from Figma (node 0:38143) ────────────────────────────────────
+const ASSET_CAMERA   = 'https://www.figma.com/api/mcp/asset/37083d30-0049-402f-bca5-25b9a272c5d5';
+const ASSET_UPLOAD   = 'https://www.figma.com/api/mcp/asset/879a559d-42f4-4263-9f04-5ef9d74da969';
+const ASSET_DASH     = 'https://www.figma.com/api/mcp/asset/bfbfd670-2ca3-4edb-9e7f-f51df23d3da1';
+const ASSET_CLOSE    = 'https://www.figma.com/api/mcp/asset/6c930596-2ca6-42d0-acf3-dedb67ecad77';
 
 // ─── SVG: File icon (for chip) ───────────────────────────────────────────────
 function IconFile() {
@@ -62,20 +43,35 @@ function IconFile() {
 }
 
 // ─── Main component ──────────────────────────────────────────────────────────
-export default function PassportUploadSheet({ side }: { side: Side }) {
+export default function PassportUploadSheet({ side, onClose, onProceed }: PassportUploadSheetProps) {
   const router = useRouter();
   const [sheetState, setSheetState] = useState<SheetState>('choose');
-  // uploadComplete: true once the simulated upload finishes (enables Proceed)
   const [uploadComplete, setUploadComplete] = useState(false);
 
-  const title = side === 'front' ? 'Upload Passport Front' : 'Upload Passport Back';
+  const title    = side === 'front' ? 'Upload Passport Front' : 'Upload Passport Back';
   const filename = side === 'front' ? 'Passport.jpg' : 'Passportback.jpg';
 
-  const handleClose = () => router.back();
+  const handleClose = () => {
+    if (onClose) {
+      onClose();
+    } else {
+      router.back();
+    }
+  };
 
-  const simulateUpload = () => {
+  const handleProceed = () => {
+    if (onProceed) {
+      onProceed();
+    } else if (side === 'front') {
+      router.push('/passportUpload/front');
+    } else {
+      router.push('/passportUpload/back');
+    }
+  };
+
+  const handlePickFile = () => {
     setSheetState('uploading');
-    // Simulate upload completing after 2 seconds
+    // Simulate upload completing after 2 s → enables Proceed
     setTimeout(() => setUploadComplete(true), 2000);
   };
 
@@ -84,88 +80,98 @@ export default function PassportUploadSheet({ side }: { side: Side }) {
     setUploadComplete(false);
   };
 
-  const handleProceed = () => {
-    if (side === 'front') {
-      router.push('/passportUpload/front');
-    } else {
-      router.push('/passportUpload/back');
-    }
-  };
-
   return (
-    // position:fixed covers the full viewport including the AppShell header.
-    // Using min-height:100vh inside <main> would add to header height and push
-    // the sheet card below the viewport (Bug 1 fix).
-    <div className={styles.sheetPage} aria-label={title} role="dialog" aria-modal="true">
+    // position:fixed + inset:0 overlays the entire viewport including the AppShell
+    // header. When rendered inline inside a parent page, the parent content is
+    // visible behind the rgba(0,0,0,0.4) dim — matching the Figma bottom-sheet pattern.
+    <div
+      className={styles.sheetPage}
+      role="dialog"
+      aria-modal="true"
+      aria-label={title}
+      onClick={(e) => {
+        // Close when user taps the dim area (outside the card)
+        if (e.target === e.currentTarget) handleClose();
+      }}
+    >
       <div className={styles.sheetCard}>
 
-        {/* Drag handle */}
+        {/* ── Drag handle ─────────────────────────────────────────────────── */}
         <div className={styles.sheetHandleRow}>
-          <div className={styles.sheetHandle} />
+          {/* Using the exact Figma "Dash" asset */}
+          <img src={ASSET_DASH} alt="" aria-hidden="true" className={styles.sheetHandleImg} />
         </div>
 
-        {/* Title + close */}
+        {/* ── Title + close ────────────────────────────────────────────────── */}
         <div className={styles.sheetTitleRow}>
           <p className={styles.sheetTitle}>{title}</p>
-          <button type="button" className={styles.sheetCloseBtn} onClick={handleClose} aria-label="Close">
-            <IconClose />
+          <button
+            type="button"
+            className={styles.sheetCloseBtn}
+            onClick={handleClose}
+            aria-label="Close"
+          >
+            {/* Using the exact Figma tabler-icon-x asset */}
+            <img src={ASSET_CLOSE} alt="" aria-hidden="true" width={24} height={24} />
           </button>
         </div>
 
         {sheetState === 'choose' ? (
           <>
-            {/* Two icon boxes: Camera + Upload */}
+            {/* ── Two icon boxes ──────────────────────────────────────────── */}
             <div className={styles.sheetIconRow}>
+              {/* Camera box */}
               <button
                 type="button"
                 className={styles.sheetIconBox}
-                onClick={simulateUpload}
+                onClick={handlePickFile}
                 aria-label="Take photo with camera"
               >
-                <IconCamera />
-                <span className={styles.sheetIconLabel}>Camera</span>
+                <img src={ASSET_CAMERA} alt="" aria-hidden="true" width={26} height={24} />
               </button>
 
+              {/* Upload box */}
               <button
                 type="button"
                 className={styles.sheetIconBox}
-                onClick={simulateUpload}
+                onClick={handlePickFile}
                 aria-label="Upload from files"
               >
-                <IconUploadCloud />
-                <span className={styles.sheetIconLabel}>Upload</span>
+                <img src={ASSET_UPLOAD} alt="" aria-hidden="true" width={24} height={24} />
               </button>
             </div>
 
-            {/* Disclaimer — {'\n'} renders as line breaks via white-space:pre-line (Bug 3 fix) */}
-            <p className={styles.sheetDisclaimer}>
-              {'Files supported: JPG, PNG & PDF\nMaximum size less than 5 MB\nPlease ensure that you don\'t upload password protected documents'}
-            </p>
+            {/* ── Disclaimer — 3 separate lines matching Figma layout ──────── */}
+            <div className={styles.sheetDisclaimerBlock}>
+              <p className={styles.sheetDisclaimer}>Files supported: JPG, PNG &amp; PDF</p>
+              <p className={styles.sheetDisclaimer}>Maximum size less than 5 MB</p>
+              <p className={styles.sheetDisclaimer}>
+                Please ensure that you don&apos;t upload password protected documents
+              </p>
+            </div>
           </>
         ) : (
           <>
-            {/* File chip + progress bar */}
+            {/* ── File chip + progress bar ─────────────────────────────────── */}
             <div className={styles.sheetProgressBlock}>
               <div className={styles.fileChip}>
                 <IconFile />
                 <span className={styles.fileChipName}>{filename}</span>
               </div>
               <div className={styles.progressTrack}>
-                {/* progressFill width animates to 100% when uploadComplete */}
                 <div
                   className={styles.progressFill}
-                  style={{ width: uploadComplete ? '100%' : '60%', transition: 'width 1.8s ease' }}
+                  style={{
+                    width: uploadComplete ? '100%' : '60%',
+                    transition: 'width 1.8s ease',
+                  }}
                 />
               </div>
             </div>
 
-            {/* Buttons — Proceed is disabled until upload completes (Bug 4 fix) */}
+            {/* ── Buttons ──────────────────────────────────────────────────── */}
             <div className={styles.sheetButtonRow}>
-              <button
-                type="button"
-                className={styles.reuploadBtn}
-                onClick={handleReupload}
-              >
+              <button type="button" className={styles.reuploadBtn} onClick={handleReupload}>
                 Reupload
               </button>
               <button
