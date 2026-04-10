@@ -542,6 +542,8 @@ section {
     margin: 0 !important;
     background: #f8f8f8 !important;
     min-height: calc(100vh - 60px);
+    justify-content: flex-start !important;
+    align-items: stretch !important;
   }
 
   // Strip Bootstrap gutters
@@ -1075,6 +1077,277 @@ section {
   width: 100%;
   justify-content: space-between;
   gap: 20px;
+}
+
+// ==========================================================
+// Segment Preference — pixel-perfect Figma implementation
+// ==========================================================
+
+// ── Shared: back button reset ──────────────────────────────
+.sp-back-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+
+  img { display: block; width: 100%; height: 100%; }
+}
+
+// ── Shared: header text block ──────────────────────────────
+.sp-header-text {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+// ── Shared: Plan Selected card ─────────────────────────────
+// border #e7ebff, inner purple glow, rounded 8px
+.sp-plan-card {
+  width: 100%;
+  border: 1px solid #e7ebff;
+  border-radius: 8px;
+  padding: 12px 16px;
+  background: #fff;
+  position: relative;
+  overflow: hidden;
+
+  // Inner glow overlay (matches Figma inset shadow)
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 8px;
+    box-shadow: inset 0px 26px 40px 11px rgba(216, 206, 255, 0.2);
+    pointer-events: none;
+  }
+}
+
+.sp-plan-label {
+  font-size: 12px;
+  font-weight: 400;
+  color: #000;
+  margin: 0 0 8px 0;
+  line-height: normal;
+}
+
+// Plan logo — 30×30px, object-fit contain
+.sp-plan-logo {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+
+  img { width: 100%; height: 100%; object-fit: contain; display: block; }
+}
+
+// Shared Change button
+.sp-change-btn {
+  font-size: 12px;
+  font-weight: 400;
+  color: #280071;
+  text-decoration: underline;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  white-space: nowrap;
+  line-height: normal;
+
+  &:hover { opacity: 0.8; }
+}
+
+// ── Shared: custom checkbox (gray bg + white check image) ──
+.sp-checkbox {
+  width: 24px;
+  height: 24px;
+  background: #d9d9d9;
+  border-radius: 4px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  img { display: block; }
+}
+
+// ==========================================================
+// MOBILE-specific styles
+// ==========================================================
+
+// Mobile white content card (replaces pan_details_form form on mobile)
+.sp-mob-card {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  background: #fff;
+  border-radius: 24px 24px 0 0;
+  box-shadow: 0px 3px 10px 0px rgba(0, 0, 0, 0.05);
+  padding: 24px 24px 80px; // 80px bottom = clearance above sticky btn
+  width: 100%;
+}
+
+// Mobile plan row: logo | name (flex-1) | Change (far right)
+// Figma: gap-[8px], items-center, justify-content: space-between
+.sp-plan-row-mob {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sp-plan-name-mob {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 600;
+  color: #222;
+  letter-spacing: -1px;
+  line-height: normal;
+  white-space: nowrap;
+}
+
+// Mobile segment row: border + padding (Figma: rgba(62,63,80,0.3), rounded 8px, p-16)
+.sp-seg-row-mob {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border: 1px solid rgba(62, 63, 80, 0.3);
+  border-radius: 8px;
+  padding: 16px;
+  width: 100%;
+}
+
+.sp-seg-label-mob {
+  font-size: 14px;
+  font-weight: 600;
+  color: #2b2b2b;
+  line-height: 1.5;
+}
+
+// ==========================================================
+// DESKTOP-specific styles
+// ==========================================================
+
+// Desktop 800px card: border #d9d9d9, rounded 24px, shadow
+.pan_details_form .sp-desk-card {
+  width: 100%;
+  max-width: 800px;
+  background: #fff;
+  border: 1px solid #d9d9d9;
+  border-radius: 24px;
+  box-shadow: 0px 2px 10px 0px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+// Desktop card header: padding 24px, border-bottom 0.5px
+.sp-desk-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 24px;
+  border-bottom: 0.5px solid #d9d9d9;
+  background: #fff;
+  border-radius: 24px 24px 0 0;
+
+  h5 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #222;
+    margin: 0;
+    line-height: normal;
+    white-space: nowrap;
+  }
+
+  .sub_title {
+    font-size: 14px;
+    color: #666;
+    margin: 0;
+    white-space: nowrap;
+  }
+}
+
+// Desktop card body: flex col, min 581px, content grows to push button down
+.sp-desk-body {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 24px;
+  min-height: 533px; // 581px total body - 48px (top+bottom padding)
+  background: #fff;
+  border-radius: 0 0 24px 24px;
+}
+
+// Desktop inner content: flex col, gap 24px, grows
+.sp-desk-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  flex: 1;
+}
+
+// Desktop plan row: logo | (ProZERO + Change inline)
+// Figma: gap-[10px], h-[31px], items-center
+.sp-plan-row-desk {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 31px;
+}
+
+// Desktop: ProZERO + Change wrapper (inline, gap 12px)
+.sp-plan-name-desk-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  letter-spacing: -1px;
+}
+
+// Desktop ProZERO: Regular 16px #141414 (differs from mobile!)
+.sp-plan-name-desk {
+  font-size: 16px;
+  font-weight: 400;
+  color: #141414;
+  white-space: nowrap;
+  line-height: normal;
+}
+
+// Desktop segment row: NO border — just flex row (Figma: gap-[8px], h-[24px])
+.sp-seg-row-desk {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 24px;
+  width: 100%;
+}
+
+// Desktop segment label: Regular 14px #666 (differs from mobile!)
+.sp-seg-label-desk {
+  font-size: 14px;
+  font-weight: 400;
+  color: #666;
+  line-height: normal;
+  flex: 1;
+}
+
+// Desktop Proceed row: centered, 350px button, 56px height
+.sp-proceed-row {
+  display: flex;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.sp-proceed-btn {
+  width: 350px !important;
+  max-width: 350px !important;
+  height: 56px !important;
+  padding: 0 !important;
+  border-radius: 8px !important;
 }
 
 // ===== pan_details + upload_css reuse in modals (outside pan_details_form) =====
