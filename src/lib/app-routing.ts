@@ -45,6 +45,14 @@
 // 'thankyou'                         → src/app/thankyou/page.tsx
 // 'fno-thankyou'                     → src/app/fno-thankyou/page.tsx
 // 'faq'                              → src/app/faq/page.tsx
+// 'passportUpload'                   → src/app/passportUpload/page.jsx
+// 'passportUpload/details'           → src/app/passportUpload/details/page.jsx
+// 'passportUpload/upload-front'      → src/app/passportUpload/upload-front/page.jsx
+// 'passportUpload/upload-back'       → src/app/passportUpload/upload-back/page.jsx
+// 'passportUpload/front'             → src/app/passportUpload/front/page.jsx
+// 'passportUpload/back'              → src/app/passportUpload/back/page.jsx
+// 'passportUpload/front-edit'        → src/app/passportUpload/front-edit/page.jsx
+// 'passportUpload/back-edit'         → src/app/passportUpload/back-edit/page.jsx
 // 'page-not-found'                   → src/app/page-not-found/page.tsx
 // '**' (catch-all)                   → src/app/not-found.tsx
 

@@ -124,6 +124,27 @@ a {
   margin-bottom: 8px;
 }
 
+// ===== Bootstrap row overflow fix =====
+// Bootstrap's .row has margin-left/right: calc(-.5 * --bs-gutter-x) = -12px.
+// This causes the row to physically extend 12px beyond its container's content
+// box on each side, creating a true layout overflow that mobile browsers expose
+// as horizontal scroll — even when body has overflow-x: hidden.
+//
+// Fix: zero out row negative margins AND col gutters on mobile so the row stays
+// inside the container. Content area remains the same (container - 2×12px)
+// because Bootstrap's container keeps its 12px padding on each side.
+@media (max-width: 767px) {
+  .row {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  [class*='col-'] {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+}
+
 // ===== Section Common =====
 section {
   padding: 40px 0;
@@ -666,13 +687,15 @@ section {
 }
 
 // ===== pan_details_form — base desktop layout (shared across all form steps) =====
+// Matches Declaration (planprocess/1) desktop: gray bg, vertically centered card
 .pan_details_form {
   display: flex;
   flex-direction: column;
-  margin: 50px 0;
   width: 100%;
   align-items: center;
   justify-content: center;
+  background-color: #f8f8f8;
+  min-height: calc(100vh - 80px);
 }
 
 .pan_details_form form {

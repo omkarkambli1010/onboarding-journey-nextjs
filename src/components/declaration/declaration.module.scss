@@ -163,7 +163,8 @@ $shadow-card-desk: 0px 2px 10px 0px rgba(0, 0, 0, 0.05);
 
 // Figma mobile: w-[328px] h-[48px] rounded-[8px]
 .mobileProceedBtn {
-  width: 328px;
+  width: calc(100% - 48px);
+  max-width: 328px;
   height: 48px;
   border: none;
   border-radius: 8px;

@@ -137,10 +137,31 @@ export default function FatherSpouseName() {
       <div className="container">
         <div className="row">
           <div className="col-lg-10 col-12 m-auto">
+
+            {/* Mobile: back button + title on gray background — matches Declaration (planprocess/1) mobile pattern */}
+            <div className="mobile_css">
+              <div className="back_cls">
+                {rejectStatus !== 'R' && (
+                  <button type="button" className="figma-card-back" onClick={BackToFour} aria-label="Go back">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M5 12H19" stroke="#222" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      <path d="M5 12L11 18" stroke="#222" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      <path d="M5 12L11 6" stroke="#222" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </button>
+                )}
+                {rejectStatus === 'R' && <div className="back_cls2" />}
+                <div>
+                  <h5>Details required to finish KYC</h5>
+                  <p className="sub_title">It&apos;s a mandatory requirement</p>
+                </div>
+              </div>
+            </div>
+
             <div className="figma-card">
 
-              {/* Card header */}
-              <div className="figma-card-header">
+              {/* Card header — desktop only (mobile uses back_cls above) */}
+              <div className="figma-card-header desktop_css">
                 <div className="figma-card-title-row">
                   {rejectStatus !== 'R' && (
                     <button
