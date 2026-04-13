@@ -2,10 +2,23 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import { Calendar } from 'primereact/calendar';
 import { toast } from 'react-toastify';
 import { useSpinner } from '@/components/spinner/Spinner';
 import apiService from '@/services/api.service';
 import styles from './bp-sso.module.scss';
+
+// Convert 'YYYY-MM-DD' string → Date | null  (for Calendar value prop)
+const strToDate = (s: string): Date | null => (s ? new Date(s) : null);
+
+// Convert Date | null → 'YYYY-MM-DD' string  (for state / API)
+const dateToStr = (d: Date | null | undefined): string => {
+  if (!d) return '';
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+};
 
 export default function BpSso() {
   const router = useRouter();
@@ -111,15 +124,15 @@ export default function BpSso() {
                 <label htmlFor="bpDob" className={styles.label}>
                   Date of Birth <span className={styles.required}>*</span>
                 </label>
-                <input
-                  id="bpDob"
-                  type="date"
-                  value={dob}
-                  onChange={(e) => {
-                    setDob(e.target.value);
-                    setDobError('');
-                  }}
-                  className={`${styles.input} ${dobError ? styles.inputError : ''}`}
+                <Calendar
+                  inputId="bpDob"
+                  value={strToDate(dob)}
+                  onChange={(e) => { setDob(dateToStr(e.value as Date | null)); setDobError(''); }}
+                  dateFormat="dd/mm/yy"
+                  placeholder="DD/MM/YYYY"
+                  showIcon
+                  iconPos="right"
+                  className={`p-prime-cal p-prime-cal-h48${dobError ? ' p-prime-cal-error' : ''}`}
                 />
                 {dobError && <p className={styles.errorText}>{dobError}</p>}
               </div>

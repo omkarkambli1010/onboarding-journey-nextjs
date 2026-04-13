@@ -166,36 +166,8 @@ $shadow-desk:   0px 2px 10px 0px rgba(0, 0, 0, 0.05);
   &:focus { border-color: $primary; }
 }
 
-// ── Calendar input wrapper (icon on right) ──────────────────────────────────
-.fieldCalendarWrap {
-  position: relative;
-  width: 100%;
-}
-
-.fieldCalendarInput {
-  width: 100%;
-  height: 40px;
-  border: 1px solid $border;
-  border-radius: 8px;
-  padding: 0 48px 0 16px;
-  font-size: 14px;
-  font-weight: 400;
-  color: $text-dark-2;
-  background: $bg-white;
-  outline: none;
-
-  &::placeholder { color: $text-ph; }
-  &:focus { border-color: $primary; }
-}
-
-.fieldCalendarIcon {
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  pointer-events: none;
-  line-height: 0;
-}
+// ── Calendar field — PrimeReact Calendar, styled via global .p-prime-cal ─────
+// (no wrapper needed for mobile; Calendar renders full-width via p-prime-cal)
 
 // ── City + State side-by-side row ───────────────────────────────────────────
 // Figma: gap-24 between City and State inputs
@@ -477,36 +449,10 @@ $shadow-desk:   0px 2px 10px 0px rgba(0, 0, 0, 0.05);
   line-height: 0;
 }
 
-// Calendar input for desktop
+// Desktop calendar wrapper — fixes width to 250px; Calendar uses .p-prime-cal globally
 .deskCalendarWrap {
-  position: relative;
   width: 250px;
   flex-shrink: 0;
-}
-
-.deskCalendarInput {
-  width: 100%;
-  height: 40px;
-  border: 1px solid $border;
-  border-radius: 8px;
-  padding: 0 48px 0 16px;
-  font-size: 14px;
-  font-weight: 400;
-  color: $text-dark-2;
-  background: $bg-white;
-  outline: none;
-
-  &::placeholder { color: $text-ph; }
-  &:focus { border-color: $primary; }
-}
-
-.deskCalendarIcon {
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  pointer-events: none;
-  line-height: 0;
 }
 
 // ── Pincode hint — desktop ──────────────────────────────────────────────────

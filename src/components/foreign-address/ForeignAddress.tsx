@@ -2,7 +2,20 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Calendar } from 'primereact/calendar';
 import styles from './foreign-address.module.scss';
+
+// Convert 'YYYY-MM-DD' string → Date | null  (for Calendar value prop)
+const strToDate = (s: string): Date | null => (s ? new Date(s) : null);
+
+// Convert Date | null → 'YYYY-MM-DD' string  (for state / API)
+const dateToStr = (d: Date | null | undefined): string => {
+  if (!d) return '';
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+};
 
 // ForeignAddress — Enter Foreign Address form
 // Figma: Onboarding-Mob-Foreignaddress (0:42951)
@@ -10,8 +23,6 @@ import styles from './foreign-address.module.scss';
 // Route: /foreignAddress
 
 // ── Figma assets ──────────────────────────────────────────────────────────
-const ASSET_CALENDAR_MOB  = 'https://www.figma.com/api/mcp/asset/cf9972a9-6e44-4347-bee7-5ed571772c8c';
-const ASSET_CALENDAR_DESK = 'https://www.figma.com/api/mcp/asset/bf48d4f4-619c-4d00-87ae-316c0c1946d1';
 const ASSET_INFO_MOB      = 'https://www.figma.com/api/mcp/asset/9195c08d-d43f-4164-8dab-81ee8207af07';
 const ASSET_INFO_DESK     = 'https://www.figma.com/api/mcp/asset/65e32e0e-acc6-4215-bf61-222139146838';
 const ASSET_BACK_DESK     = 'https://www.figma.com/api/mcp/asset/3969d807-3118-439a-b579-6dd809493ef6';
@@ -115,18 +126,16 @@ export default function ForeignAddress() {
         {/* Document Expiry Date */}
         <div className={styles.fieldGroup}>
           <label className={styles.fieldLabel} htmlFor="mob-expiry">Document Expiry Date</label>
-          <div className={styles.fieldCalendarWrap}>
-            <input
-              id="mob-expiry"
-              type="date"
-              className={styles.fieldCalendarInput}
-              value={expiryDate}
-              onChange={(e) => setExpiryDate(e.target.value)}
-            />
-            <span className={styles.fieldCalendarIcon}>
-              <img src={ASSET_CALENDAR_MOB} alt="" aria-hidden="true" width={24} height={24} />
-            </span>
-          </div>
+          <Calendar
+            inputId="mob-expiry"
+            value={strToDate(expiryDate)}
+            onChange={(e) => setExpiryDate(dateToStr(e.value as Date | null))}
+            dateFormat="dd/mm/yy"
+            placeholder="DD/MM/YYYY"
+            showIcon
+            iconPos="right"
+            className="p-prime-cal"
+          />
         </div>
 
         {/* Select Country */}
@@ -321,16 +330,16 @@ export default function ForeignAddress() {
             <div className={styles.desktopFieldRow}>
               <p className={styles.desktopLabel}>Document Expiry Date</p>
               <div className={styles.deskCalendarWrap}>
-                <input
-                  type="date"
-                  className={styles.deskCalendarInput}
-                  value={expiryDate}
-                  onChange={(e) => setExpiryDate(e.target.value)}
-                  aria-label="Document Expiry Date"
+                <Calendar
+                  inputId="desk-expiry"
+                  value={strToDate(expiryDate)}
+                  onChange={(e) => setExpiryDate(dateToStr(e.value as Date | null))}
+                  dateFormat="dd/mm/yy"
+                  placeholder="DD/MM/YYYY"
+                  showIcon
+                  iconPos="right"
+                  className="p-prime-cal"
                 />
-                <span className={styles.deskCalendarIcon}>
-                  <img src={ASSET_CALENDAR_DESK} alt="" aria-hidden="true" width={24} height={24} />
-                </span>
               </div>
             </div>
 

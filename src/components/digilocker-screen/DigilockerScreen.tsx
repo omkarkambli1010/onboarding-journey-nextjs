@@ -10,13 +10,23 @@ import aesService from '@/services/aes.service';
 import moengagesdkService from '@/services/moengagesdk.service';
 import styles from './digilocker-screen.module.scss';
 
-// DigiLocker Screen — equivalent to Angular DigilockerScreenComponent
-// Shows DigiLocker verification instructions and redirects user to DigiLocker
+// DigilockerScreen — Aadhaar & PAN verification via DigiLocker
+// Figma: ExXo1tRiZv7Zcb9DGMnyiI
+//   Web   node 1-5263 — Onboarding-Web-PANMANUAL-Verification-Filled
+//   Mobile node 1-5158 — Onboarding-Mob-PANMANUAL-Verification-Success
+
+function BackArrow() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M19 12H5" stroke="#2B2B2B" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M12 19L5 12L12 5" stroke="#2B2B2B" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
 
 export default function DigilockerScreen() {
   const router = useRouter();
   const { show: showSpinner, hide: hideSpinner } = useSpinner();
-
   const [nameSubmitted, setNameSubmitted] = useState('');
 
   const clientid =
@@ -53,20 +63,17 @@ export default function DigilockerScreen() {
       const response = await apiService.postRequest('api/v1/Digilocker/getRedirectURL', {
         formNumber: sessionStorage.getItem('FormNumber'),
       });
-
       if (response?.status === true) {
         const decrypted = JSON.parse(
           JSON.parse(aesService.decrypt(response.data, clientid, clientid))
         );
         const redirectUrl = decrypted?.data;
-
         moengagesdkService.trackEvent('Digilocker Redirection', {
           product_id: sessionStorage.getItem('FormNumber') ?? '',
           product_name: 'Onboarding DIY',
           category: 'Digilocker Redirection',
           Redirection_URL: redirectUrl,
         });
-
         if (redirectUrl) {
           window.location.href = redirectUrl;
         } else {
@@ -82,128 +89,203 @@ export default function DigilockerScreen() {
     }
   };
 
+  const handleBack = () => router.back();
+
   return (
-    <section aria-label="DigiLocker Aadhaar and PAN Verification" className={`${styles.panDetailsForm} pan_details_form`}>
-      <div className="container">
-        <div className="row">
-          <div className="col-lg-8 col-md-12 col-12 p-0 p-sm-0 m-auto">
-            {/* Mobile header */}
-            <div className="mobile_css">
-              <div className={styles.headerPadding}>
-                <div className={styles.helpFaqCss}>
-                  <div>
-                    <Image
-                      src="/assets/images/diy/digilocker_img.png"
-                      alt="DigiLocker logo"
-                      width={120}
-                      height={40}
-                    />
-                  </div>
-                  <div>
-                    <button
-                      className={styles.helpBtn}
-                      onClick={() => faqHelpBtn('Digilocker')}
-                    >
-                      Need Help?
-                    </button>
-                  </div>
-                </div>
-                <p className="sub_title">Verify your Aadhaar &amp; PAN via Digilocker</p>
+    <>
+      {/* ═══ MOBILE ════════════════════════════════════════════════════════════
+          Figma 1-5158 — Onboarding-Mob-PANMANUAL-Verification-Success (360px)
+      ════════════════════════════════════════════════════════════════════════ */}
+      <div className={styles.mobilePage} aria-label="DigiLocker Aadhaar and PAN Verification">
+
+        {/* Gray header: back + DigiLocker logo row + title */}
+        {/* Figma: gap-8 between sections, flex-col */}
+        <div className={styles.mobileHeader}>
+          <button
+            type="button"
+            className={styles.mobileBackBtn}
+            onClick={handleBack}
+            aria-label="Go back"
+          >
+            <BackArrow />
+          </button>
+
+          {/* Figma: DigiLocker logo (98×24) + Need Help? pill — space-between */}
+          <div className={styles.mobileDigiRow}>
+            <Image
+              src="/assets/images/diy/digilocker_img.png"
+              alt="DigiLocker"
+              width={98}
+              height={24}
+            />
+            <button
+              type="button"
+              className={styles.needHelpBtn}
+              onClick={() => faqHelpBtn('Digilocker')}
+            >
+              Need Help?
+            </button>
+          </div>
+
+          {/* Figma: 16px SemiBold #2b2b2b */}
+          <h1 className={styles.mobileTitle}>
+            Verify your Aadhaar &amp; PAN via Digilocker
+          </h1>
+        </div>
+
+        {/* White card — rounded-top-24, shadow, flex-1 */}
+        <div className={styles.mobileCard}>
+
+          {/* Aadhaar section — centered, gap-8 */}
+          {/* Figma: 12px text, 226×143 image, 12px gray hint */}
+          <div className={styles.contentSection}>
+            <p className={styles.enterAadhaarText}>
+              Enter Aadhaar number or VID for{' '}
+              <strong>&apos;{nameSubmitted}&apos;</strong>
+            </p>
+            <div className={styles.aadhaarImageWrap}>
+              <Image
+                src="/assets/images/diy/aadhar_card_sample_img.png"
+                alt="Sample Aadhaar card"
+                width={226}
+                height={143}
+                draggable={false}
+              />
+            </div>
+            <p className={styles.otpHintText}>
+              In the next step, OTP will be sent to your Aadhaar linked Mobile number
+            </p>
+          </div>
+
+          {/* Gray highlight band — full-width, spans card edge-to-edge */}
+          {/* Figma: rgba(241,241,246,0.5), h-185, flex-col, gap-12 */}
+          <div className={styles.highlightSection}>
+            <p className={styles.selectText}>
+              Select <strong>Aadhaar and PAN</strong> on the next screen
+            </p>
+            <div className={styles.gifWrap}>
+              <Image
+                src="/assets/images/diy/digilocker_toogle_video.gif"
+                alt="DigiLocker document selection guide"
+                width={312}
+                height={82}
+                draggable={false}
+                unoptimized
+              />
+            </div>
+            <p className={styles.mPinText}>
+              Create a 6-digit M-PIN (for new DigiLocker users)
+            </p>
+          </div>
+
+        </div>
+
+        {/* Sticky bottom button — pb-16, w-328, h-48, bg #280071 */}
+        <div className={styles.mobileProceedArea}>
+          <button type="button" className={styles.proceedBtn} onClick={redirectDigiLocker}>
+            Verify with Digilocker
+          </button>
+        </div>
+
+      </div>
+
+      {/* ═══ DESKTOP ═══════════════════════════════════════════════════════════
+          Figma 1-5263 — Onboarding-Web-PANMANUAL-Verification-Filled (1440px)
+          Card: 800px wide, 680px tall, rounded-24, border #d9d9d9, shadow
+      ════════════════════════════════════════════════════════════════════════ */}
+      <div className={styles.desktopPage} aria-label="DigiLocker Aadhaar and PAN Verification">
+        <div className={styles.desktopCard}>
+
+          {/* Card header — p-24, border-bottom 0.5px #d9d9d9 */}
+          {/* Figma: [back-arrow] [digilocker-logo + title] [Need Help?] */}
+          <div className={styles.desktopCardHeader}>
+            <button
+              type="button"
+              className={styles.desktopBackBtn}
+              onClick={handleBack}
+              aria-label="Go back"
+            >
+              <BackArrow />
+            </button>
+
+            {/* DigiLocker logo stacked above title, flex-1 */}
+            <div className={styles.desktopHeaderMid}>
+              <Image
+                src="/assets/images/diy/digilocker_img.png"
+                alt="DigiLocker"
+                width={98}
+                height={24}
+              />
+              {/* Figma: 16px SemiBold #2b2b2b */}
+              <h1 className={styles.desktopCardTitle}>
+                Verify your Aadhaar &amp; PAN via Digilocker
+              </h1>
+            </div>
+
+            <button
+              type="button"
+              className={styles.needHelpBtn}
+              onClick={() => faqHelpBtn('Digilocker')}
+            >
+              Need Help?
+            </button>
+          </div>
+
+          {/* Card body — flex-col, items-center */}
+          <div className={styles.desktopCardBody}>
+
+            {/* Aadhaar section — centered, gap-8 */}
+            {/* Figma: 14px text, 226×143 image (border, rounded-16), 12px gray hint */}
+            <div className={styles.desktopContentSection}>
+              <p className={styles.enterAadhaarText}>
+                Enter Aadhaar number or VID for{' '}
+                <strong>&apos;{nameSubmitted}&apos;</strong>
+              </p>
+              <div className={styles.aadhaarImageWrap}>
+                <Image
+                  src="/assets/images/diy/aadhar_card_sample_img.png"
+                  alt="Sample Aadhaar card"
+                  width={226}
+                  height={143}
+                  draggable={false}
+                />
               </div>
+              <p className={styles.otpHintText}>
+                In the next step, OTP will be sent to your Aadhaar linked Mobile number
+              </p>
             </div>
 
-            {/* Desktop header */}
-            <div className="desktop_css">
-              <div className={styles.headerPadding}>
-                <div className={styles.helpFaqCss}>
-                  <div className={styles.desktopAlignHeader}>
-                    <div>
-                      <Image
-                        src="/assets/images/diy/digilocker_img.png"
-                        alt="DigiLocker logo"
-                        width={120}
-                        height={40}
-                      />
-                      <p className="sub_title">Verify your Aadhaar &amp; PAN via Digilocker</p>
-                    </div>
-                    <div>
-                      <button
-                        className={styles.helpBtn}
-                        onClick={() => faqHelpBtn('Digilocker')}
-                      >
-                        Need Help?
-                      </button>
-                    </div>
-                  </div>
-                </div>
+            {/* Gray highlight band — full-width, breaks card body padding */}
+            {/* Figma: 800px wide, h-185, absolute left-[-24px], rgba(241,241,246,0.5) */}
+            <div className={styles.desktopHighlightSection}>
+              <p className={styles.selectText}>
+                Select <strong>Aadhaar and PAN</strong> on the next screen
+              </p>
+              <div className={styles.gifWrap}>
+                <Image
+                  src="/assets/images/diy/digilocker_toogle_video.gif"
+                  alt="DigiLocker document selection guide"
+                  width={358}
+                  height={94}
+                  draggable={false}
+                  unoptimized
+                />
               </div>
+              <p className={styles.mPinText}>
+                Create a 6-digit M-PIN (for new DigiLocker users)
+              </p>
             </div>
 
-            <div className="desktop_css">
-              <div className="line_css"></div>
+            {/* CTA — centered, w-350, h-56, bg #280071 */}
+            <div className={styles.desktopProceedWrapper}>
+              <button type="button" className={styles.proceedBtn} onClick={redirectDigiLocker}>
+                Verify with Digilocker
+              </button>
             </div>
 
-            {/* Main content */}
-            <div className="col-lg-12 col-md-12 col-12">
-              <div className={styles.mobileSection}>
-                <div className={styles.desktopAlign}>
-                  <div className={styles.mainHeading}>
-                    Enter Aadhaar number for{' '}
-                    <span style={{ textTransform: 'capitalize' }}>&apos;{nameSubmitted}&apos;</span>
-                  </div>
-                  <div>
-                    <Image
-                      src="/assets/images/diy/aadhar_card_sample_img.png"
-                      alt="Sample Aadhaar card"
-                      width={340}
-                      height={200}
-                      draggable={false}
-                      style={{ width: '100%', height: 'auto' }}
-                    />
-                  </div>
-                  <p className={styles.subHeading}>
-                    In the next step, OTP will be sent to your Aadhaar linked Mobile number
-                  </p>
-                </div>
-
-                <div className={styles.digilockerVideoSection}>
-                  <div className={styles.section}>
-                    <p className={styles.header}>
-                      Select <span>Aadhaar and PAN</span> on the next screen
-                    </p>
-                    <div>
-                      <Image
-                        src="/assets/images/diy/digilocker_toogle_video.gif"
-                        alt="DigiLocker selection guide animation"
-                        width={300}
-                        height={200}
-                        draggable={false}
-                        style={{ width: '100%', height: 'auto' }}
-                      />
-                    </div>
-                    <p className={styles.bottomText}>
-                      Create a 6-digit M-PIN (for new DigiLocker users)
-                    </p>
-                  </div>
-                </div>
-
-                <div className={`stickybtn_desk desktop_css`}>
-                  <button className="btn btn_cls" onClick={redirectDigiLocker}>
-                    Verify with Digilocker
-                  </button>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>
-
-      {/* Sticky mobile button */}
-      <div className="stickybtn mobile_css">
-        <button className="btn btn_cls" onClick={redirectDigiLocker}>
-          Verify with Digilocker
-        </button>
-      </div>
-    </section>
+    </>
   );
 }

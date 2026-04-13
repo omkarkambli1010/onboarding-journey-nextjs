@@ -3,22 +3,136 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { toast } from 'react-toastify';
+import { Splide, SplideSlide } from '@splidejs/react-splide';
+import '@splidejs/react-splide/css/core';
+import { Calendar } from 'primereact/calendar';
 import { useSpinner } from '@/components/spinner/Spinner';
 import apiService from '@/services/api.service';
 import styles from './upload-process.module.scss';
 
+// Convert 'YYYY-MM-DD' string → Date | null  (for Calendar value prop)
+const strToDate = (s: string): Date | null => (s ? new Date(s) : null);
+
+// Convert Date | null → 'YYYY-MM-DD' string  (for state / API)
+const dateToStr = (d: Date | null | undefined): string => {
+  if (!d) return '';
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+};
+
+// UploadProcess — PAN Manual Entry (Enter PAN Card Details)
+// Figma: 1:4282 — form filled state (desktop)
+//        1:4567 — form + "Verifying your PAN details" overlay (desktop)
+//        1:5501 — mobile verifying bottom sheet
+// Route: /uploadProcess/[formNumber]
+
+const ASSET_BACK_ARROW = 'https://www.figma.com/api/mcp/asset/6cbc6140-1def-4b19-b701-3293cbb7d815';
+const ASSET_LOADING    = 'https://www.figma.com/api/mcp/asset/708a088c-d80e-4503-ab43-24807612c81e';
+const ASSET_DASH       = 'https://www.figma.com/api/mcp/asset/e556b2bb-fa97-49aa-8a1a-dd995454a5e9';
+const ASSET_PAN_PHOTO  = 'https://www.figma.com/api/mcp/asset/ade13a77-cb23-4cc7-a724-974ffbb1bbc2';
+const ASSET_PAN_IT     = 'https://www.figma.com/api/mcp/asset/f64e671b-7699-476a-a83a-b3452902db62';
+
+// ── PAN card front (slide 1) ─────────────────────────────────────────────────
+// Figma: 225×141px white card — front face of sample PAN card
+function PanCardFront() {
+  return (
+    <div className={styles.panCardMini}>
+      <p className={styles.panCardTitle}>Permanent Account Number</p>
+      <p className={styles.panCardNumber}>XXXXXXXXXX</p>
+      <div className={styles.panCardPhotoBox}>
+        <img src={ASSET_PAN_PHOTO} alt="" aria-hidden="true" />
+      </div>
+      <p className={styles.panCardFieldLabel} style={{ top: 45, left: 80 }}>Name</p>
+      <p className={styles.panCardFieldLabel} style={{ top: 69, left: 70 }}>Father&apos;s Name</p>
+      <p className={styles.panCardFieldLabel} style={{ top: 93, left: 72 }}>Date of Birth</p>
+      <p className={`${styles.panCardFieldLabel} ${styles.panCardGrayLabel}`} style={{ bottom: 10, left: 16 }}>Signature</p>
+      <div className={styles.panCardITWrap}>
+        <img src={ASSET_PAN_IT} alt="" aria-hidden="true" className={styles.panCardITImg} />
+        <span className={styles.panCardCommissioner}>Commissioner of Income Tax</span>
+      </div>
+    </div>
+  );
+}
+
+// ── PAN card back (slide 2) ──────────────────────────────────────────────────
+// Figma: 225×141px white card — back face of sample PAN card
+function PanCardBack() {
+  return (
+    <div className={styles.panCardMini}>
+      <div className={styles.panCardBackStrip} />
+      <p className={styles.panCardBackLabel}>Permanent Account Number Card</p>
+      <div className={styles.panCardBackBarcode} />
+      <p className={`${styles.panCardBackLabel} ${styles.panCardBackLabelSm}`}>
+        Income Tax Department, Govt. of India
+      </p>
+    </div>
+  );
+}
+
+// ── PAN carousel (Splide) ────────────────────────────────────────────────────
+// perPage:1 · arrows:false · pagination dots · swipeable
+function PanCardCarousel() {
+  return (
+    <div className={styles.panCarouselWrap}>
+      <Splide
+        options={{
+          perPage: 1,
+          arrows: false,
+          pagination: true,
+          rewind: true,
+          gap: 0,
+          padding: 0,
+          autoWidth: false,
+          trimSpace: true,
+        }}
+        aria-label="PAN card preview"
+        className={styles.panSplide}
+      >
+        <SplideSlide>
+          <div className={styles.panSlide}>
+            <PanCardFront />
+          </div>
+        </SplideSlide>
+        <SplideSlide>
+          <div className={styles.panSlide}>
+            <PanCardBack />
+          </div>
+        </SplideSlide>
+      </Splide>
+    </div>
+  );
+}
+
+// ── Verifying overlay content ────────────────────────────────────────────────
+function VerifyingContent() {
+  return (
+    <>
+      {/* Figma: loading animation 150×46 */}
+      <img src={ASSET_LOADING} alt="" aria-hidden="true" className={styles.loadingImg} />
+      {/* Figma: 20px SemiBold #2b2b2b */}
+      <p className={styles.verifyingTitle}>Verifying your PAN details</p>
+      {/* Figma: 18px Regular #2b2b2b, line-height 1.5 */}
+      <p className={styles.verifyingSubtitle}>This usually takes less than a minute.</p>
+    </>
+  );
+}
+
+// ── Main component ────────────────────────────────────────────────────────────
 export default function UploadProcess() {
   const router = useRouter();
   const params = useParams();
   const { show: showSpinner, hide: hideSpinner } = useSpinner();
 
-  const [pan, setPan] = useState('');
-  const [name, setName] = useState('');
-  const [dob, setDob] = useState('');
-  const [panError, setPanError] = useState('');
-  const [nameError, setNameError] = useState('');
-  const [dobError, setDobError] = useState('');
+  const [pan, setPan]               = useState('');
+  const [name, setName]             = useState('');
+  const [dob, setDob]               = useState('');
+  const [panError, setPanError]     = useState('');
+  const [nameError, setNameError]   = useState('');
+  const [dobError, setDobError]     = useState('');
   const [formNumber, setFormNumber] = useState('');
+  const [showVerifying, setShowVerifying] = useState(false);
 
   useEffect(() => {
     document.title = 'PAN Details | SBI Securities';
@@ -34,31 +148,29 @@ export default function UploadProcess() {
         flag: 'GetPanDetails',
         FormNumber: fn,
       }, hideSpinner);
-
       if (response?.status === true && response?.data) {
         const data = response.data;
         setPan(data.PAN ?? '');
         setName(data.Name ?? '');
         setDob(data.DOB ?? '');
       }
-    } catch {
-      // silent fail, user can fill manually
-    } finally {
-      hideSpinner();
-    }
+    } catch { /* silent — user can fill manually */ }
+    finally { hideSpinner(); }
   };
 
   const validate = () => {
     let valid = true;
-    if (!pan) { setPanError('PAN is required'); valid = false; }
-    else if (!/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(pan)) { setPanError('Invalid PAN format'); valid = false; }
-    else setPanError('');
+    if (!pan) {
+      setPanError('PAN is required'); valid = false;
+    } else if (!/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(pan)) {
+      setPanError('Invalid PAN format (e.g. ABCDE1234F)'); valid = false;
+    } else { setPanError(''); }
 
     if (!name.trim()) { setNameError('Name is required'); valid = false; }
-    else setNameError('');
+    else { setNameError(''); }
 
     if (!dob) { setDobError('Date of Birth is required'); valid = false; }
-    else setDobError('');
+    else { setDobError(''); }
 
     return valid;
   };
@@ -67,7 +179,7 @@ export default function UploadProcess() {
     e.preventDefault();
     if (!validate()) return;
 
-    showSpinner();
+    setShowVerifying(true);
     try {
       const response = await apiService.postRequest('api/v1/pan/upload/manual', {
         PAN: pan,
@@ -81,98 +193,239 @@ export default function UploadProcess() {
         const nextRoute = response.data?.NextRoute ?? '/uploadPan';
         router.push(nextRoute);
       } else {
+        setShowVerifying(false);
         toast.error(response?.message ?? 'Failed to save PAN details. Please try again.', {
           position: 'bottom-center',
           autoClose: 3500,
         });
       }
     } catch {
-      // error handled by apiService
-    } finally {
-      hideSpinner();
+      setShowVerifying(false);
     }
   };
 
+  const handleBack = () => router.back();
+
   return (
-    <section aria-label="PAN Details Entry" className={`pan_details_form ${styles.uploadProcessPage}`}>
-      <div className="container">
-        <div className="row">
-          <div className="col-lg-10 col-12 m-auto">
-            <div className="mobile_css">
-              <div className="back_cls">
-                <h5>PAN Details</h5>
-              </div>
+    <>
+      {/* ═══ MOBILE ════════════════════════════════════════════════════════════
+          Adapted from 1:5501 + standard project mobile pattern
+      ════════════════════════════════════════════════════════════════════════ */}
+      <div className={styles.mobilePage} aria-label="Enter PAN Card Details">
+
+        {/* Gray header */}
+        <div className={styles.mobileHeader}>
+          <div className={styles.mobileHeaderInner}>
+            <button type="button" className={styles.mobileBackBtn} onClick={handleBack} aria-label="Go back">
+              <img src={ASSET_BACK_ARROW} alt="" width={24} height={24} aria-hidden="true" />
+            </button>
+            <div className={styles.mobileTitleBlock}>
+              <h1 className={styles.mobileTitle}>Enter PAN Card Details</h1>
+              <p className={styles.mobileSubtitle}>Enter details exactly as per your PAN</p>
             </div>
-            <div className="col-lg-12 col-md-12 col-12 desktop_css">
-              <h5>PAN Details</h5>
-              <p>Enter your PAN card details manually</p>
-            </div>
-            <hr className="desktop_css" />
-
-            <form onSubmit={handleSubmit} noValidate>
-              <div className={styles.formGroup}>
-                <label htmlFor="panInput" className={styles.label}>
-                  PAN Number <span className={styles.required}>*</span>
-                </label>
-                <input
-                  id="panInput"
-                  type="text"
-                  maxLength={10}
-                  value={pan}
-                  onChange={(e) => {
-                    setPan(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''));
-                    setPanError('');
-                  }}
-                  placeholder="e.g., ABCDE1234F"
-                  className={`${styles.input} ${panError ? styles.inputError : ''}`}
-                />
-                {panError && <p className={styles.errorText}>{panError}</p>}
-              </div>
-
-              <div className={styles.formGroup}>
-                <label htmlFor="nameInput" className={styles.label}>
-                  Name as on PAN <span className={styles.required}>*</span>
-                </label>
-                <input
-                  id="nameInput"
-                  type="text"
-                  value={name}
-                  onChange={(e) => {
-                    setName(e.target.value);
-                    setNameError('');
-                  }}
-                  placeholder="Enter name as on PAN card"
-                  className={`${styles.input} ${nameError ? styles.inputError : ''}`}
-                />
-                {nameError && <p className={styles.errorText}>{nameError}</p>}
-              </div>
-
-              <div className={styles.formGroup}>
-                <label htmlFor="dobInput" className={styles.label}>
-                  Date of Birth <span className={styles.required}>*</span>
-                </label>
-                <input
-                  id="dobInput"
-                  type="date"
-                  value={dob}
-                  onChange={(e) => {
-                    setDob(e.target.value);
-                    setDobError('');
-                  }}
-                  className={`${styles.input} ${dobError ? styles.inputError : ''}`}
-                />
-                {dobError && <p className={styles.errorText}>{dobError}</p>}
-              </div>
-
-              <div className={styles.proceedBtn}>
-                <button type="submit" className="btn btn_cls">
-                  Save &amp; Proceed
-                </button>
-              </div>
-            </form>
           </div>
         </div>
+
+        {/* White card */}
+        <form onSubmit={handleSubmit} noValidate>
+          <div className={styles.mobileCard}>
+
+            {/* PAN No. */}
+            <div className={styles.mobileFormField}>
+              <label htmlFor="mob-pan" className={styles.mobileLabel}>PAN No.</label>
+              <input
+                id="mob-pan"
+                type="text"
+                maxLength={10}
+                value={pan}
+                onChange={(e) => { setPan(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '')); setPanError(''); }}
+                placeholder="e.g. ABCDE1234F"
+                className={`${styles.mobileInput}${panError ? ` ${styles.mobileInputError}` : ''}`}
+              />
+              {panError && <p className={styles.mobileErrorText}>{panError}</p>}
+              {/* PAN card carousel — swipeable front/back */}
+              <PanCardCarousel />
+            </div>
+
+            {/* Date of Birth */}
+            <div className={styles.mobileFormField}>
+              <label htmlFor="mob-dob" className={styles.mobileLabel}>Date of Birth</label>
+              <Calendar
+                inputId="mob-dob"
+                value={strToDate(dob)}
+                onChange={(e) => { setDob(dateToStr(e.value as Date | null)); setDobError(''); }}
+                dateFormat="dd/mm/yy"
+                placeholder="DD/MM/YYYY"
+                showIcon
+                iconPos="right"
+                className={`p-prime-cal p-prime-cal-h48${dobError ? ' p-prime-cal-error' : ''}`}
+              />
+              {dobError && <p className={styles.mobileErrorText}>{dobError}</p>}
+            </div>
+
+            {/* Full Name */}
+            <div className={styles.mobileFormField}>
+              <label htmlFor="mob-name" className={styles.mobileLabel}>Full Name</label>
+              <input
+                id="mob-name"
+                type="text"
+                value={name}
+                onChange={(e) => { setName(e.target.value); setNameError(''); }}
+                placeholder="Enter name as on PAN"
+                className={`${styles.mobileInput}${nameError ? ` ${styles.mobileInputError}` : ''}`}
+              />
+              {nameError && <p className={styles.mobileErrorText}>{nameError}</p>}
+            </div>
+
+          </div>
+
+          {/* Figma: 328×48, bg #280071, 16px SemiBold white */}
+          <div className={styles.mobileProceedArea}>
+            <button type="submit" className={styles.mobileProceedBtn}>
+              Verify PAN
+            </button>
+          </div>
+        </form>
+
       </div>
-    </section>
+
+      {/* ═══ DESKTOP ═══════════════════════════════════════════════════════════
+          Figma: 1:4282 — Onboarding-Web-PANMANUAL-Verification-Filled (1440×1024)
+      ════════════════════════════════════════════════════════════════════════ */}
+      <div className={styles.desktopPage} aria-label="Enter PAN Card Details">
+        {/* Figma: w-800, rounded-24, border #d9d9d9, shadow */}
+        <div className={styles.desktopCard}>
+
+          {/* Card header */}
+          {/* Figma: p-24, flex, gap-8, border-bottom 0.5px #d9d9d9 */}
+          <div className={styles.desktopCardHeader}>
+            <button type="button" className={styles.desktopBackBtn} onClick={handleBack} aria-label="Go back">
+              <img src={ASSET_BACK_ARROW} alt="" width={24} height={24} aria-hidden="true" />
+            </button>
+            <div className={styles.desktopHeaderContent}>
+              {/* Row: title + Need Help? */}
+              <div className={styles.desktopHeaderRow}>
+                {/* Figma: 18px SemiBold #222 */}
+                <h1 className={styles.desktopCardTitle}>Enter PAN Card Details</h1>
+                {/* Figma: pill badge bg rgba(207,169,255,0.09), border 0.5px #d9d9d9, rounded-25px */}
+                <button type="button" className={styles.needHelpBadge}>Need Help?</button>
+              </div>
+              {/* Figma: 14px Regular #666 */}
+              <p className={styles.desktopCardSubtitle}>Enter details exactly as per your PAN</p>
+            </div>
+          </div>
+
+          {/* Card body */}
+          {/* Figma: p-24, flex col, justify-between, h-581 */}
+          <form onSubmit={handleSubmit} noValidate>
+            <div className={styles.desktopCardBody}>
+              <div className={styles.desktopFieldsArea}>
+
+                {/* ── PAN No. field ── */}
+                {/* Figma: label "PAN No." 16px Regular #666; input w-250 h-40 border #d9d9d9 rounded-8 */}
+                <div className={`${styles.desktopFormRow} ${styles.desktopFormRowCenter}`}>
+                  <label htmlFor="desk-pan" className={styles.desktopLabel}>
+                    PAN No.
+                  </label>
+                  <div className={styles.desktopInputGroup}>
+                    <input
+                      id="desk-pan"
+                      type="text"
+                      maxLength={10}
+                      value={pan}
+                      onChange={(e) => { setPan(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '')); setPanError(''); }}
+                      placeholder="e.g. ABCDE1234F"
+                      className={`${styles.desktopInput}${panError ? ` ${styles.desktopInputError}` : ''}`}
+                    />
+                    {panError && <p className={styles.desktopErrorText}>{panError}</p>}
+
+                    {/* PAN card Splide carousel — front / back, 1 slide at a time */}
+                    <PanCardCarousel />
+                  </div>
+                </div>
+
+                {/* ── Date of Birth field ── */}
+                {/* PrimeReact Calendar — dateFormat dd/mm/yy, showIcon, 250px wide */}
+                <div className={`${styles.desktopFormRow} ${styles.desktopFormRowCenter}`}>
+                  <label htmlFor="desk-dob" className={styles.desktopLabel}>
+                    Date of Birth
+                  </label>
+                  <div className={styles.desktopCalWrap}>
+                    <Calendar
+                      inputId="desk-dob"
+                      value={strToDate(dob)}
+                      onChange={(e) => { setDob(dateToStr(e.value as Date | null)); setDobError(''); }}
+                      dateFormat="dd/mm/yy"
+                      placeholder="DD/MM/YYYY"
+                      showIcon
+                      iconPos="right"
+                      className={`p-prime-cal${dobError ? ' p-prime-cal-error' : ''}`}
+                    />
+                    {dobError && <p className={styles.desktopErrorText}>{dobError}</p>}
+                  </div>
+                </div>
+
+                {/* ── Full Name field ── */}
+                {/* Figma: label w-231 16px Regular #666; input w-250 h-40 */}
+                <div className={`${styles.desktopFormRow} ${styles.desktopFormRowCenter}`}>
+                  <label htmlFor="desk-name" className={styles.desktopLabel}>
+                    Full Name
+                  </label>
+                  <div>
+                    <input
+                      id="desk-name"
+                      type="text"
+                      value={name}
+                      onChange={(e) => { setName(e.target.value); setNameError(''); }}
+                      placeholder="Enter name as on PAN"
+                      className={`${styles.desktopInput}${nameError ? ` ${styles.desktopInputError}` : ''}`}
+                    />
+                    {nameError && <p className={styles.desktopErrorText}>{nameError}</p>}
+                  </div>
+                </div>
+
+              </div>
+
+              {/* Figma: centered, w-350, h-56, bg #280071, 16px SemiBold white */}
+              <div className={styles.desktopProceedWrapper}>
+                <button type="submit" className={styles.desktopProceedBtn}>
+                  Verify PAN
+                </button>
+              </div>
+            </div>
+          </form>
+
+        </div>
+      </div>
+
+      {/* ═══ VERIFYING OVERLAY — desktop (Figma 1:4567) ═══════════════════════
+          rgba(0,0,0,0.6) full-screen + white centered dialog (500px)
+      ════════════════════════════════════════════════════════════════════════ */}
+      {showVerifying && (
+        <div className={styles.verifyingOverlay} role="dialog" aria-modal="true" aria-label="Verifying PAN">
+          <div className={styles.verifyingDialog}>
+            <VerifyingContent />
+          </div>
+        </div>
+      )}
+
+      {/* ═══ VERIFYING SHEET — mobile (Figma 1:5501) ══════════════════════════
+          Onboarding-Mob-PANMANUAL-Verification-Drawer
+          Bottom sheet: dash handle + loading animation + title + subtitle
+      ════════════════════════════════════════════════════════════════════════ */}
+      {showVerifying && (
+        <div className={styles.verifyingSheetOverlay} role="dialog" aria-modal="true" aria-label="Verifying PAN">
+          <div className={styles.verifyingSheet}>
+            {/* Figma: dash handle — 100×24px, centered */}
+            <button type="button" className={styles.sheetDashBtn} aria-label="Close">
+              <img src={ASSET_DASH} alt="" className={styles.sheetDashImg} aria-hidden="true" />
+            </button>
+            <div className={styles.sheetContent}>
+              <VerifyingContent />
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
