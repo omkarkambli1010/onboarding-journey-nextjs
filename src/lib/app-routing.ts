@@ -58,6 +58,7 @@
 // 'oci/back'                         → src/app/oci/back/page.jsx
 // 'fatca'                            → src/app/fatca/page.jsx
 // 'fatca/document'                   → src/app/fatca/document/page.jsx
+// 'permanent-address-details'        → src/app/permanent-address-details/page.tsx
 // 'foreignAddress'                   → src/app/foreignAddress/page.jsx
 // 'page-not-found'                   → src/app/page-not-found/page.tsx
 // '**' (catch-all)                   → src/app/not-found.tsx

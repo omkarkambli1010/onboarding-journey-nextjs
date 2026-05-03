@@ -31,48 +31,49 @@ const dateToStr = (d: Date | null | undefined): string => {
 const ASSET_BACK_ARROW = 'https://www.figma.com/api/mcp/asset/6cbc6140-1def-4b19-b701-3293cbb7d815';
 const ASSET_LOADING    = 'https://www.figma.com/api/mcp/asset/708a088c-d80e-4503-ab43-24807612c81e';
 const ASSET_DASH       = 'https://www.figma.com/api/mcp/asset/e556b2bb-fa97-49aa-8a1a-dd995454a5e9';
-const ASSET_PAN_PHOTO  = 'https://www.figma.com/api/mcp/asset/ade13a77-cb23-4cc7-a724-974ffbb1bbc2';
-const ASSET_PAN_IT     = 'https://www.figma.com/api/mcp/asset/f64e671b-7699-476a-a83a-b3452902db62';
 
-// ── PAN card front (slide 1) ─────────────────────────────────────────────────
-// Figma: 225×141px white card — front face of sample PAN card
+// ── Chevron icon for accordion ────────────────────────────────────────────────
+function ChevronSvg({ open }: { open: boolean }) {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s ease', flexShrink: 0 }}
+    >
+      <path d="M6 9L12 15L18 9" stroke="#280071" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+// ── PAN card front (slide 1) — Figma: image 3215 ─────────────────────────────
 function PanCardFront() {
   return (
-    <div className={styles.panCardMini}>
-      <p className={styles.panCardTitle}>Permanent Account Number</p>
-      <p className={styles.panCardNumber}>XXXXXXXXXX</p>
-      <div className={styles.panCardPhotoBox}>
-        <img src={ASSET_PAN_PHOTO} alt="" aria-hidden="true" />
-      </div>
-      <p className={styles.panCardFieldLabel} style={{ top: 45, left: 80 }}>Name</p>
-      <p className={styles.panCardFieldLabel} style={{ top: 69, left: 70 }}>Father&apos;s Name</p>
-      <p className={styles.panCardFieldLabel} style={{ top: 93, left: 72 }}>Date of Birth</p>
-      <p className={`${styles.panCardFieldLabel} ${styles.panCardGrayLabel}`} style={{ bottom: 10, left: 16 }}>Signature</p>
-      <div className={styles.panCardITWrap}>
-        <img src={ASSET_PAN_IT} alt="" aria-hidden="true" className={styles.panCardITImg} />
-        <span className={styles.panCardCommissioner}>Commissioner of Income Tax</span>
-      </div>
+    <div className={styles.panSlide}>
+      <img src="/pan-card-sample-front.png" alt="Sample PAN card front" className={styles.panCardImg} />
     </div>
   );
 }
 
 // ── PAN card back (slide 2) ──────────────────────────────────────────────────
-// Figma: 225×141px white card — back face of sample PAN card
 function PanCardBack() {
   return (
-    <div className={styles.panCardMini}>
-      <div className={styles.panCardBackStrip} />
-      <p className={styles.panCardBackLabel}>Permanent Account Number Card</p>
-      <div className={styles.panCardBackBarcode} />
-      <p className={`${styles.panCardBackLabel} ${styles.panCardBackLabelSm}`}>
-        Income Tax Department, Govt. of India
-      </p>
+    <div className={styles.panSlide}>
+      <div className={styles.panCardMini}>
+        <div className={styles.panCardBackStrip} />
+        <p className={styles.panCardBackLabel}>Permanent Account Number Card</p>
+        <div className={styles.panCardBackBarcode} />
+        <p className={`${styles.panCardBackLabel} ${styles.panCardBackLabelSm}`}>
+          Income Tax Department, Govt. of India
+        </p>
+      </div>
     </div>
   );
 }
 
 // ── PAN carousel (Splide) ────────────────────────────────────────────────────
-// perPage:1 · arrows:false · pagination dots · swipeable
 function PanCardCarousel() {
   return (
     <div className={styles.panCarouselWrap}>
@@ -90,16 +91,8 @@ function PanCardCarousel() {
         aria-label="PAN card preview"
         className={styles.panSplide}
       >
-        <SplideSlide>
-          <div className={styles.panSlide}>
-            <PanCardFront />
-          </div>
-        </SplideSlide>
-        <SplideSlide>
-          <div className={styles.panSlide}>
-            <PanCardBack />
-          </div>
-        </SplideSlide>
+        <SplideSlide><PanCardFront /></SplideSlide>
+        <SplideSlide><PanCardBack /></SplideSlide>
       </Splide>
     </div>
   );
@@ -133,6 +126,7 @@ export default function UploadProcess() {
   const [dobError, setDobError]     = useState('');
   const [formNumber, setFormNumber] = useState('');
   const [showVerifying, setShowVerifying] = useState(false);
+  const [showSamplePan, setShowSamplePan] = useState(false);
 
   useEffect(() => {
     document.title = 'PAN Details | SBI Securities';
@@ -243,8 +237,16 @@ export default function UploadProcess() {
                 className={`${styles.mobileInput}${panError ? ` ${styles.mobileInputError}` : ''}`}
               />
               {panError && <p className={styles.mobileErrorText}>{panError}</p>}
-              {/* PAN card carousel — swipeable front/back */}
-              <PanCardCarousel />
+              <button
+                type="button"
+                className={styles.accordionToggle}
+                onClick={() => setShowSamplePan(v => !v)}
+                aria-expanded={showSamplePan}
+              >
+                <span className={styles.accordionToggleText}>View sample PAN</span>
+                <ChevronSvg open={showSamplePan} />
+              </button>
+              {showSamplePan && <PanCardCarousel />}
             </div>
 
             {/* Date of Birth */}
@@ -339,9 +341,16 @@ export default function UploadProcess() {
                       className={`${styles.desktopInput}${panError ? ` ${styles.desktopInputError}` : ''}`}
                     />
                     {panError && <p className={styles.desktopErrorText}>{panError}</p>}
-
-                    {/* PAN card Splide carousel — front / back, 1 slide at a time */}
-                    <PanCardCarousel />
+                    <button
+                      type="button"
+                      className={styles.accordionToggle}
+                      onClick={() => setShowSamplePan(v => !v)}
+                      aria-expanded={showSamplePan}
+                    >
+                      <span className={styles.accordionToggleText}>View sample PAN</span>
+                      <ChevronSvg open={showSamplePan} />
+                    </button>
+                    {showSamplePan && <PanCardCarousel />}
                   </div>
                 </div>
 

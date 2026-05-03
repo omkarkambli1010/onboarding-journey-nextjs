@@ -332,9 +332,39 @@ $text-gray: #666666;
   flex-shrink: 0;
 }
 
+// ── "View sample PAN" accordion toggle ───────────────────────────────────────
+
+// Figma 1-74034 / 1-73533: gray pill toggle below PAN input
+.accordionToggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: $bg-page;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  width: 100%;
+  box-sizing: border-box;
+
+  @media (min-width: 768px) {
+    width: 250px;
+  }
+
+  &:hover {
+    background: darken(#f8f8f8, 3%);
+  }
+}
+
+// Figma: 14px Regular #280071
+.accordionToggleText {
+  font-size: 14px;
+  font-weight: 400;
+  color: $primary;
+}
+
 // ── PAN card Splide carousel ──────────────────────────────────────────────────
 
-// Outer wrapper — constrains the carousel to card width, no overflow
 .panCarouselWrap {
   width: 250px;
   overflow: hidden;
@@ -344,9 +374,7 @@ $text-gray: #666666;
   }
 }
 
-// Splide root — remove default track padding
 .panSplide {
-  // Splide pagination dots — center-align, compact
   :global(.splide__pagination) {
     position: static;
     display: flex;
@@ -374,7 +402,7 @@ $text-gray: #666666;
 
   :global(.splide__track) {
     overflow: hidden;
-    border-radius: 9.6px;
+    border-radius: 10px;
   }
 
   :global(.splide__list) {
@@ -383,7 +411,6 @@ $text-gray: #666666;
   }
 }
 
-// Each slide — centers the card inside the track
 .panSlide {
   display: flex;
   justify-content: center;
@@ -391,20 +418,15 @@ $text-gray: #666666;
   width: 100%;
 }
 
-// ── PAN card preview (shared between front & back) ────────────────────────────
-
-// Figma: PAN card preview — white, border #d9d9d9, rounded-9.6px, 225×141, overflow-clip
-.panCardWrap {
-  width: 250px;
-  background: $bg-page;
-  border-radius: 6px;
-  padding: 12px;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
+// Figma: image 3215 — real PAN card photo
+.panCardImg {
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  display: block;
 }
+
+// ── PAN card back (slide 2) ───────────────────────────────────────────────────
 
 .panCardMini {
   width: 225px;
@@ -417,85 +439,6 @@ $text-gray: #666666;
   flex-shrink: 0;
 }
 
-.panCardTitle {
-  position: absolute;
-  top: 9px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 8px;
-  font-weight: 600;
-  color: $text-dark;
-  white-space: nowrap;
-  margin: 0;
-}
-
-.panCardNumber {
-  position: absolute;
-  top: 22px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 10px;
-  font-weight: 600;
-  color: $text-dark;
-  white-space: nowrap;
-  margin: 0;
-}
-
-.panCardPhotoBox {
-  position: absolute;
-  top: 46px;
-  left: 16px;
-  width: 51px;
-  height: 51px;
-  border: 0.8px solid $border;
-  border-radius: 6px;
-  overflow: hidden;
-
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-}
-
-.panCardFieldLabel {
-  position: absolute;
-  font-size: 6.4px;
-  font-weight: 600;
-  color: $text-dark;
-  margin: 0;
-}
-
-.panCardGrayLabel {
-  color: $text-gray;
-}
-
-.panCardITWrap {
-  position: absolute;
-  bottom: 4px;
-  right: 12px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-}
-
-.panCardITImg {
-  width: 24px;
-  height: 16px;
-  object-fit: contain;
-}
-
-.panCardCommissioner {
-  font-size: 5px;
-  font-weight: 600;
-  color: $text-gray;
-  white-space: nowrap;
-}
-
-// ── PAN card back ─────────────────────────────────────────────────────────────
-
-// Magnetic/signature strip across the top
 .panCardBackStrip {
   position: absolute;
   top: 18px;
@@ -505,7 +448,6 @@ $text-gray: #666666;
   background: #333;
 }
 
-// Label text on back
 .panCardBackLabel {
   position: absolute;
   top: 58px;
@@ -525,7 +467,6 @@ $text-gray: #666666;
   color: $text-gray;
 }
 
-// Barcode placeholder
 .panCardBackBarcode {
   position: absolute;
   top: 72px;
