@@ -258,6 +258,7 @@ export default function UploadProcess() {
                 placeholder="DD/MM/YYYY"
                 showIcon
                 iconPos="right"
+                touchUI
                 className={`p-prime-cal p-prime-cal-h48${dobError ? ' p-prime-cal-error' : ''}`}
               />
               {dobError && <p className={styles.mobileErrorText}>{dobError}</p>}
@@ -359,6 +360,7 @@ export default function UploadProcess() {
                       placeholder="DD/MM/YYYY"
                       showIcon
                       iconPos="right"
+                      touchUI
                       className={`p-prime-cal${dobError ? ' p-prime-cal-error' : ''}`}
                     />
                     {dobError && <p className={styles.desktopErrorText}>{dobError}</p>}
