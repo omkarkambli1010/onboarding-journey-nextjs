@@ -7,6 +7,7 @@ import 'primeicons/primeicons.css';
 import 'primeflex/primeflex.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'react-toastify/dist/ReactToastify.css';
+import 'react-phone-number-input/style.css';
 import Providers from '@/lib/providers';
 import AppShell from '@/components/app-shell/AppShell';
 

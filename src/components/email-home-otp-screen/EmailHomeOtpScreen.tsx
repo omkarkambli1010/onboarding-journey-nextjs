@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import OtpInput from 'react-otp-input';
+import { InputOtp } from 'primereact/inputotp';
 import { useSpinner } from '@/components/spinner/Spinner';
 import { toast } from 'react-toastify';
 import apiService from '@/services/api.service';
@@ -100,8 +100,9 @@ export default function EmailHomeOtpScreen() {
     }, 1000);
   };
 
-  const handleOtpChange = (value: string) => {
-    setOtp(value);
+  const handleOtpChange = (value: string | null | undefined) => {
+    const val = value ?? '';
+    setOtp(val);
     if (isWrongOTP) setIsWrongOTP(false);
     if (isRightOTP) setIsRightOTP(false);
   };
@@ -152,52 +153,60 @@ export default function EmailHomeOtpScreen() {
     setIsWrongOTP(false);
     setIsRightOTP(false);
 
-    const reqData = {
-      Flag: 'VerifyOTPEmail',
-      Formnumber: typeof window !== 'undefined' ? sessionStorage.getItem('FormNumber') : '',
-      emailid: emailRef.current,
-      mobileno: mobileRef.current,
-      isRetry: false,
-      otp,
-      utm_source: utmSource,
-      utm_medium: utmMedium,
-      utm_campaign: utmCampaign,
-    };
-    showSpinner();
-    try {
-      const response = await apiService.postRequest('api/v1/oauth/service/otp/verify', reqData, hideSpinner);
-      if (response?.status === false) {
-        toast.error(response.message, { position: 'bottom-center', autoClose: 4000 });
-        return;
-      }
-      if (response?.message === 'OTP Verify successfully' && response?.status === true) {
-        if (typeof window !== 'undefined') sessionStorage.removeItem('email');
-        if (intervalRef.current) clearInterval(intervalRef.current);
-        setShowSuccessModal(true);
-        setTimeout(() => {
-          setShowSuccessModal(false);
-          router.push('/uploadProcess/1');
-          hideSpinner();
-        }, 2000);
-      } else if (response?.status === false) {
-        const msg = response?.message;
-        if (msg === 'Wrong Otp') {
-          setIsWrongOTP(true);
-        } else if (msg === 'OTP Limit Exceeded') {
-          toast.warning(msg, { position: 'bottom-center', autoClose: 2000 });
-        } else {
-          toast.info(msg, { position: 'bottom-center', autoClose: 2000 });
-        }
-      } else {
-        setTimeout(() => {
-          router.push('/email-home-textpage');
-          hideSpinner();
-        }, 200);
-        toast.error(response?.message, { position: 'bottom-center', autoClose: 3000 });
-      }
-    } catch {
-      hideSpinner();
-    }
+    // TODO: Re-enable when API is ready
+    // const reqData = {
+    //   Flag: 'VerifyOTPEmail',
+    //   Formnumber: typeof window !== 'undefined' ? sessionStorage.getItem('FormNumber') : '',
+    //   emailid: emailRef.current,
+    //   mobileno: mobileRef.current,
+    //   isRetry: false,
+    //   otp,
+    //   utm_source: utmSource,
+    //   utm_medium: utmMedium,
+    //   utm_campaign: utmCampaign,
+    // };
+    // showSpinner();
+    // try {
+    //   const response = await apiService.postRequest('api/v1/oauth/service/otp/verify', reqData, hideSpinner);
+    //   if (response?.status === false) {
+    //     toast.error(response.message, { position: 'bottom-center', autoClose: 4000 });
+    //     return;
+    //   }
+    //   if (response?.message === 'OTP Verify successfully' && response?.status === true) {
+    //     if (typeof window !== 'undefined') sessionStorage.removeItem('email');
+    //     if (intervalRef.current) clearInterval(intervalRef.current);
+    //     setShowSuccessModal(true);
+    //     setTimeout(() => {
+    //       setShowSuccessModal(false);
+    //       router.push('/uploadProcess/1');
+    //       hideSpinner();
+    //     }, 2000);
+    //   } else if (response?.status === false) {
+    //     const msg = response?.message;
+    //     if (msg === 'Wrong Otp') {
+    //       setIsWrongOTP(true);
+    //     } else if (msg === 'OTP Limit Exceeded') {
+    //       toast.warning(msg, { position: 'bottom-center', autoClose: 2000 });
+    //     } else {
+    //       toast.info(msg, { position: 'bottom-center', autoClose: 2000 });
+    //     }
+    //   } else {
+    //     setTimeout(() => {
+    //       router.push('/email-home-textpage');
+    //       hideSpinner();
+    //     }, 200);
+    //     toast.error(response?.message, { position: 'bottom-center', autoClose: 3000 });
+    //   }
+    // } catch {
+    //   hideSpinner();
+    // }
+
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    setShowSuccessModal(true);
+    setTimeout(() => {
+      setShowSuccessModal(false);
+      router.push('/uploadProcess/1');
+    }, 2000);
   };
 
   // Figma 0:19259 — wrong OTP: #ff2e00 border + text
@@ -217,14 +226,12 @@ export default function EmailHomeOtpScreen() {
       {/* OTP input */}
       <div className={styles.otpField}>
         <label className={styles.otpLabel}>Enter OTP</label>
-        <OtpInput
+        <InputOtp
           value={otp}
-          onChange={handleOtpChange}
-          numInputs={6}
-          renderInput={(props) => <input {...props} className={otpInputClass} />}
-          containerStyle={{ display: 'flex', gap: '12px' }}
-          inputType="tel"
-          shouldAutoFocus
+          onChange={(e) => handleOtpChange(e.value as string)}
+          length={6}
+          integerOnly
+          pt={{ input: { root: { className: otpInputClass } } }}
         />
         {/* Figma 0:19259 — inline error below OTP boxes */}
         {isWrongOTP && (

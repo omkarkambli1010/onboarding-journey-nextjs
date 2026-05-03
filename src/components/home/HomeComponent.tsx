@@ -4,8 +4,8 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { Carousel } from 'primereact/carousel';
-import { InputOtp } from 'primereact/inputotp';
 import { toast } from 'react-toastify';
+import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input';
 import { useSpinner } from '@/components/spinner/Spinner';
 import apiService from '@/services/api.service';
 import aesService from '@/services/aes.service';
@@ -90,15 +90,14 @@ export default function HomeComponent() {
     document.title =
       'Open Demat Account - Free Demat & Trading Account Opening Online | SBI Securities';
 
-    // Pre-fill from session
+    // Pre-fill from session — ensure mobile is E.164 so PhoneInput shows correct flag
     const savedMobile = sessionStorage.getItem('mobile');
     const savedName = sessionStorage.getItem('NameSubmitted');
     if (savedMobile || savedName) {
-      setSendOtp((prev) => ({
-        ...prev,
-        mobile: savedMobile ?? '',
-        fullname: savedName ?? '',
-      }));
+      const mobile = savedMobile
+        ? savedMobile.startsWith('+') ? savedMobile : `+91${savedMobile}`
+        : '';
+      setSendOtp((prev) => ({ ...prev, mobile, fullname: savedName ?? '' }));
     }
 
     // UTM source check — hide Google button if non-organic
@@ -164,21 +163,16 @@ export default function HomeComponent() {
     setPanFullNameReqSpace(val.length === 0 || val.split(' ').length < 2);
   };
 
-  const mobileNoValidation = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+  const handlePhoneChange = (value: string | undefined) => {
+    const val = value ?? '';
     setSendOtp((prev) => ({ ...prev, mobile: val }));
-    setMobileDigitReq(val.length > 0 && (val.length !== 10 || !/^[6-9]/.test(val)));
+    setMobileDigitReq(val.length > 0 && !isValidPhoneNumber(val));
     validateForm(sendOtp.fullname, val);
-  };
-
-  const mobileNoValidation2 = (e: React.FocusEvent<HTMLInputElement>) => {
-    const val = e.target.value;
-    setMobileDigitReq(val.length > 0 && (val.length !== 10 || !/^[6-9]/.test(val)));
   };
 
   const validateForm = (name: string, mobile: string) => {
     const nameValid = name.trim().length >= 3 && !/[^a-zA-Z\s]/.test(name);
-    const mobileValid = mobile.length === 10 && /^[6-9]/.test(mobile);
+    const mobileValid = mobile.length > 0 && isValidPhoneNumber(mobile);
     setIsDisabledLoginBtn(!(nameValid && mobileValid));
   };
 
@@ -201,34 +195,77 @@ export default function HomeComponent() {
     }, 1000);
   };
 
-  const getMobileOtp = async (isResend: boolean) => {
-    showSpinner();
-    try {
-      const payload = {
-        mobile: sendOtp.mobile,
-        fullname: sendOtp.fullname,
-        utm_source: searchParams?.get('utm_source') || 'NA',
-        utm_medium: searchParams?.get('utm_medium') || 'NA',
-        utm_campaign: searchParams?.get('utm_campaign') || 'NA',
-        isResend,
-      };
-      const response = await apiService.postRequest('SendMobileOTP', payload, hideSpinner);
-      if (response) {
-        sessionStorage.setItem('mobile', sendOtp.mobile);
-        sessionStorage.setItem('NameSubmitted', sendOtp.fullname);
-        sessionStorage.setItem('clientid', response.clientid ?? '');
-        startTimer();
-        // Open mobile OTP modal
-        const modal = document.getElementById('mobileOTPModal');
-        if (modal) {
-          const bsModal = (window as any).bootstrap?.Modal?.getOrCreateInstance(modal);
-          bsModal?.show();
-        } else {
-          router.push('/mobile-home-otp');
-        }
+  const getMobileOtp = async (_isResend: boolean) => {
+    // TODO: Re-enable when API is ready
+    // showSpinner();
+    // try {
+    //   const payload = {
+    //     mobile: sendOtp.mobile,
+    //     fullname: sendOtp.fullname,
+    //     utm_source: searchParams?.get('utm_source') || 'NA',
+    //     utm_medium: searchParams?.get('utm_medium') || 'NA',
+    //     utm_campaign: searchParams?.get('utm_campaign') || 'NA',
+    //     isResend,
+    //   };
+    //   const response = await apiService.postRequest('SendMobileOTP', payload, hideSpinner);
+    //   if (response) {
+    //     sessionStorage.setItem('mobile', sendOtp.mobile);
+    //     sessionStorage.setItem('NameSubmitted', sendOtp.fullname);
+    //     sessionStorage.setItem('clientid', response.clientid ?? '');
+    //     startTimer();
+    //     const modal = document.getElementById('mobileOTPModal');
+    //     if (modal) {
+    //       const bsModal = (window as any).bootstrap?.Modal?.getOrCreateInstance(modal);
+    //       bsModal?.show();
+    //     } else {
+    //       router.push('/mobile-home-otp');
+    //     }
+    //   }
+    // } catch {
+    //   hideSpinner();
+    // }
+
+    sessionStorage.setItem('mobile', sendOtp.mobile);
+    sessionStorage.setItem('NameSubmitted', sendOtp.fullname);
+
+    const isIndian = sendOtp.mobile.startsWith('+91');
+
+    if (isIndian) {
+      sessionStorage.setItem('otpChannel', 'sms');
+      router.push('/mobile-home-otp');
+    } else {
+      // TODO: Replace with real API call when ready
+      // showSpinner();
+      // try {
+      //   const payload = {
+      //     mobile: sendOtp.mobile,
+      //     fullname: sendOtp.fullname,
+      //     channel: 'whatsapp',
+      //     utm_source: searchParams?.get('utm_source') || 'NA',
+      //     utm_medium: searchParams?.get('utm_medium') || 'NA',
+      //     utm_campaign: searchParams?.get('utm_campaign') || 'NA',
+      //   };
+      //   const response = await apiService.postRequest('CheckAndSendWhatsAppOTP', payload, hideSpinner);
+      //   const isAvailableOnWhatsApp = response?.whatsappAvailable ?? false;
+      // } catch {
+      //   hideSpinner();
+      //   return;
+      // }
+
+      // Dummy whitelist — simulates numbers registered on WhatsApp
+      // TODO: Remove when real API is wired
+      const DUMMY_WHATSAPP_NUMBERS = ['+12025550100'];
+      const isAvailableOnWhatsApp = DUMMY_WHATSAPP_NUMBERS.includes(sendOtp.mobile.replace(/\s/g, ''));
+
+      if (isAvailableOnWhatsApp) {
+        sessionStorage.setItem('otpChannel', 'whatsapp');
+        router.push('/mobile-home-otp');
+      } else {
+        toast.error('Specific number not available on WhatsApp', {
+          position: 'bottom-center',
+          autoClose: 4000,
+        });
       }
-    } catch {
-      hideSpinner();
     }
   };
 
@@ -377,24 +414,25 @@ export default function HomeComponent() {
 
                   {/* Mobile Input */}
                   <div>
-                    <input
-                      type="text"
-                      className="form-control otp_field"
-                      id="mobile-number"
-                      aria-label="Mobile Number"
-                      aria-required="true"
-                      name="MobileNo"
-                      placeholder="Mobile Number"
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                      maxLength={10}
-                      value={sendOtp.mobile}
-                      onChange={mobileNoValidation}
-                      onBlur={mobileNoValidation2}
-                    />
+                    <div className="phone-input-field">
+                      <PhoneInput
+                        defaultCountry="IN"
+                        value={sendOtp.mobile}
+                        onChange={handlePhoneChange}
+                        international
+                        countryCallingCodeEditable={false}
+                        placeholder="Mobile Number"
+                        numberInputProps={{
+                          'aria-label': 'Mobile Number',
+                          'aria-required': 'true',
+                          name: 'MobileNo',
+                          inputMode: 'numeric',
+                        }}
+                      />
+                    </div>
                     {mobileDigitReq && (
                       <span className="red_warning">
-                        *Please enter your valid 10 digit mobile number.
+                        *Please enter a valid mobile number.
                       </span>
                     )}
                   </div>

@@ -60,7 +60,18 @@ $light-bg: #f8f9fa;
   div {
     margin-bottom: 16px;
   }
+
+  // Reset margin for all inner divs of the phone input
+  :global(.phone-input-field) {
+    margin-bottom: 0;
+
+    div {
+      margin-bottom: 0;
+    }
+  }
 }
+
+
 
 .btnAlign {
   margin-top: 8px;

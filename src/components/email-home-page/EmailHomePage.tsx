@@ -1,15 +1,15 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter/*, useSearchParams*/ } from 'next/navigation'; // TODO: Re-enable useSearchParams when API is ready
 import { useSpinner } from '@/components/spinner/Spinner';
-import { toast } from 'react-toastify';
-import apiService from '@/services/api.service';
+// import { toast } from 'react-toastify';         // TODO: Re-enable when API is ready
+// import apiService from '@/services/api.service'; // TODO: Re-enable when API is ready
 import navigationService from '@/services/navigation.service';
 import styles from './email-home-page.module.scss';
 
-// EmailHomePage — Figma: Email-UI-Revamp / Email ID Verification (text entry)
-// Nodes: 0:17003 (empty), 0:17237 / 0:17471 (filled), 0:17705 (error)
+// EmailHomePage — Figma: SEMI--FULL-NRE-NRO / Email ID Verification (text entry)
+// Desktop: 1:76966   Mobile: 1:72753
 
 const BackArrowSvg = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -38,15 +38,15 @@ const isEmailValid = (v: string): boolean => {
 
 export default function EmailHomePage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  // const searchParams = useSearchParams(); // TODO: Re-enable when API is ready
   const { show: showSpinner, hide: hideSpinner } = useSpinner();
 
   const [email, setEmail] = useState('');
   const [showError, setShowError] = useState(false);
 
-  const utmSource = searchParams.get('utm_source') || 'NA';
-  const utmMedium = searchParams.get('utm_medium') || 'NA';
-  const utmCampaign = searchParams.get('utm_campaign') || 'NA';
+  // const utmSource = searchParams.get('utm_source') || 'NA';   // TODO: Re-enable when API is ready
+  // const utmMedium = searchParams.get('utm_medium') || 'NA';   // TODO: Re-enable when API is ready
+  // const utmCampaign = searchParams.get('utm_campaign') || 'NA'; // TODO: Re-enable when API is ready
 
   const hasError = showError && email.length > 0 && !isEmailValid(email);
   const isSendDisabled = !isEmailValid(email);
@@ -77,36 +77,40 @@ export default function EmailHomePage() {
   const getEmailOtp = async () => {
     if (isSendDisabled) return;
     if (typeof window !== 'undefined') sessionStorage.setItem('email', email);
-    showSpinner();
-    const reqData = {
-      Flag: 'InsertOtpEmail',
-      emailid: email,
-      mobileno: typeof window !== 'undefined' ? sessionStorage.getItem('mobile') : '',
-      isRetry: false,
-      utm_source: utmSource,
-      utm_medium: utmMedium,
-      utm_campaign: utmCampaign,
-      Formnumber: typeof window !== 'undefined' ? sessionStorage.getItem('FormNumber') : '',
-    };
-    try {
-      const response = await apiService.postRequest('api/v1/oauth/service/otp/send', reqData, hideSpinner);
-      if (response?.status === true) {
-        setTimeout(() => {
-          router.push('/email-home-otp');
-          hideSpinner();
-        }, 200);
-      } else if (response?.status === false) {
-        const msg = response.message;
-        if (msg === 'Internal server error') {
-          toast.error('Internal Server Error!', { position: 'bottom-center', autoClose: 2000 });
-        } else {
-          toast.warning(msg, { position: 'bottom-center', autoClose: 5000 });
-        }
-        hideSpinner();
-      }
-    } catch {
-      hideSpinner();
-    }
+
+    // TODO: Re-enable when API is ready
+    // showSpinner();
+    // const reqData = {
+    //   Flag: 'InsertOtpEmail',
+    //   emailid: email,
+    //   mobileno: typeof window !== 'undefined' ? sessionStorage.getItem('mobile') : '',
+    //   isRetry: false,
+    //   utm_source: utmSource,
+    //   utm_medium: utmMedium,
+    //   utm_campaign: utmCampaign,
+    //   Formnumber: typeof window !== 'undefined' ? sessionStorage.getItem('FormNumber') : '',
+    // };
+    // try {
+    //   const response = await apiService.postRequest('api/v1/oauth/service/otp/send', reqData, hideSpinner);
+    //   if (response?.status === true) {
+    //     setTimeout(() => {
+    //       router.push('/email-home-otp');
+    //       hideSpinner();
+    //     }, 200);
+    //   } else if (response?.status === false) {
+    //     const msg = response.message;
+    //     if (msg === 'Internal server error') {
+    //       toast.error('Internal Server Error!', { position: 'bottom-center', autoClose: 2000 });
+    //     } else {
+    //       toast.warning(msg, { position: 'bottom-center', autoClose: 5000 });
+    //     }
+    //     hideSpinner();
+    //   }
+    // } catch {
+    //   hideSpinner();
+    // }
+
+    router.push('/email-home-otp');
   };
 
   const errorMessage = (
@@ -136,7 +140,7 @@ export default function EmailHomePage() {
 
         <div className={styles.mobileCard}>
           <div className={styles.mobileEmailField}>
-            <label htmlFor="emailInputMobile" className={styles.mobileEmailLabel}>Email ID</label>
+            <label htmlFor="emailInputMobile" className={styles.mobileEmailLabel}>Enter Email ID</label>
             <input
               id="emailInputMobile"
               type="email"

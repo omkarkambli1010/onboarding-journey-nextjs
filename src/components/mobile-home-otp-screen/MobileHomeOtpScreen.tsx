@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import OtpInput from 'react-otp-input';
+import { InputOtp } from 'primereact/inputotp';
 import { toast } from 'react-toastify';
 import { useSpinner } from '@/components/spinner/Spinner';
 import apiService from '@/services/api.service';
@@ -35,6 +35,7 @@ export default function MobileHomeOtpScreen() {
 
   const mobile = typeof window !== 'undefined' ? sessionStorage.getItem('mobile') ?? '' : '';
   const fullname = typeof window !== 'undefined' ? sessionStorage.getItem('NameSubmitted') ?? '' : '';
+  const isWhatsApp = typeof window !== 'undefined' ? sessionStorage.getItem('otpChannel') === 'whatsapp' : false;
 
   const isVerifyDisabled = otp.length !== 6;
 
@@ -63,8 +64,9 @@ export default function MobileHomeOtpScreen() {
     }, 1000);
   };
 
-  const handleOtpChange = (value: string) => {
-    setOtp(value);
+  const handleOtpChange = (value: string | null | undefined) => {
+    const val = value ?? '';
+    setOtp(val);
     if (isWrongOTP) setIsWrongOTP(false);
   };
 
@@ -89,29 +91,32 @@ export default function MobileHomeOtpScreen() {
   };
 
   const getMobileOtpVerify = async () => {
-    showSpinner();
-    try {
-      const clientid = sessionStorage.getItem('clientid') ?? '';
-      const response = await apiService.postRequest(
-        'VerifyMobileOTP',
-        { mobile, otp, clientid },
-        hideSpinner,
-      );
-      if (response) {
-        setIsRightOTP(true);
-        setIsWrongOTP(false);
-        if (response.token) sessionStorage.setItem('token', response.token);
-        const routes: string[] = response.routes ?? [];
-        sessionStorage.setItem('allowedRoutes', JSON.stringify(routes));
-        router.push(routes[0] ?? '/email');
-      } else {
-        setIsWrongOTP(true);
-        setIsRightOTP(false);
-        hideSpinner();
-      }
-    } catch {
-      hideSpinner();
-    }
+    // TODO: Re-enable when API is ready
+    // showSpinner();
+    // try {
+    //   const clientid = sessionStorage.getItem('clientid') ?? '';
+    //   const response = await apiService.postRequest(
+    //     'VerifyMobileOTP',
+    //     { mobile, otp, clientid },
+    //     hideSpinner,
+    //   );
+    //   if (response) {
+    //     setIsRightOTP(true);
+    //     setIsWrongOTP(false);
+    //     if (response.token) sessionStorage.setItem('token', response.token);
+    //     const routes: string[] = response.routes ?? [];
+    //     sessionStorage.setItem('allowedRoutes', JSON.stringify(routes));
+    //     router.push(routes[0] ?? '/email');
+    //   } else {
+    //     setIsWrongOTP(true);
+    //     setIsRightOTP(false);
+    //     hideSpinner();
+    //   }
+    // } catch {
+    //   hideSpinner();
+    // }
+
+    router.push('/email');
   };
 
   const otpInputClass = `${styles.otpBox}${isWrongOTP ? ` ${styles.otpBoxError}` : isRightOTP ? ` ${styles.otpBoxSuccess}` : ''}`;
@@ -130,14 +135,12 @@ export default function MobileHomeOtpScreen() {
       {/* OTP input */}
       <div className={styles.otpField}>
         <label className={styles.otpLabel}>Enter OTP</label>
-        <OtpInput
+        <InputOtp
           value={otp}
-          onChange={handleOtpChange}
-          numInputs={6}
-          renderInput={(props) => <input {...props} className={otpInputClass} />}
-          containerStyle={{ display: 'flex', gap: '12px' }}
-          inputType="tel"
-          shouldAutoFocus
+          onChange={(e) => handleOtpChange(e.value as string)}
+          length={6}
+          integerOnly
+          pt={{ input: { root: { className: otpInputClass } } }}
         />
         {isWrongOTP && (
           <div className={styles.otpError}>
@@ -177,7 +180,7 @@ export default function MobileHomeOtpScreen() {
             </button>
             <div className={styles.mobileTitleBlock}>
               <h5 className={styles.mobileTitle}>OTP Verification</h5>
-              <p className={styles.mobileSubtitle}>You will receive OTP on your mobile number</p>
+              <p className={styles.mobileSubtitle}>{isWhatsApp ? 'You will receive OTP on your WhatsApp' : 'You will receive OTP on your mobile number'}</p>
             </div>
           </div>
         </div>
@@ -213,7 +216,7 @@ export default function MobileHomeOtpScreen() {
             <div className={styles.desktopTitleBlock}>
               <h5 className={styles.desktopCardTitle}>OTP Verification</h5>
               <p className={styles.desktopCardSubtitle}>
-                You will receive OTP on your mobile number
+                {isWhatsApp ? 'You will receive OTP on your WhatsApp' : 'You will receive OTP on your mobile number'}
               </p>
             </div>
           </div>

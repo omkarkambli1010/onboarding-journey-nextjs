@@ -53,9 +53,9 @@ a {
 
 // ===== Common Button Styles =====
 .btn_cls {
-  background-color: $primary-color;
-  color: $white;
-  border: none;
+  background-color: $primary-color !important;
+  color: $white !important;
+  border: none !important;
   border-radius: 8px;
   padding: 12px 24px;
   font-size: 16px;
@@ -67,16 +67,16 @@ a {
   text-align: center;
 
   &:hover:not(:disabled) {
-    background-color: $secondary-color;
-    color: $white;
+    background-color: $secondary-color !important;
+    color: $white !important;
   }
 
   &:disabled,
   &[aria-disabled='true'] {
-    opacity: 0.6;
+    opacity: 1;
     cursor: not-allowed;
-    background-color: $primary-color;
-    color: $white;
+    background-color: #b0b0b0 !important;
+    color: $white !important;
   }
 }
 
@@ -208,6 +208,103 @@ section {
   height: 1px;
   background-color: #e0e0e0;
   margin: 16px 0;
+}
+
+// ===== Phone Input with Country Code =====
+.phone-input-field {
+  border: 1px solid $border-color;
+  border-radius: 8px;
+  background: #fff;
+  overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+  &:focus-within {
+    border-color: $primary-color;
+    box-shadow: 0 0 0 2px rgba(40, 0, 113, 0.1);
+  }
+
+  .PhoneInput {
+    display: flex;
+    align-items: stretch;
+    border: none;
+    background: transparent;
+  }
+
+  .PhoneInputCountry {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 12px;
+    background: #f8f9fa;
+    border-right: 1px solid $border-color;
+    margin-right: 0;
+    flex-shrink: 0;
+    position: relative;
+    cursor: pointer;
+  }
+
+  .PhoneInputCountryIcon {
+    width: 24px;
+    height: 16px;
+    border-radius: 2px;
+    overflow: hidden;
+    flex-shrink: 0;
+
+    img, svg {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+  }
+
+  .PhoneInputCountrySelect {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 1;
+    border: none;
+  }
+
+  .PhoneInputCountrySelectArrow {
+    width: 6px;
+    height: 6px;
+    border-style: solid;
+    border-color: #555;
+    border-top-width: 0;
+    border-left-width: 0;
+    border-right-width: 2px;
+    border-bottom-width: 2px;
+    transform: rotate(45deg);
+    margin-top: -4px;
+    opacity: 1;
+    flex-shrink: 0;
+  }
+
+  .PhoneInputInput {
+    flex: 1;
+    border: none;
+    outline: none;
+    box-shadow: none;
+    background: transparent;
+    font-size: 16px;
+    padding: 14px 16px;
+    color: #333;
+    min-width: 0;
+
+    &::placeholder {
+      color: #aaa;
+    }
+
+    &:focus {
+      outline: none;
+      border: none;
+      box-shadow: none;
+    }
+  }
 }
 
 // ===== Page heading =====
@@ -1496,5 +1593,298 @@ section {
   @media (max-width: 480px) {
     max-width: calc(100vw - 24px);
     left: 12px !important;
+  }
+}
+
+// ===== PrimeReact Calendar — touchUI readable overrides ======================
+// .p-datepicker-touch-ui is added when touchUI prop is set.
+// The panel renders as a body portal over .p-datepicker-mask backdrop.
+
+// ── Backdrop ─────────────────────────────────────────────────────────────────
+.p-datepicker-mask {
+  background: rgba(0, 0, 0, 0.55) !important;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+// ── Calendar panel ────────────────────────────────────────────────────────────
+.p-datepicker.p-datepicker-touch-ui {
+  width: min(400px, 94vw) !important;
+  border-radius: 20px !important;
+  border: none !important;
+  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.4) !important;
+  overflow: hidden;
+  padding: 0 !important;
+  font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+
+  // ── Header ──────────────────────────────────────────────────────────────
+  // Flex row: [←]  [Month  Year]  [→]
+  // Title takes all remaining space and is centered between the nav buttons.
+  .p-datepicker-header {
+    background: #280071 !important;
+    border-bottom: none !important;
+    padding: 14px 16px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 8px;
+
+    .p-datepicker-title {
+      flex: 1;                          // fill the space between arrow buttons
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 6px;
+      min-width: 0;
+
+      .p-datepicker-month,
+      .p-datepicker-year {
+        color: #fff !important;
+        font-size: 17px !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.1px;
+        padding: 5px 8px !important;
+        border-radius: 8px;
+        line-height: 1.2;
+        transition: background 0.15s;
+        white-space: nowrap;
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.18) !important;
+          color: #fff !important;
+          box-shadow: none !important;
+        }
+
+        &:focus {
+          box-shadow: none !important;
+          outline: none;
+        }
+      }
+    }
+
+    // Circular arrow nav buttons — fixed size so title stays truly centered
+    .p-datepicker-prev,
+    .p-datepicker-next {
+      flex-shrink: 0;
+      width: 38px !important;
+      height: 38px !important;
+      border-radius: 50% !important;
+      background: rgba(255, 255, 255, 0.12) !important;
+      border: 1.5px solid rgba(255, 255, 255, 0.28) !important;
+      color: #fff !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      transition: background 0.15s !important;
+      padding: 0 !important;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.24) !important;
+        box-shadow: none !important;
+      }
+
+      &:focus {
+        box-shadow: none !important;
+        outline: none;
+      }
+
+      .p-icon {
+        width: 16px !important;
+        height: 16px !important;
+        color: #fff !important;
+        display: block;
+      }
+    }
+  }
+
+  // ── Day grid ────────────────────────────────────────────────────────────
+  .p-datepicker-calendar-container {
+    padding: 10px 14px 18px !important;
+  }
+
+  table.p-datepicker-calendar {
+    width: 100% !important;
+    table-layout: fixed !important;  // equal column widths for perfect centering
+    border-collapse: collapse !important;
+
+    // Day-of-week headers (Su Mo Tu We Th Fr Sa)
+    thead tr th {
+      padding: 6px 0 10px !important;
+      text-align: center !important;
+
+      > span {
+        font-size: 11px !important;
+        font-weight: 700 !important;
+        color: #999 !important;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+    }
+
+    // Day cells
+    tbody tr td {
+      padding: 2px 0 !important;
+      text-align: center !important;
+      vertical-align: middle !important;
+
+      > span {
+        width: 40px !important;
+        height: 40px !important;
+        line-height: 40px !important;
+        border-radius: 50% !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 14px !important;
+        font-weight: 500 !important;
+        color: #1a1a1a !important;
+        transition: background 0.15s, color 0.15s !important;
+        cursor: pointer;
+        box-shadow: none !important;
+
+        &:not(.p-highlight):not(.p-disabled):hover {
+          background: rgba(40, 0, 113, 0.1) !important;
+          color: #280071 !important;
+        }
+      }
+
+      // Today — purple ring
+      &.p-datepicker-today > span:not(.p-highlight) {
+        border: 2px solid #280071 !important;
+        color: #280071 !important;
+        font-weight: 700 !important;
+        background: rgba(40, 0, 113, 0.05) !important;
+      }
+
+      // Selected
+      > span.p-highlight {
+        background: #280071 !important;
+        color: #fff !important;
+        font-weight: 700 !important;
+        box-shadow: 0 3px 10px rgba(40, 0, 113, 0.35) !important;
+      }
+
+      // Other-month days — greyed, non-interactive
+      &.p-datepicker-other-month > span {
+        color: #ccc !important;
+        pointer-events: none;
+        &:hover { background: transparent !important; }
+      }
+
+      // Disabled days
+      &.p-disabled > span {
+        opacity: 0.3 !important;
+        pointer-events: none;
+      }
+    }
+  }
+
+  // ── Month picker ─────────────────────────────────────────────────────────
+  // 12 items → 3 columns × 4 rows. Reset PrimeReact's default width:33% on items.
+  .p-monthpicker {
+    padding: 10px 14px 18px !important;
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 6px !important;
+
+    .p-monthpicker-month {
+      width: auto !important;           // override PrimeReact's inline width
+      min-width: 0 !important;
+      padding: 13px 4px !important;
+      border-radius: 10px !important;
+      font-size: 14px !important;
+      font-weight: 500 !important;
+      color: #222 !important;
+      text-align: center !important;
+      line-height: 1.2;
+      transition: background 0.15s, color 0.15s !important;
+      cursor: pointer;
+      border: 1.5px solid #ebebeb !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+
+      &:hover {
+        background: rgba(40, 0, 113, 0.07) !important;
+        color: #280071 !important;
+        border-color: rgba(40, 0, 113, 0.2) !important;
+      }
+
+      &.p-highlight {
+        background: #280071 !important;
+        color: #fff !important;
+        border-color: #280071 !important;
+        font-weight: 700 !important;
+      }
+    }
+  }
+
+  // ── Year picker ──────────────────────────────────────────────────────────
+  // 10 items by default → 2 columns × 5 rows for a cleaner layout.
+  .p-yearpicker {
+    padding: 10px 14px 18px !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 6px !important;
+
+    .p-yearpicker-year {
+      width: auto !important;           // override PrimeReact's inline width
+      min-width: 0 !important;
+      padding: 14px 4px !important;
+      border-radius: 10px !important;
+      font-size: 15px !important;
+      font-weight: 500 !important;
+      color: #222 !important;
+      text-align: center !important;
+      line-height: 1.2;
+      transition: background 0.15s, color 0.15s !important;
+      cursor: pointer;
+      border: 1.5px solid #ebebeb !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+
+      &:hover {
+        background: rgba(40, 0, 113, 0.07) !important;
+        color: #280071 !important;
+        border-color: rgba(40, 0, 113, 0.2) !important;
+      }
+
+      &.p-highlight {
+        background: #280071 !important;
+        color: #fff !important;
+        border-color: #280071 !important;
+        font-weight: 700 !important;
+      }
+    }
+  }
+
+  // ── Button bar (Today / Clear) ────────────────────────────────────────────
+  .p-datepicker-buttonbar {
+    padding: 10px 14px 14px !important;
+    border-top: 1px solid #f0f0f0 !important;
+    gap: 10px !important;
+    display: flex !important;
+
+    .p-button {
+      flex: 1;
+      border-radius: 8px !important;
+      font-size: 14px !important;
+      font-weight: 600 !important;
+      height: 40px !important;
+      justify-content: center !important;
+
+      &.p-button-text {
+        color: #280071 !important;
+        &:hover { background: rgba(40, 0, 113, 0.07) !important; }
+        &:focus { box-shadow: none !important; }
+      }
+
+      &:not(.p-button-text) {
+        background: #280071 !important;
+        border-color: #280071 !important;
+        &:focus { box-shadow: none !important; }
+      }
+    }
   }
 }
