@@ -11,6 +11,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       { protocol: 'https', hostname: 'diy.sbisecurities.in' },
       { protocol: 'https', hostname: 'udn.sbisecurities.in' },
+      { protocol: 'https', hostname: 'www.figma.com' },
     ],
   },
   // PWA-style output

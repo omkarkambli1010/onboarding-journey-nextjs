@@ -1,93 +1,414 @@
 $primary-color: #280071;
-$secondary-color: #3d0087;
-$accent-color: #f4780b;
 $white: #fff;
 $light-bg: #f8f9fa;
+$dark: #25313c;
+$dark-grey: #231f20;
 
 // ===== Banner Section =====
 .banner {
   padding: 0;
   overflow: hidden;
+  position: relative;
+  background: linear-gradient(160.85deg, #eff6ff 0%, #eef2ff 50%, #faf5ff 100%);
 
   .bannerImg {
-    min-height: 480px;
+    min-height: 500px;
     align-items: center;
+    position: relative;
+    z-index: 1;
+    padding: 40px 0;
+
+    @media (max-width: 767px) {
+      min-height: auto;
+      flex-direction: column;
+      padding: 24px 0 0;
+    }
   }
 }
 
-.bannerTxt {
-  position: relative;
-  height: 100%;
+// Decorative circles
+.decorCirclePink {
+  position: absolute;
+  width: 112px;
+  height: 112px;
+  border-radius: 50%;
+  background: #d71e53;
+  opacity: 0.1;
+  top: 21px;
+  right: 60px;
+  z-index: 0;
+  pointer-events: none;
 }
 
-.desktopBanner {
-  display: block;
-
-  @media (max-width: 767px) {
-    display: none;
-  }
+.decorCircleBlue {
+  position: absolute;
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  background: #00a7e1;
+  opacity: 0.1;
+  bottom: 74px;
+  left: 47px;
+  z-index: 0;
+  pointer-events: none;
 }
 
-.mobileBanner {
-  display: none;
+// Pagination dots
+.paginationDots {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1;
 
-  @media (max-width: 767px) {
+  img {
     display: block;
+    height: 10px;
+    width: auto;
   }
 }
 
-// ===== Registration Form =====
+// ===== Banner Left — headline + phone + cards =====
+.bannerLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  position: relative;
+  z-index: 1;
+
+  @media (max-width: 767px) {
+    gap: 16px;
+    padding-bottom: 24px;
+  }
+}
+
+.bannerHeadline {
+  font-size: 45px;
+  font-weight: 700;
+  color: #292075;
+  line-height: 50px;
+  margin: 0;
+
+  @media (max-width: 991px) {
+    font-size: 32px;
+    line-height: 40px;
+  }
+
+  @media (max-width: 767px) {
+    font-size: 28px;
+    line-height: 36px;
+  }
+}
+
+.phoneContainer {
+  position: relative;
+  height: 265px;
+
+  @media (max-width: 767px) {
+    height: 220px;
+  }
+}
+
+.phoneMockup {
+  position: absolute;
+  left: 119px;
+  top: 0;
+  width: 229px;
+  height: 265px;
+  object-fit: cover;
+
+  @media (max-width: 767px) {
+    left: 50%;
+    transform: translateX(-50%);
+    width: 160px;
+    height: auto;
+  }
+}
+
+// Floating info cards — positions match Figma node 0-28 exactly
+.floatingCard {
+  position: absolute;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.3);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border-radius: 14px;
+}
+
+.cardZero {
+  background: #eae8ff;
+  border-radius: 8px;
+  left: 8px;
+  top: 38px;
+  width: 140px;
+  padding: 10px 5px;
+
+  @media (max-width: 767px) {
+    left: 0;
+    top: 24px;
+    transform: scale(0.85);
+    transform-origin: top left;
+  }
+}
+
+.cardRate {
+  background: #e6f6fc;
+  left: 367px;
+  top: 6px;
+  width: 130px;
+
+  @media (max-width: 767px) {
+    left: auto;
+    right: 0;
+    top: 6px;
+    transform: scale(0.85);
+    transform-origin: top right;
+  }
+}
+
+.cardFree {
+  background: #fce8ed;
+  left: 302px;
+  top: 183px;
+  width: 130px;
+
+  @media (max-width: 767px) {
+    left: auto;
+    right: 0;
+    top: auto;
+    bottom: 0;
+    transform: scale(0.85);
+    transform-origin: bottom right;
+  }
+}
+
+.cardValuePrimary {
+  display: block;
+  font-size: 30px;
+  font-weight: 700;
+  color: #292075;
+  line-height: 1.2;
+}
+
+.cardValueBlue {
+  display: block;
+  font-size: 30px;
+  font-weight: 700;
+  color: #00a7e1;
+  line-height: 24.5px;
+}
+
+.cardValueRed {
+  display: block;
+  font-size: 30px;
+  font-weight: 700;
+  color: #d71e53;
+  line-height: 24.5px;
+}
+
+.cardDesc {
+  display: block;
+  font-size: 12px;
+  color: #4a5565;
+  line-height: 14px;
+  width: 107px;
+  text-align: center;
+  margin-top: 4px;
+}
+
+.rupeeSymbol {
+  font-size: 20px;
+}
+
+// ===== Form Card =====
 .mobileForm {
   background: $white;
-  border-radius: 16px;
-  padding: 32px 28px;
-  box-shadow: 0 4px 24px rgba(40, 0, 113, 0.1);
+  border-radius: 15px;
+  padding: 38px 30px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+  position: relative;
+  z-index: 2;
 
   @media (max-width: 767px) {
-    border-radius: 0;
-    box-shadow: none;
-    padding: 24px 16px;
+    margin: 0 12px 24px;
+    padding: 24px 20px;
+    border-radius: 15px;
   }
 
   h1 {
-    font-size: 22px;
+    font-size: 24px;
     font-weight: 700;
-    color: $primary-color;
-    margin-bottom: 24px;
+    background: linear-gradient(to right, #2a1f75 16%, #da1d52);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 20px;
     line-height: 1.3;
+
+    @media (max-width: 767px) {
+      font-size: 18px;
+    }
   }
 
   div {
     margin-bottom: 16px;
   }
 
-  // Reset margin for all inner divs of the phone input
-  :global(.phone-input-field) {
+  :global(.iti),
+  :global(.iti) div {
     margin-bottom: 0;
+  }
+}
 
-    div {
-      margin-bottom: 0;
+.btnAlign {
+  margin-top: 8px;
+}
+
+// ===== Resume Application link =====
+.resumeRow {
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+.resumeLink {
+  font-size: 14px;
+  font-weight: 400;
+  background: linear-gradient(90deg, #292075 0%, #d71e53 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-decoration: underline;
+  cursor: pointer;
+
+  &:hover {
+    opacity: 0.8;
+    text-decoration: underline;
+  }
+}
+
+// ===== Form gradient submit button =====
+.submitBtn {
+  background: linear-gradient(90deg, #2a2076 0%, #2a2076 32%, #d82053 100%) !important;
+  color: $white !important;
+  border: none !important;
+  border-radius: 4px !important;
+  padding: 10px 24px !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  width: 100%;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    opacity: 0.92;
+  }
+
+  &:disabled,
+  &[aria-disabled='true'] {
+    opacity: 1;
+    cursor: not-allowed;
+    background: #b0b0b0 !important;
+  }
+}
+
+// ===== Account Type radio group =====
+.accountTypeSection {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 0;
+}
+
+.accountTypeLabel {
+  font-size: 13px;
+  color: #212529;
+  line-height: 1.5;
+  flex-shrink: 0;
+  padding-top: 4px;
+  min-width: 80px;
+}
+
+.radioGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 0;
+}
+
+.radioOption {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  cursor: pointer;
+  padding-top: 5px;
+
+  input[type='radio'] {
+    flex-shrink: 0;
+    margin-top: 2px;
+    width: 15px;
+    height: 15px;
+    accent-color: $primary-color;
+    cursor: pointer;
+    border: 1px solid #ddd;
+  }
+
+  span {
+    font-size: 12px;
+    color: #212529;
+    line-height: 1.4;
+
+    small {
+      font-size: 10px;
+      color: #212529;
     }
   }
 }
 
+// ===== Terms checkbox row =====
+.termsRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-bottom: 0 !important;
+}
 
+.termsCheck {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  margin-top: 1px;
+  cursor: pointer;
+  accent-color: $primary-color;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
 
-.btnAlign {
-  margin-top: 8px;
+.termsLabel {
+  font-size: 12px;
+  color: #212529;
+  line-height: 1.5;
+  cursor: pointer;
 
-  .btn_cls {
-    width: 100%;
+  a {
+    font-weight: 700;
+    text-decoration: underline;
+    color: #212529;
   }
+}
+
+.textGradient {
+  background-image: linear-gradient(to right, rgb(48, 32, 116) 2%, rgb(48, 32, 116) 11%, rgb(198, 30, 86) 82%, rgb(198, 30, 86) 96%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: 700;
 }
 
 // ===== Why Open Demat Section =====
 .whyOpenDemat {
-  background: $light-bg;
-  padding: 60px 0;
-}
-
-.ezdemat {
+  background: $white;
   padding: 60px 0;
 }
 
@@ -95,10 +416,15 @@ $light-bg: #f8f9fa;
   text-align: center;
 
   h2 {
-    font-size: 26px;
-    font-weight: 700;
-    color: $primary-color;
-    margin-bottom: 36px;
+    font-size: 30px;
+    font-weight: 600;
+    color: $dark;
+    margin-bottom: 40px;
+
+    @media (max-width: 767px) {
+      font-size: 24px;
+      margin-bottom: 28px;
+    }
   }
 }
 
@@ -106,8 +432,28 @@ $light-bg: #f8f9fa;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 24px;
-  align-items: center;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+// Icon with two overlaid Figma layers
+.iconWrapper {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  flex-shrink: 0;
+
+  @media (max-width: 767px) {
+    width: 42px;
+    height: 42px;
+  }
+}
+
+.iconLayer {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 .cardCls {
@@ -115,44 +461,76 @@ $light-bg: #f8f9fa;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: 12px;
+  gap: 10px;
   background: $white;
-  border-radius: 12px;
+  border-radius: 18px;
   padding: 20px 16px;
-  min-width: 140px;
-  max-width: 160px;
-  box-shadow: 0 2px 12px rgba(40, 0, 113, 0.07);
+  min-width: 200px;
+  max-width: 200px;
+  min-height: 185px;
+  justify-content: center;
+  box-shadow: 6px 6px 22px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(35, 31, 32, 0.6);
+
+  @media (max-width: 767px) {
+    min-width: 150px;
+    max-width: 150px;
+    min-height: 135px;
+    padding: 14px 10px;
+  }
 
   img {
     width: 56px;
     height: 56px;
     object-fit: contain;
+
+    @media (max-width: 767px) {
+      width: 42px;
+      height: 42px;
+    }
   }
 
-  p,
+  p {
+    font-size: 20px;
+    color: $dark;
+    font-weight: 500;
+    margin: 0;
+    line-height: 1.4;
+
+    @media (max-width: 767px) {
+      font-size: 14px;
+    }
+  }
+
   h6 {
-    font-size: 13px;
-    color: $primary-color;
+    font-size: 20px;
+    color: $dark;
     font-weight: 600;
     margin: 0;
+
+    @media (max-width: 767px) {
+      font-size: 14px;
+    }
   }
 
-  // Testimonial variant
+  // Testimonial card variant
   &:has(> span) {
     max-width: 100%;
+    min-height: auto;
     text-align: left;
     gap: 8px;
 
     p {
       font-size: 15px;
       font-weight: 400;
-      color: #444;
+      color: rgba(35, 31, 32, 0.8);
       line-height: 1.6;
     }
 
     span {
-      font-weight: 600;
-      color: $primary-color;
+      font-weight: 400;
+      color: #6d7d8b;
+      font-size: 14px;
     }
   }
 }
@@ -160,6 +538,7 @@ $light-bg: #f8f9fa;
 .cardClsArrow {
   display: flex;
   align-items: center;
+  padding-bottom: 36px;
 
   @media (max-width: 767px) {
     display: none;
@@ -167,24 +546,87 @@ $light-bg: #f8f9fa;
 }
 
 .cardSubheading {
-  font-size: 14px;
-  font-weight: 700;
-  color: $primary-color;
-  margin-bottom: 4px;
+  font-size: 20px;
+  font-weight: 600;
+  color: $dark;
+  margin-bottom: 2px;
+
+  @media (max-width: 767px) {
+    font-size: 14px;
+  }
+}
+
+// ===== Easy Demat Process Section (gradient bg) =====
+.ezdemat {
+  padding: 60px 0;
+  background: linear-gradient(to right, #2a1f75 16%, #da1d52);
+
+  .align h2 {
+    color: $white;
+  }
+
+  .cardAlign {
+    align-items: flex-start;
+  }
+
+  .cardCls {
+    background: transparent;
+    box-shadow: none;
+    border: none;
+    min-width: 80px;
+    max-width: 115px;
+    min-height: auto;
+    padding: 10px 8px;
+    gap: 20px;
+
+    img {
+      filter: brightness(0) invert(1);
+      width: 52px;
+      height: 52px;
+
+      @media (max-width: 767px) {
+        width: 36px;
+        height: 36px;
+      }
+    }
+
+    p {
+      color: $white;
+      font-size: 15px;
+      font-weight: 700;
+
+      @media (max-width: 767px) {
+        font-size: 13px;
+      }
+    }
+  }
+
+  .cardClsArrow {
+    padding-bottom: 36px;
+
+    img {
+      filter: brightness(0) invert(1);
+    }
+  }
 }
 
 // ===== Videos / Carousel Section =====
 .benefitsSection {
   padding: 60px 0;
-  background: $light-bg;
+  background: $white;
 }
 
 .trustCss {
   h2 {
-    font-size: 26px;
-    font-weight: 700;
-    color: $primary-color;
+    font-size: 30px;
+    font-weight: 600;
+    color: $dark;
     margin-bottom: 32px;
+    text-align: center;
+
+    @media (max-width: 767px) {
+      font-size: 24px;
+    }
   }
 }
 
@@ -200,28 +642,107 @@ $light-bg: #f8f9fa;
 
   h6 {
     margin-top: 12px;
-    font-size: 14px;
-    color: #444;
-    line-height: 1.4;
+    font-size: 15px;
+    color: $dark-grey;
+    line-height: 1.5;
+    font-weight: 500;
   }
 }
 
 // ===== Testimonial Section =====
 .trustSection {
   padding: 60px 0;
+  background: $white;
+}
 
-  h2 {
-    font-size: 26px;
-    font-weight: 700;
-    color: $primary-color;
-    margin-bottom: 8px;
+.trustHeading {
+  font-size: 30px;
+  font-weight: 600;
+  color: #231f20;
+  text-transform: capitalize;
+  margin-bottom: 8px;
+}
+
+.trustSubtitle {
+  font-size: 20px;
+  color: rgba(35, 31, 32, 0.6);
+  margin-bottom: 40px;
+}
+
+.testimonialSplide {
+  // Splide is narrowed by 56px so the next arrow can sit outside the right
+  // edge of the track without overflowing the Bootstrap column
+  width: calc(100% - 56px);
+
+  :global(.splide__arrow--prev) {
+    display: none; // Figma shows only the next arrow
   }
 
-  h6 {
-    font-size: 15px;
-    color: #666;
-    margin-bottom: 32px;
+  :global(.splide__arrow--next) {
+    // 56px to the right of the track's right edge, centred vertically by Splide
+    right: -56px;
+    width: 34px;
+    height: 34px;
+    background: $white;
+    border: none;
+    border-radius: 50%;
+    opacity: 1;
+    // matches the Figma drop-shadow + hairline ring on the arrow button
+    box-shadow: 5.064px 5.064px 17.362px rgba(0, 0, 0, 0.06),
+                0 0 0 0.723px rgba(35, 31, 32, 0.12);
+
+    svg {
+      fill: #6d7d8b;
+      width: 14px;
+      height: 14px;
+    }
+
+    &:hover:not(:disabled) {
+      background: #f5f5f5;
+    }
   }
+}
+
+.testimonialCard {
+  background: $white;
+  border: 0.919px solid rgba(35, 31, 32, 0.6);
+  border-radius: 18.374px;
+  padding: 20px 20px 20px;
+  box-shadow: 6.431px 6.431px 22.049px 0px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 207px;
+}
+
+.quoteIcon {
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
+  margin-bottom: 10px;
+}
+
+.testimonialText {
+  font-size: 16px;
+  color: rgba(35, 31, 32, 0.8);
+  line-height: 19.23px;
+  flex: 1;
+  margin-bottom: 12px;
+}
+
+.testimonialAuthor {
+  font-size: 14px;
+  color: #6d7d8b;
+  line-height: 1.506;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.testimonialLine {
+  display: block;
+  width: 75px;
+  height: 1px;
+  flex-shrink: 0;
 }
 
 // ===== What is Demat Section =====
@@ -241,13 +762,54 @@ $light-bg: #f8f9fa;
 .faqSection {
   padding: 60px 0;
 
-  .accordion-button {
-    font-weight: 600;
-    color: $primary-color;
+  h2 {
+    font-size: 30px;
+    font-weight: 700;
+    color: $dark;
+
+    @media (max-width: 767px) {
+      font-size: 24px;
+    }
+  }
+
+  :global(.accordion-item) {
+    border: 1px solid rgba(35, 31, 32, 0.6) !important;
+    border-radius: 18px !important;
+    margin-bottom: 16px;
+    box-shadow: 6px 6px 22px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+  }
+
+  :global(.accordion-button) {
+    font-size: 20px;
+    color: $dark-grey;
+    background: $white;
+    font-family: Arial, sans-serif;
+    font-weight: 400;
+    padding: 20px 24px;
+    border-radius: 18px !important;
 
     &:not(.collapsed) {
-      color: $primary-color;
-      background-color: rgba(40, 0, 113, 0.05);
+      color: $dark-grey;
+      background-color: $white;
+      box-shadow: none;
+    }
+
+    @media (max-width: 767px) {
+      font-size: 16px;
+      padding: 18px 16px;
+    }
+  }
+
+  :global(.accordion-body) {
+    font-size: 15px;
+    color: #555;
+    line-height: 1.6;
+    padding: 0 24px 20px;
+
+    @media (max-width: 767px) {
+      padding: 0 16px 16px;
     }
   }
 }
+

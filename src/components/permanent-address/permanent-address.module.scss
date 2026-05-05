@@ -30,7 +30,7 @@ $shadow-sheet:   3px 4px 10px 0px rgba(0, 0, 0, 0.15);
   display: flex;
   flex-direction: column;
   background: $bg-page;
-  min-height: 100vh;
+  min-height: calc(100vh - 90px);
   position: relative;
 
   @media (min-width: 768px) { display: none; }
