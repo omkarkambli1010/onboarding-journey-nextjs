@@ -152,7 +152,7 @@ export default function Selfie() {
       <section
         className="pan_details_form"
         aria-label="Take a Selfie — Preparation"
-        style={{ background: '#f8f8f8', minHeight: 'calc(100vh - 80px)', padding: '0' }}
+        style={{ background: '#f8f8f8', minHeight: 'calc(100vh - 90px)', padding: '0' }}
       >
 
         {/* ══════════════════════════════════════════════════════════
