@@ -9,8 +9,61 @@ import apiService from '@/services/api.service';
 import navigationService from '@/services/navigation.service';
 import styles from './selfie.module.scss';
 
-// Selfie — CaptureSelfie step 1 = prep screen, step 2 = webcam capture
-// Equivalent to Angular SelfieComponent
+// CaptureSelfie
+// Step 1 (/CaptureSelfie/1) — prep/guidelines screen
+// Step 2 (/CaptureSelfie/2) — webcam capture
+//
+// Figma desktop: node 0:7128  |  mobile: node 0:6537
+
+// ── Static data ──────────────────────────────────────────────────────────────
+
+const DOS = [
+  { img: '/assets/images/diy/selfie_do_lighting.png',   label: 'Good lighting' },
+  { img: '/assets/images/diy/selfie_do_background.png', label: 'White background' },
+  { img: '/assets/images/diy/selfie_do_align.png',      label: 'Align face in the centre' },
+];
+
+const DONTS = [
+  { img: '/assets/images/diy/selfie_dont_blur.png',    label: 'No blurry photo' },
+  { img: '/assets/images/diy/selfie_dont_cap.png',     label: 'No cap' },
+  { img: '/assets/images/diy/selfie_dont_eyewear.png', label: 'No eyewear' },
+];
+
+// ── Back arrow SVG ────────────────────────────────────────────────────────────
+function BackArrow() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M5 12H19" stroke="#2b2b2b" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M5 12L11 18" stroke="#2b2b2b" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M5 12L11 6" stroke="#2b2b2b" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+// ── Shield icon SVG (Figma: tabler-icon-shield-check-filled) ─────────────────
+function ShieldIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
+      <path
+        d="M9.103 1.677a1.25 1.25 0 0 1 1.794 0l.76.794a1.25 1.25 0 0 0 .878.373l1.09-.01a1.25 1.25 0 0 1 1.268 1.268l-.01 1.09c-.003.33.13.645.373.878l.794.76a1.25 1.25 0 0 1 0 1.794l-.794.76a1.25 1.25 0 0 0-.373.878l.01 1.09a1.25 1.25 0 0 1-1.268 1.268l-1.09-.01a1.25 1.25 0 0 0-.878.373l-.76.794a1.25 1.25 0 0 1-1.794 0l-.76-.794a1.25 1.25 0 0 0-.878-.373l-1.09.01a1.25 1.25 0 0 1-1.268-1.268l.01-1.09a1.25 1.25 0 0 0-.373-.878l-.794-.76a1.25 1.25 0 0 1 0-1.794l.794-.76c.243-.233.376-.548.373-.878l-.01-1.09A1.25 1.25 0 0 1 6.375 4.902l1.09.01c.33.003.645-.13.878-.373l.76-.794Z"
+        fill="#666"
+      />
+      <path d="M7.5 10l1.667 1.667L12.5 8.333" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+// ── Right-arrow SVG (banner) ──────────────────────────────────────────────────
+function ArrowRight() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M5 12H19" stroke="#280071" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M13 6L19 12L13 18" stroke="#280071" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 export default function Selfie() {
   const router = useRouter();
@@ -18,66 +71,54 @@ export default function Selfie() {
   const formNumber = params?.formNumber as string;
   const { show: showSpinner, hide: hideSpinner } = useSpinner();
 
-  const [personalFormOne, setPersonalFormOne] = useState(false); // original form 1 (unused in new flow)
-  const [personalFormTwo, setPersonalFormTwo] = useState(false); // prep/instructions screen
-  const [personalFormThree, setPersonalFormThree] = useState(false); // webcam capture
-
+  const [step, setStep] = useState<1 | 2>(1);
   const [imageDataUrl, setImageDataUrl] = useState('');
   const [showWebcam, setShowWebcam] = useState(false);
-  const [existingImage, setExistingImage] = useState('');
   const webcamRef = useRef<Webcam>(null);
 
   const rejectStatus = typeof window !== 'undefined' ? sessionStorage.getItem('RejectStatus') : null;
 
   useEffect(() => {
     navigationService.setRouter(router, hideSpinner);
-    setFormVisibility(formNumber);
+    if (formNumber === '1') {
+      setStep(1);
+    } else if (formNumber === '2') {
+      setStep(2);
+      setShowWebcam(true);
+    }
   }, [formNumber]);
 
-  const setFormVisibility = (step: string) => {
-    setPersonalFormOne(false);
-    setPersonalFormTwo(false);
-    setPersonalFormThree(false);
-    if (step === '1') {
-      setPersonalFormTwo(true);
-      getSelfieData();
-    } else if (step === '2') {
-      setPersonalFormThree(true);
-      setShowWebcam(true);
+  const goBack = () => {
+    showSpinner();
+    if (step === 1) {
+      setTimeout(() => { router.push('/planprocess/3'); hideSpinner(); }, 200);
+    } else {
+      setTimeout(() => { router.push('/CaptureSelfie/1'); hideSpinner(); }, 200);
     }
   };
 
-  const getSelfieData = async () => {
-    showSpinner();
-    const reqData = {
-      flag: 'selfie',
-      formnumber: typeof window !== 'undefined' ? sessionStorage.getItem('FormNumber') : '',
-    };
-    try {
-      const response = await apiService.postRequest('api/v1/WorkflowDetails/getworkflowdata', reqData, hideSpinner);
-      if (response?.status === true && response?.data?.[0]?.Image) {
-        setExistingImage(response.data[0].Image);
-      }
-      hideSpinner();
-    } catch { hideSpinner(); }
+  const goToCapture = () => { router.push('/CaptureSelfie/2'); };
+
+  const continueWithMobile = () => {
+    toast.info('Please open this link on your mobile device to capture your selfie.', {
+      position: 'bottom-center', autoClose: 3000,
+    });
   };
 
   const capture = useCallback(() => {
-    if (webcamRef.current) {
-      const screenshot = webcamRef.current.getScreenshot();
-      if (screenshot) {
-        setImageDataUrl(screenshot);
-        setShowWebcam(false);
-      }
+    const screenshot = webcamRef.current?.getScreenshot();
+    if (screenshot) {
+      setImageDataUrl(screenshot);
+      setShowWebcam(false);
     }
-  }, [webcamRef]);
+  }, []);
 
   const retake = () => {
     setImageDataUrl('');
     setShowWebcam(true);
   };
 
-  const uploadSelfieApiCall = async () => {
+  const uploadSelfie = async () => {
     if (!imageDataUrl) {
       toast.warning('Please capture a selfie first.', { position: 'bottom-center', autoClose: 2000 });
       return;
@@ -93,11 +134,11 @@ export default function Selfie() {
       const response = await apiService.postRequest('api/v1/uploadDocument/upload', reqData, hideSpinner);
       if (response?.status === true) {
         toast.success('Selfie uploaded successfully!', { position: 'bottom-center', autoClose: 2000 });
-        if (rejectStatus !== 'R') {
-          setTimeout(() => { router.push('/uploadSignature'); hideSpinner(); }, 200);
-        } else {
-          setTimeout(() => { navigationService.navigateToNextStep(); hideSpinner(); }, 200);
-        }
+        setTimeout(() => {
+          if (rejectStatus !== 'R') router.push('/uploadSignature');
+          else navigationService.navigateToNextStep();
+          hideSpinner();
+        }, 200);
       } else {
         toast.error(response?.message || 'Upload failed', { position: 'bottom-center', autoClose: 3000 });
         hideSpinner();
@@ -105,189 +146,293 @@ export default function Selfie() {
     } catch { hideSpinner(); }
   };
 
-  const redirectPlanProcess = () => {
-    showSpinner();
-    setTimeout(() => { router.push('/planprocess/3'); hideSpinner(); }, 200);
-  };
+  // ── Step 1: Prep / Guidelines ───────────────────────────────────────────────
+  if (step === 1) {
+    return (
+      <section
+        className="pan_details_form"
+        aria-label="Take a Selfie — Preparation"
+        style={{ background: '#f8f8f8', minHeight: '100vh' }}
+      >
 
-  const goToCapture = () => {
-    router.push('/CaptureSelfie/2');
-  };
+        {/* ══════════════════════════════════════════════════════════
+            MOBILE LAYOUT  (hidden ≥768px via pan_details_form breakpoint)
+            ══════════════════════════════════════════════════════════ */}
+        <div className="mobile_css" style={{ width: '100%' }}>
+          {/* Gray header */}
+          <div className={styles.mobGrayHeader}>
+            <div className={styles.mobBackRow}>
+              {rejectStatus !== 'R' && (
+                <button type="button" className={styles.mobBackBtn} onClick={goBack} aria-label="Go back">
+                  <svg width="8" height="15" viewBox="0 0 8 15" fill="none" aria-hidden="true">
+                    <path d="M7 1L1 7.5L7 14" stroke="#666666" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
+              )}
+            </div>
+            <div className={styles.mobTitleBlock}>
+              <p className={styles.mobTitle}>Get set for a quick selfie</p>
+              <p className={styles.mobSubtitle}>
+                Take a clear picture and upload it. Please ensure your selfie matches the photo on your Aadhar or Pan card
+              </p>
+            </div>
+          </div>
 
-  const faqHelpBtn = (stageName: string) => {
-    const encodedStageName = btoa(stageName);
-    window.location.href = `faq?stageName=${encodeURIComponent(encodedStageName)}`;
-  };
+          {/* White content card */}
+          <div className={styles.mobContentCard}>
+            {/* Illustration */}
+            <div className={styles.mobIllustration}>
+              <img src="/assets/images/diy/selfie_illustration.png" alt="Selfie guide illustration" />
+            </div>
 
-  return (
-    <>
-      {/* Step 1: Preparation screen */}
-      {personalFormTwo && !personalFormThree && (
-        <section className="pan_details_form" aria-label="Take a Selfie — Preparation">
-          <div className="container">
-            <div className="row">
-              <div className="col-lg-10 col-12 m-auto">
-                <div className="mobile_css">
-                  <div className="back_cls">
-                    {rejectStatus !== 'R' && (
-                      <div onClick={redirectPlanProcess} style={{ cursor: 'pointer' }}>
-                        <img src="/assets/images/diy/ChevronLeft.png" alt="" aria-hidden="true" /> Back
-                      </div>
-                    )}
-                    {rejectStatus === 'R' && <div className="back_cls2"></div>}
-                    <div className="mobile_header_padding">
-                      <div className="help_faq_css">
-                        <div className="d-flex gap-2">
-                          <div className="d-flex flex-column gap-2">
-                            <h5>Let&apos;s take a selfie</h5>
-                          </div>
-                        </div>
-                        <div>
-                          <div className="help_btn" onClick={() => faqHelpBtn('Selfie')} style={{ cursor: 'pointer' }}>Need Help?</div>
-                        </div>
-                      </div>
-                      <p className="sub_title">Take a clear picture and upload it.</p>
-                    </div>
+            {/* Do's */}
+            <div className={styles.mobGuideSection}>
+              <p className={styles.mobGuideTitle}>Do&apos;s</p>
+              <div className={styles.mobGuideItemRow}>
+                {DOS.map((d) => (
+                  <div key={d.label} className={styles.mobGuideItem}>
+                    <img src={d.img} alt={d.label} />
+                    <p>{d.label}</p>
                   </div>
-                </div>
-
-                <form aria-label="Selfie Preparation Form" method="post">
-                  <div>
-                    <div className="col-lg-12 col-md-12 col-12 desktop_css">
-                      <div className="mobile_header_padding">
-                        <div className="help_faq_css">
-                          <div className="d-flex gap-2">
-                            {rejectStatus !== 'R' && (
-                              <div onClick={redirectPlanProcess} style={{ cursor: 'pointer' }}>
-                                <span>
-                                  <svg width="24" height="25" viewBox="0 0 24 25" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <g clipPath="url(#clip0_selfie)">
-                                      <path d="M5 12.5H19" stroke="black" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                      <path d="M5 12.5L11 18.5" stroke="black" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                      <path d="M5 12.5L11 6.5" stroke="black" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                    </g>
-                                    <defs><clipPath id="clip0_selfie"><rect width="24" height="24" fill="white" transform="translate(0 0.5)" /></clipPath></defs>
-                                  </svg>
-                                </span>
-                              </div>
-                            )}
-                            <div className="heading">
-                              <h5>Get set for a quick selfie</h5>
-                              <p className="sub_title">Take a clear picture and upload it. Please ensure your selfie matches the photo on your Aadhar or Pan card</p>
-                            </div>
-                          </div>
-                          <div>
-                            <div className="help_btn" onClick={() => faqHelpBtn('Selfie')} style={{ cursor: 'pointer' }}>Need Help?</div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <hr className="desktop_css" />
-                    <div className="selfie_new">
-                      <div className="left_section">
-                        <img src="/assets/images/diy/selfie_guy.png" alt="Selfie guide illustration" />
-                      </div>
-                      <div className="right_section">
-                        <div className="do_section">
-                          <h6>Do&apos;s</h6>
-                          <ul>
-                            <li>Ensure good lighting</li>
-                            <li>Face the camera directly</li>
-                            <li>Keep a neutral expression</li>
-                          </ul>
-                        </div>
-                        <div className="dont_section">
-                          <h6>Don&apos;ts</h6>
-                          <ul>
-                            <li>Avoid wearing glasses</li>
-                            <li>Don&apos;t cover your face</li>
-                            <li>Avoid dark backgrounds</li>
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
-                    {existingImage && (
-                      <div className="text-center my-3">
-                        <img src={existingImage} alt="Existing selfie" style={{ maxWidth: 200, borderRadius: 8 }} />
-                      </div>
-                    )}
-                  </div>
-                </form>
+                ))}
               </div>
-              <div className="stickybtn">
-                <button className="btn btn_cls" onClick={goToCapture}>Take Selfie</button>
+            </div>
+
+            {/* Dont's */}
+            <div className={styles.mobGuideSection}>
+              <p className={styles.mobGuideTitle}>Dont&apos;s</p>
+              <div className={styles.mobGuideItemRow}>
+                {DONTS.map((d) => (
+                  <div key={d.label} className={styles.mobGuideItem}>
+                    <img src={d.img} alt={d.label} />
+                    <p>{d.label}</p>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
-        </section>
-      )}
 
-      {/* Step 2: Webcam capture */}
-      {personalFormThree && (
-        <section className="pan_details_form" aria-label="Capture Selfie">
-          <div className="container">
-            <div className="row">
-              <div className="col-lg-10 col-12 m-auto">
+          {/* Sticky capture button */}
+          <div className={styles.mobBtnBar}>
+            <button type="button" className={styles.mobCaptureBtn} onClick={goToCapture}>
+              Capture Now
+            </button>
+          </div>
+        </div>
+
+        {/* ══════════════════════════════════════════════════════════
+            DESKTOP LAYOUT  (hidden <768px)
+            ══════════════════════════════════════════════════════════ */}
+        <div className="desktop_css">
+          <div className={styles.deskCard}>
+
+            {/* Header */}
+            <div className={styles.deskHeader}>
+              {rejectStatus !== 'R' && (
+                <button type="button" className={styles.backBtn} onClick={goBack} aria-label="Go back">
+                  <BackArrow />
+                </button>
+              )}
+              <div className={styles.deskHeaderText}>
+                <h5>Get set for a quick selfie</h5>
+                <p>
+                  Take a clear picture and upload it. Please ensure your selfie matches the photo on your Aadhar or Pan card
+                </p>
+              </div>
+            </div>
+
+            {/* Body */}
+            <div className={styles.deskBody}>
+
+              {/* Security row */}
+              <div className={styles.securityRow}>
+                <ShieldIcon />
+                <p>Your PAN details are safe and secure with us.</p>
+              </div>
+
+              {/* Two-column: illustration + guidelines */}
+              <div className={styles.twoCol}>
+
+                {/* Left: illustration */}
+                <div className={styles.illustrationCol}>
+                  <img src="/assets/images/diy/selfie_illustration.png" alt="Selfie guide illustration" />
+                </div>
+
+                {/* Right: guidelines */}
+                <div className={styles.guidelinesCol}>
+
+                  {/* Do's */}
+                  <div className={styles.guideSection}>
+                    <p className={styles.guideTitle}>Do&apos;s</p>
+                    <div className={styles.guideItemRow}>
+                      {DOS.map((d) => (
+                        <div key={d.label} className={styles.guideItem}>
+                          <img src={d.img} alt={d.label} />
+                          <p>{d.label}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Dont's */}
+                  <div className={styles.guideSection}>
+                    <p className={styles.guideTitle}>Dont&apos;s</p>
+                    <div className={styles.guideItemRow}>
+                      {DONTS.map((d) => (
+                        <div key={d.label} className={styles.guideItem}>
+                          <img src={d.img} alt={d.label} />
+                          <p>{d.label}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+              {/* "No webcam" banner */}
+              <div className={styles.noWebcamBanner}>
+                <p>No webcam? No problem, Continue with mobile</p>
+                <div className={styles.bannerArrow}>
+                  <ArrowRight />
+                </div>
+              </div>
+
+              {/* Button row */}
+              <div className={styles.deskBtnRow}>
+                <button
+                  type="button"
+                  className={styles.continueWithMobileBtn}
+                  onClick={continueWithMobile}
+                >
+                  Continue with Mobile
+                </button>
+                <button
+                  type="button"
+                  className={styles.captureNowBtn}
+                  onClick={goToCapture}
+                >
+                  Capture Now
+                </button>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+      </section>
+    );
+  }
+
+  // ── Step 2: Webcam capture ──────────────────────────────────────────────────
+  return (
+    <section className="pan_details_form" aria-label="Capture Selfie">
+      <div className="container">
+        <div className="row">
+          <div className="col-lg-10 col-12 m-auto">
+
+            {/* Mobile */}
+            <div className="mobile_css">
+              <div className="back_cls">
+                <button type="button" onClick={goBack} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <img src="/assets/images/diy/ChevronLeft.png" alt="" aria-hidden="true" style={{ width: 15 }} /> Back
+                </button>
+                <div className="mobile_header_padding">
+                  <h5>Capture your selfie</h5>
+                  <p className="sub_title">Position your face in the oval and tap capture.</p>
+                </div>
+              </div>
+            </div>
+
+            <form method="post">
+              <div className="col-lg-12 col-md-12 col-12 desktop_css">
                 <div className="mobile_header_padding">
                   <div className="help_faq_css">
                     <div className="d-flex gap-2">
-                      <div onClick={() => router.push('/CaptureSelfie/1')} style={{ cursor: 'pointer' }}>
-                        <span aria-hidden="true">
-                          <svg width="24" height="25" viewBox="0 0 24 25" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <g clipPath="url(#clip0_selfie2)">
-                              <path d="M5 12.5H19" stroke="black" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                              <path d="M5 12.5L11 18.5" stroke="black" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                              <path d="M5 12.5L11 6.5" stroke="black" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                            </g>
-                            <defs><clipPath id="clip0_selfie2"><rect width="24" height="24" fill="white" transform="translate(0 0.5)" /></clipPath></defs>
-                          </svg>
-                        </span>
-                      </div>
+                      <button type="button" className="sp-back-btn" onClick={goBack} aria-label="Go back">
+                        <BackArrow />
+                      </button>
                       <div className="heading">
                         <h5>Capture your selfie</h5>
-                        <p className="sub_title">Position your face within the frame and click capture</p>
+                        <p className="sub_title">Position your face in the oval and click capture.</p>
                       </div>
                     </div>
                   </div>
                 </div>
-                <hr className="desktop_css" />
+              </div>
+              <hr className="desktop_css" />
 
-                <div className="selfie_capture text-center">
-                  {showWebcam && (
+              <div className={styles.cameraWrap}>
+                {showWebcam && (
+                  <div className={styles.ovalFrame}>
                     <Webcam
                       ref={webcamRef}
                       screenshotFormat="image/jpeg"
-                      screenshotQuality={0.8}
+                      screenshotQuality={0.85}
                       videoConstraints={{ facingMode: 'user' }}
-                      style={{ width: '100%', maxWidth: 400, borderRadius: 8 }}
+                      className={styles.ovalVideo}
                       onUserMediaError={() => {
-                        toast.error('Camera access denied. Please enable camera permissions.', { position: 'bottom-center', autoClose: 3000 });
+                        toast.error('Camera access denied. Please enable camera permissions.', {
+                          position: 'bottom-center', autoClose: 3000,
+                        });
                         router.push('/CaptureSelfie/1');
                       }}
                     />
-                  )}
-                  {imageDataUrl && !showWebcam && (
-                    <div>
-                      <img src={imageDataUrl} alt="Captured selfie" style={{ width: '100%', maxWidth: 400, borderRadius: 8 }} />
-                    </div>
-                  )}
-                </div>
+                  </div>
+                )}
 
-                <div className="stickybtn">
-                  {showWebcam ? (
-                    <button className="btn btn_cls" onClick={capture}>Capture</button>
-                  ) : (
-                    <>
-                      <button className="btn btn_cls_outline me-2" onClick={retake}>Retake</button>
-                      <button className="btn btn_cls" onClick={uploadSelfieApiCall}>Upload</button>
-                    </>
-                  )}
-                </div>
+                {imageDataUrl && !showWebcam && (
+                  <img src={imageDataUrl} alt="Captured selfie" className={styles.previewImg} />
+                )}
+
+                <p className={styles.ovalHint}>
+                  {showWebcam ? 'Position your face in the oval' : 'Selfie captured'}
+                </p>
+
+                {showWebcam && (
+                  <button type="button" className={styles.captureBtn} onClick={capture} aria-label="Capture selfie">
+                    <img src="/assets/images/diy/camera-icon.png" alt="" aria-hidden="true" />
+                  </button>
+                )}
+
+                {!showWebcam && imageDataUrl && (
+                  <div className={styles.captureActions}>
+                    <button type="button" className={styles.retakeBtn} onClick={retake}>Retake</button>
+                    <button type="button" className={styles.uploadBtn} onClick={uploadSelfie}>Upload</button>
+                  </div>
+                )}
               </div>
-            </div>
+
+              <div className="stickybtn_desk desktop_css" style={{ marginTop: 24 }}>
+                {showWebcam && (
+                  <button type="button" className="btn btn_cls" style={{ maxWidth: 350 }} onClick={capture}>
+                    Capture
+                  </button>
+                )}
+                {!showWebcam && imageDataUrl && (
+                  <div style={{ display: 'flex', gap: 12, maxWidth: 400, margin: '0 auto' }}>
+                    <button type="button" className="btn btn_cls_outline" onClick={retake} style={{ flex: 1 }}>Retake</button>
+                    <button type="button" className="btn btn_cls" onClick={uploadSelfie} style={{ flex: 1 }}>Upload</button>
+                  </div>
+                )}
+              </div>
+            </form>
+
           </div>
-        </section>
-      )}
-    </>
+
+          <div className="stickybtn mobile_css">
+            {showWebcam && (
+              <button type="button" className="btn btn_cls" onClick={capture}>Capture</button>
+            )}
+            {!showWebcam && imageDataUrl && (
+              <div style={{ display: 'flex', gap: 12 }}>
+                <button type="button" className="btn btn_cls_outline" onClick={retake} style={{ flex: 1 }}>Retake</button>
+                <button type="button" className="btn btn_cls" onClick={uploadSelfie} style={{ flex: 1 }}>Upload</button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
