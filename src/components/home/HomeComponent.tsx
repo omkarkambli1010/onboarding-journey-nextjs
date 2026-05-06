@@ -875,7 +875,7 @@ export default function HomeComponent() {
       {/* FATF Modal */}
       {showFatfModal && (
         <div className={styles.modalOverlay} onClick={() => setShowFatfModal(false)}>
-          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()} data-lenis-prevent>
             <div className={styles.modalHeader}>
               <h2>FATF Countries</h2>
               <button
