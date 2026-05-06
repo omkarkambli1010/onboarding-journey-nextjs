@@ -18,15 +18,15 @@ import styles from './selfie.module.scss';
 // ── Static data ──────────────────────────────────────────────────────────────
 
 const DOS = [
-  { img: '/assets/images/diy/selfie_do_lighting.png',   label: 'Good lighting' },
-  { img: '/assets/images/diy/selfie_do_background.png', label: 'White background' },
-  { img: '/assets/images/diy/selfie_do_align.png',      label: 'Align face in the centre' },
+  { img: '/assets/images/diy/good_lightening_icon.png', label: 'Good lighting' },
+  { img: '/assets/images/diy/white_bg_icon.png',        label: 'White background' },
+  { img: '/assets/images/diy/align_face_icon.png',      label: 'Align face in the centre' },
 ];
 
 const DONTS = [
-  { img: '/assets/images/diy/selfie_dont_blur.png',    label: 'No blurry photo' },
-  { img: '/assets/images/diy/selfie_dont_cap.png',     label: 'No cap' },
-  { img: '/assets/images/diy/selfie_dont_eyewear.png', label: 'No eyewear' },
+  { img: '/assets/images/diy/no_blurry_pic.png',  label: 'No blurry photo' },
+  { img: '/assets/images/diy/no_cap_icon.png',    label: 'No cap' },
+  { img: '/assets/images/diy/no_eyewear_icon.png', label: 'No eyewear' },
 ];
 
 // ── Back arrow SVG ────────────────────────────────────────────────────────────
@@ -152,7 +152,7 @@ export default function Selfie() {
       <section
         className="pan_details_form"
         aria-label="Take a Selfie — Preparation"
-        style={{ background: '#f8f8f8', minHeight: '100vh' }}
+        style={{ background: '#f8f8f8', minHeight: 'calc(100vh - 80px)', padding: '0' }}
       >
 
         {/* ══════════════════════════════════════════════════════════
@@ -243,12 +243,6 @@ export default function Selfie() {
 
             {/* Body */}
             <div className={styles.deskBody}>
-
-              {/* Security row */}
-              <div className={styles.securityRow}>
-                <ShieldIcon />
-                <p>Your PAN details are safe and secure with us.</p>
-              </div>
 
               {/* Two-column: illustration + guidelines */}
               <div className={styles.twoCol}>
