@@ -87,8 +87,8 @@
 // ── Two-column content [752x328] ─────────────────────────────────────────────
 .twoCol {
   display: flex;
-  gap: 34px;
-  align-items: flex-start;
+  gap: 40px;
+  align-items: center;
 }
 
 // Left column: illustration [359x328]
@@ -99,8 +99,8 @@
   justify-content: center;
 
   img {
-    width: 192px;
-    height: 192px;
+    width: 220px;
+    height: 220px;
     object-fit: contain;
     display: block;
   }
@@ -129,10 +129,10 @@
   width: 100%;
 }
 
-// Row of 3 icon items [359x84], each item [93x84]
+// Row of 3 icon items [359x84], each item [93x84], gap=40 between items
 .guideItemRow {
   display: flex;
-  gap: 0;
+  gap: 40px;
   width: 359px;
 }
 
@@ -141,7 +141,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
 
   img {
     width: 48px;
