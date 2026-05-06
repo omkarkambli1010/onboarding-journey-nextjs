@@ -269,7 +269,7 @@ $dark-grey: #231f20;
 
 // ===== Resume Application link =====
 .resumeRow {
-  text-align: center;
+  text-align: left;
   margin-bottom: 4px;
 }
 
@@ -375,8 +375,8 @@ $dark-grey: #231f20;
 }
 
 .termsCheck {
-  width: 20px;
-  height: 20px;
+  width: 15px;
+  height: 15px;
   flex-shrink: 0;
   margin-top: 1px;
   cursor: pointer;
@@ -404,6 +404,17 @@ $dark-grey: #231f20;
   background-clip: text;
   color: transparent;
   font-weight: 700;
+}
+
+.linkText {
+  cursor: pointer;
+  text-decoration: underline;
+  display: inline;
+}
+
+.linkText:focus-visible {
+  outline: 2px solid #280071;
+  outline-offset: 2px;
 }
 
 // ===== Why Open Demat Section =====
@@ -491,7 +502,7 @@ $dark-grey: #231f20;
   }
 
   p {
-    font-size: 20px;
+    font-size: 14px;
     color: $dark;
     font-weight: 500;
     margin: 0;
@@ -503,7 +514,7 @@ $dark-grey: #231f20;
   }
 
   h6 {
-    font-size: 20px;
+    font-size: 18px;
     color: $dark;
     font-weight: 600;
     margin: 0;
@@ -538,10 +549,11 @@ $dark-grey: #231f20;
 .cardClsArrow {
   display: flex;
   align-items: center;
-  padding-bottom: 36px;
+  // padding-bottom: 36px;
+  padding: 0;
 
   @media (max-width: 767px) {
-    display: none;
+    display: block;
   }
 }
 
@@ -566,7 +578,7 @@ $dark-grey: #231f20;
   }
 
   .cardAlign {
-    align-items: flex-start;
+    align-items: center;
   }
 
   .cardCls {
@@ -602,7 +614,7 @@ $dark-grey: #231f20;
   }
 
   .cardClsArrow {
-    padding-bottom: 36px;
+    padding: 0px;
 
     img {
       filter: brightness(0) invert(1);
@@ -675,11 +687,10 @@ $dark-grey: #231f20;
   width: calc(100% - 56px);
 
   :global(.splide__arrow--prev) {
-    display: none; // Figma shows only the next arrow
+    display: none;
   }
 
   :global(.splide__arrow--next) {
-    // 56px to the right of the track's right edge, centred vertically by Splide
     right: -56px;
     width: 34px;
     height: 34px;
@@ -687,7 +698,6 @@ $dark-grey: #231f20;
     border: none;
     border-radius: 50%;
     opacity: 1;
-    // matches the Figma drop-shadow + hairline ring on the arrow button
     box-shadow: 5.064px 5.064px 17.362px rgba(0, 0, 0, 0.06),
                 0 0 0 0.723px rgba(35, 31, 32, 0.12);
 
@@ -696,9 +706,135 @@ $dark-grey: #231f20;
       width: 14px;
       height: 14px;
     }
+  }
+}
 
-    &:hover:not(:disabled) {
-      background: #f5f5f5;
+// ===== FATF Modal =====
+.fatfButton {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-size: inherit;
+  font-family: inherit;
+  color: inherit;
+  text-decoration: unset;
+
+  &:focus {
+    outline: 2px solid #280071;
+    outline-offset: 2px;
+  }
+
+  &:hover {
+    opacity: 0.8;
+  }
+}
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-in-out;
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+}
+
+.modalContent {
+  background: $white;
+  border-radius: 8px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  animation: slideUp 0.3s ease-in-out;
+
+  @keyframes slideUp {
+    from {
+      transform: translateY(20px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  @media (max-width: 767px) {
+    width: 95%;
+    max-width: 100%;
+  }
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px;
+  border-bottom: 1px solid #e5e7eb;
+
+  h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: $dark;
+  }
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  font-size: 28px;
+  color: $dark;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+
+  &:hover {
+    background: #f3f4f6;
+  }
+
+  &:focus {
+    outline: 2px solid $primary-color;
+    outline-offset: 2px;
+  }
+}
+
+.modalBody {
+  padding: 15px;
+}
+
+.countriesList {
+  margin: 0;
+  padding-left: 24px;
+
+  li {
+    font-size: 16px;
+    color: $dark;
+    margin-bottom: 12px;
+    line-height: 1.6;
+
+    &:last-child {
+      margin-bottom: 0;
     }
   }
 }

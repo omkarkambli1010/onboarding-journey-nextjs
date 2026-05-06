@@ -5,12 +5,10 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { Carousel } from 'primereact/carousel';
 import { Splide, SplideSlide } from '@splidejs/react-splide';
-import '@splidejs/react-splide/css/core';
-import { toast } from 'react-toastify';
+import { Toast } from 'primereact/toast';
 import type { Iti } from 'intl-tel-input';
 import { useSpinner } from '@/components/spinner/Spinner';
 import apiService from '@/services/api.service';
-import aesService from '@/services/aes.service';
 import moengagesdkService from '@/services/moengagesdk.service';
 import styles from './home.module.scss';
 
@@ -56,40 +54,35 @@ const RESPONSIVE_VIDEO_OPTIONS = [
 const WHY_DEMAT_CARDS = [
   {
     imgs: [
-      { src: '/assets/images/why-demat/sbi-legacy-1.png', inset: '0.01% 7.49% 0 7.46%' },
-      { src: '/assets/images/why-demat/sbi-legacy-2.png', inset: '0.01% 7.49% 0 7.46%' },
+      { src: '/assets/images/why-demat/sbi-legacy-2.svg', inset: '0.01% 7.49% 0 7.46%' },
     ],
     alt: "SBI's Legacy and Trust",
     label: "SBI's Legacy and Trust",
   },
   {
     imgs: [
-      { src: '/assets/images/why-demat/community-1.png', inset: '14.58% 1% 14.56% 0.99%' },
-      { src: '/assets/images/why-demat/community-2.png', inset: '14.58% 1% 14.56% 0.99%' },
+      { src: '/assets/images/why-demat/community-2.svg', inset: '14.58% 1% 14.56% 0.99%' },
     ],
     alt: 'Community of 4+ million investors',
     label: 'Community of 4+ million investors',
   },
   {
     imgs: [
-      { src: '/assets/images/why-demat/products-1.png', inset: '0.7% 0.7% 0.68% 0.73%' },
-      { src: '/assets/images/why-demat/products-2.png', inset: '0.7% 0.7% 0.68% 0.73%' },
+      { src: '/assets/images/why-demat/products-2.svg', inset: '0.7% 0.7% 0.68% 0.73%' },
     ],
     alt: 'Invest in multiple products with a single app',
     label: 'Invest in multiple products with a single app',
   },
   {
     imgs: [
-      { src: '/assets/images/why-demat/branches-1.png', inset: '4.1% 0.83% 4.11% 0.8%' },
-      { src: '/assets/images/why-demat/branches-2.png', inset: '4.1% 0.83% 4.11% 0.8%' },
+      { src: '/assets/images/why-demat/branches-2.svg', inset: '4.1% 0.83% 4.11% 0.8%' },
     ],
     alt: 'Wide Network of 80+ Branches across India',
     label: 'Wide Network of 80+ Branches across India',
   },
   {
     imgs: [
-      { src: '/assets/images/why-demat/research-1.png', inset: '0 0 0 0.01%' },
-      { src: '/assets/images/why-demat/research-2.png', inset: '0 0 0 0.01%' },
+      { src: '/assets/images/why-demat/research-2.svg', inset: '0 0 0 0.01%' },
     ],
     alt: 'Research recommended stocks',
     label: 'Research recommended stocks',
@@ -116,24 +109,53 @@ export default function HomeComponent() {
 
   const phoneInputRef = useRef<HTMLInputElement>(null);
   const itiRef = useRef<Iti | null>(null);
+  const toastRef = useRef<Toast>(null);
 
-  // OTP state
+  // OTP state — kept for API integration (getMobileOtpVerify / startTimer)
   const [otpMobile, setOtpMobile] = useState('');
-  const [otpEmail, setOtpEmail] = useState('');
   const [isWrongOTP, setIsWrongOTP] = useState(false);
   const [isRightOTP, setIsRightOTP] = useState(false);
-  const [isMobileVerifyBtn, setIsMobileVerifyBtn] = useState(true);
-  const [isEmailDisableBtn, setIsEmailDisableBtn] = useState(true);
 
-  // Timer state
+  // Timer state — kept for API integration (startTimer)
   const [timeLeft, setTimeLeft] = useState(30);
   const [timeroff, setTimeroff] = useState(true);
   const [displayMobile, setDisplayMobile] = useState(30);
 
-  // Email state
-  const [googleHideBtn, setGoogleHideBtn] = useState(false);
-  const [googlebtn, setGooglebtn] = useState(false);
+  // FATF Modal state
+  const [showFatfModal, setShowFatfModal] = useState(false);
 
+  const FATF_COUNTRIES = [
+    'South Sudan',
+    'Netherlands',
+    'Algeria',
+    'Angola',
+    'Bolivia',
+    'British Virgin Islands',
+    'Bulgaria',
+    'Burkina Faso',
+    'Myanmar',
+    'Algeria',
+    'Algeria',
+    'Cameroon',
+    'Republic of the Congo',
+    'Democratic Republic of the Congo',
+    'Haiti',
+    'Iran',
+    'Kenya',
+    'Laos',
+    'Lebanon',
+    'Monaco',
+    'Mozambique',
+    'Namibia',
+    'Nepal',
+    'Nigeria',
+    'North Korea',
+    'Sao Tome and Principe',
+    'South Africa',
+    'South Sudan',
+    'Vietnam',
+    'Yemen'
+  ];
 
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const clientid = typeof window !== 'undefined' ? sessionStorage.getItem('clientid') ?? '' : '';
@@ -155,6 +177,11 @@ export default function HomeComponent() {
         countrySearch: true,
         formatAsYouType: true,
         formatOnDisplay: true,
+        excludeCountries: [
+          'dz', 'ao', 'bo', 'vg', 'bg', 'bf', 'mm', 'cm', 'cg', 'cd',
+          'ht', 'ir', 'ke', 'la', 'lb', 'mc', 'mz', 'na', 'np', 'ng',
+          'kp', 'st', 'za', 'ss', 'vn', 'ye',
+        ],
       });
       itiRef.current = iti;
 
@@ -199,23 +226,16 @@ export default function HomeComponent() {
       };
     });
 
-    // UTM source check — hide Google button if non-organic
-    const utmSource = searchParams?.get('utm_source');
-    if (!utmSource || ['search-engine', 'search_engine', 'NA', ''].includes(utmSource)) {
-      setGoogleHideBtn(false);
-    } else {
-      setGoogleHideBtn(true);
-    }
-
     // Handle status query params
     const status = searchParams?.get('status');
     if (status === 'exhausted') {
-      toast.warning(
-        'Your Mobile OTP request limit is exhausted, please retry to log in after 15 minutes',
-        { position: 'bottom-center', autoClose: 5000 }
-      );
+      toastRef.current?.show({
+        severity: 'warn',
+        detail: 'Your Mobile OTP request limit is exhausted, please retry to log in after 15 minutes',
+        life: 5000,
+      });
     } else if (status === 'internal_server_error') {
-      toast.error('Internal Server Error', { position: 'bottom-center', autoClose: 2000 });
+      toastRef.current?.show({ severity: 'error', detail: 'Internal Server Error', life: 2000 });
     }
 
     // Handle Google OAuth callback params
@@ -228,9 +248,10 @@ export default function HomeComponent() {
       getEmailOtpVerify(false);
     } else if (emailError) {
       moengagesdkService.MoeInit();
-      toast.error('Google Authentication Failed, Please Try Again...', {
-        position: 'bottom-center',
-        autoClose: 5000,
+      toastRef.current?.show({
+        severity: 'error',
+        detail: 'Google Authentication Failed, Please Try Again...',
+        life: 5000,
       });
     }
 
@@ -256,7 +277,11 @@ export default function HomeComponent() {
     setMoreThanTwoValues(val.trim().length > 0 && val.trim().length < 3);
   };
 
-  const onKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    // Allow navigation / editing keys and clipboard shortcuts
+    const PASSTHROUGH = ['Backspace', 'Delete', 'Tab', 'Enter', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'];
+    if (PASSTHROUGH.includes(e.key) || e.ctrlKey || e.metaKey) return;
+    // Block anything that isn't a letter or space
     if (!/^[a-zA-Z\s]$/.test(e.key)) e.preventDefault();
   };
 
@@ -315,45 +340,20 @@ export default function HomeComponent() {
     // }
 
     sessionStorage.setItem('mobile', sendOtp.mobile);
+    sessionStorage.setItem('accountType', accountType);
 
     const isIndian = sendOtp.mobile.startsWith('+91');
+    // Store channel so the OTP screen knows how the code was sent
+    sessionStorage.setItem('otpChannel', isIndian ? 'sms' : 'whatsapp');
 
-    if (isIndian) {
-      sessionStorage.setItem('otpChannel', 'sms');
-      router.push('/mobile-home-otp');
+    // TODO: Replace with real API call — API will return the correct route.
+    // Dummy routing based on account type selection:
+    //   Semi-Digital (NRE/NRO)  → email verification first
+    //   Digital (NRO, Aadhaar)  → mobile OTP first
+    if (accountType === 'semi-digital') {
+      router.push('/email');
     } else {
-      // TODO: Replace with real API call when ready
-      // showSpinner();
-      // try {
-      //   const payload = {
-      //     mobile: sendOtp.mobile,
-      //     fullname: sendOtp.fullname,
-      //     channel: 'whatsapp',
-      //     utm_source: searchParams?.get('utm_source') || 'NA',
-      //     utm_medium: searchParams?.get('utm_medium') || 'NA',
-      //     utm_campaign: searchParams?.get('utm_campaign') || 'NA',
-      //   };
-      //   const response = await apiService.postRequest('CheckAndSendWhatsAppOTP', payload, hideSpinner);
-      //   const isAvailableOnWhatsApp = response?.whatsappAvailable ?? false;
-      // } catch {
-      //   hideSpinner();
-      //   return;
-      // }
-
-      // Dummy whitelist — simulates numbers registered on WhatsApp
-      // TODO: Remove when real API is wired
-      const DUMMY_WHATSAPP_NUMBERS = ['+12025550100'];
-      const isAvailableOnWhatsApp = DUMMY_WHATSAPP_NUMBERS.includes(sendOtp.mobile.replace(/\s/g, ''));
-
-      if (isAvailableOnWhatsApp) {
-        sessionStorage.setItem('otpChannel', 'whatsapp');
-        router.push('/mobile-home-otp');
-      } else {
-        toast.error('Specific number not available on WhatsApp', {
-          position: 'bottom-center',
-          autoClose: 4000,
-        });
-      }
+      router.push('/mobile-home-otp');
     }
   };
 
@@ -484,10 +484,11 @@ export default function HomeComponent() {
                       placeholder="Full Name as per PAN"
                       value={sendOtp.fullname}
                       onChange={(e) => { updateDisplayedName(e.target.value); checkInput(e); }}
-                      onKeyPress={onKeyPress}
+                      onKeyDown={onKeyDown}
                       onPaste={(e) => e.preventDefault()}
                       maxLength={100}
                       autoComplete="name"
+                      suppressHydrationWarning
                     />
                     {moreThanTwoValues && (
                       <span className="red_warning">More than 2 characters are allowed</span>
@@ -511,6 +512,7 @@ export default function HomeComponent() {
                       aria-required="true"
                       name="MobileNo"
                       inputMode="numeric"
+                      suppressHydrationWarning
                     />
                     {mobileDigitReq && (
                       <span className="red_warning">*Please enter a valid mobile number.</span>
@@ -564,9 +566,53 @@ export default function HomeComponent() {
                       />
                       <label htmlFor="termsCheck" className={styles.termsLabel}>
                         By submitting this, I accept all the{' '}
-                        <span className={styles.textGradient}>Terms &amp; Conditions</span>
+                        <span
+                          role="link"
+                          tabIndex={0}
+                          className={`${styles.textGradient} ${styles.linkText}`}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            window.open(
+                              'https://www.sbisecurities.in/fileserver/regulation/terms-and-conditions.html',
+                              '_blank',
+                              'noopener,noreferrer'
+                            );
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault();
+                              window.open(
+                                'https://www.sbisecurities.in/fileserver/regulation/terms-and-conditions.html',
+                                '_blank',
+                                'noopener,noreferrer'
+                              );
+                            }
+                          }}
+                        >
+                          Terms &amp; Conditions
+                        </span>
                         {' '}&amp; also confirming that I am not resident of{' '}
-                        <span className={styles.textGradient}>FATF</span> Sanction Country list.
+                        <span
+                          role="button"
+                          tabIndex={0}
+                          className={`${styles.textGradient} ${styles.linkText}`}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setShowFatfModal(true);
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault();
+                              setShowFatfModal(true);
+                            }
+                          }}
+                          aria-label="View FATF Sanction Countries"
+                        >
+                          FATF
+                        </span>
+                        {' '}Sanction Country list.
                       </label>
                     </div>
 
@@ -612,7 +658,7 @@ export default function HomeComponent() {
                       aria-disabled={isDisabledLoginBtn}
                       onClick={() => getMobileOtp(false)}
                     >
-                      Submit
+                      Get Started
                     </button>
                   </div>
                 </form>
@@ -829,6 +875,34 @@ export default function HomeComponent() {
         </div>
       </section>
 
+      <Toast ref={toastRef} position="bottom-center" />
+
+      {/* FATF Modal */}
+      {showFatfModal && (
+        <div className={styles.modalOverlay} onClick={() => setShowFatfModal(false)}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h2>FATF Countries</h2>
+              <button
+                type="button"
+                className={styles.closeBtn}
+                onClick={() => setShowFatfModal(false)}
+                aria-label="Close modal"
+              >
+                ×
+              </button>
+            </div>
+            <div className={styles.modalBody}>
+              <ol className={styles.countriesList}>
+                {FATF_COUNTRIES.map((country, index) => (
+                  <li key={index}>{country}</li>
+                ))}
+              </ol>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* FAQ Section */}
       <section aria-label="Frequently Asked Questions" className={styles.faqSection}>
         <div className="container">
@@ -879,6 +953,7 @@ export default function HomeComponent() {
                           aria-expanded="false"
                           aria-controls={`collapse${faq.id}`}
                           itemProp="name"
+                          suppressHydrationWarning
                         >
                           {faq.question}
                         </button>
