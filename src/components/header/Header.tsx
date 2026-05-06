@@ -39,6 +39,7 @@ export default function Header() {
           onClick={redirectHome}
           aria-label="Go to homepage"
           style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+          suppressHydrationWarning
         >
           <Image
             src="/assets/images/sbi-securities-logo.png"

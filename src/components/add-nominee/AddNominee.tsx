@@ -2,11 +2,24 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import { Calendar } from 'primereact/calendar';
 import { useSpinner } from '@/components/spinner/Spinner';
 import { toast } from 'react-toastify';
 import apiService from '@/services/api.service';
 import navigationService from '@/services/navigation.service';
 import styles from './add-nominee.module.scss';
+
+// Convert 'YYYY-MM-DD' string → Date | null  (for Calendar value prop)
+const strToDate = (s: string): Date | null => (s ? new Date(s) : null);
+
+// Convert Date | null → 'YYYY-MM-DD' string  (for state / API)
+const dateToStr = (d: Date | null | undefined): string => {
+  if (!d) return '';
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+};
 
 // AddNominee — Add nominee details during account opening
 // Equivalent to Angular AddNomineeComponent
@@ -230,11 +243,15 @@ export default function AddNominee() {
 
                     <div className="mb-3">
                       <label className="form-label">Date of Birth <span style={{ color: '#dc3545' }}>*</span></label>
-                      <input
-                        type="date"
-                        className="form-control otp_field"
-                        value={nominee.dob}
-                        onChange={(e) => updateNominee(index, 'dob', e.target.value)}
+                      <Calendar
+                        inputId={`nominee-dob-${index}`}
+                        value={strToDate(nominee.dob)}
+                        onChange={(e) => updateNominee(index, 'dob', dateToStr(e.value as Date | null))}
+                        dateFormat="dd/mm/yy"
+                        placeholder="DD/MM/YYYY"
+                        showIcon
+                        iconPos="right"
+                        className="p-prime-cal p-prime-cal-h48"
                       />
                     </div>
 

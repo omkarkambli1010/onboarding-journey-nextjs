@@ -4,11 +4,11 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { Carousel } from 'primereact/carousel';
-import { InputOtp } from 'primereact/inputotp';
-import { toast } from 'react-toastify';
+import { Splide, SplideSlide } from '@splidejs/react-splide';
+import { Toast } from 'primereact/toast';
+import type { Iti } from 'intl-tel-input';
 import { useSpinner } from '@/components/spinner/Spinner';
 import apiService from '@/services/api.service';
-import aesService from '@/services/aes.service';
 import moengagesdkService from '@/services/moengagesdk.service';
 import styles from './home.module.scss';
 
@@ -18,13 +18,18 @@ import styles from './home.module.scss';
 const TESTIMONIALS = [
   {
     message:
-      'We appreciate the innovative solutions and tools provided by SBI Securities, particularly the SBI Securities app. The app has been a game-changer for us, offering a seamless and intuitive trading experience.',
-    author: 'Arun Kumar Mishra',
+      "I've been using this platform for several months now and I'm impressed. The interface is user-friendly and makes it easy to keep track of my investments.",
+    author: 'Rohit Sharma',
   },
   {
     message:
-      'I am really thankful for your personal touch in understanding SBI Securities platform. Earlier, I was not aware about Infra Tracker, Reality Tracker, and other Trackers available in the platform which helped me to invest in a better manner.',
-    author: 'Rajiv Ranjan',
+      "I love the variety of investment options available on this platform. I'm able to diversify my portfolio and feel confident that I'm making smart investment decisions.",
+    author: 'Sayali Prasad',
+  },
+  {
+    message:
+      "The app is fantastic and makes it easy to manage my investments on-the-go. I'm able to keep track of my portfolio and make trades quickly and efficiently from my phone.",
+    author: "Dorothy D'souza",
   },
 ];
 
@@ -35,8 +40,7 @@ const VIDEOS = [
   },
   {
     url: 'https://www.youtube.com/embed/Rb7IE_P3UcA',
-    caption:
-      'E-Margin (Margin Trading Facility) - Up to 4x Buying Power at 0% Interest for 23 trading days',
+    caption: "Begin your Investment journey with India's trusted Nivesh SAATHI",
   },
 ];
 
@@ -46,9 +50,43 @@ const RESPONSIVE_VIDEO_OPTIONS = [
   { breakpoint: '560px', numVisible: 1, numScroll: 1 },
 ];
 
-const RESPONSIVE_OPTIONS = [
-  { breakpoint: '1024px', numVisible: 2, numScroll: 1 },
-  { breakpoint: '768px', numVisible: 1, numScroll: 1 },
+
+const WHY_DEMAT_CARDS = [
+  {
+    imgs: [
+      { src: '/assets/images/why-demat/sbi-legacy-2.svg', inset: '0.01% 7.49% 0 7.46%' },
+    ],
+    alt: "SBI's Legacy and Trust",
+    label: "SBI's Legacy and Trust",
+  },
+  {
+    imgs: [
+      { src: '/assets/images/why-demat/community-2.svg', inset: '14.58% 1% 14.56% 0.99%' },
+    ],
+    alt: 'Community of 4+ million investors',
+    label: 'Community of 4+ million investors',
+  },
+  {
+    imgs: [
+      { src: '/assets/images/why-demat/products-2.svg', inset: '0.7% 0.7% 0.68% 0.73%' },
+    ],
+    alt: 'Invest in multiple products with a single app',
+    label: 'Invest in multiple products with a single app',
+  },
+  {
+    imgs: [
+      { src: '/assets/images/why-demat/branches-2.svg', inset: '4.1% 0.83% 4.11% 0.8%' },
+    ],
+    alt: 'Wide Network of 80+ Branches across India',
+    label: 'Wide Network of 80+ Branches across India',
+  },
+  {
+    imgs: [
+      { src: '/assets/images/why-demat/research-2.svg', inset: '0 0 0 0.01%' },
+    ],
+    alt: 'Research recommended stocks',
+    label: 'Research recommended stocks',
+  },
 ];
 
 export default function HomeComponent() {
@@ -57,31 +95,67 @@ export default function HomeComponent() {
   const { show: showSpinner, hide: hideSpinner } = useSpinner();
 
   // Form state
-  const [sendOtp, setSendOtp] = useState({ mobile: '', email: '', fullname: '' });
+  const [sendOtp, setSendOtp] = useState({ mobile: '', fullname: '' });
   const [moreThanTwoValues, setMoreThanTwoValues] = useState(false);
   const [panFullNameReqSpecial, setPanFullNameReqSpecial] = useState(false);
   const [panFullNameReqDigit, setPanFullNameReqDigit] = useState(false);
-  const [panFullNameReqSpace, setPanFullNameReqSpace] = useState(false);
   const [mobileDigitReq, setMobileDigitReq] = useState(false);
+  const [isPhoneValid, setIsPhoneValid] = useState(false);
   const [isDisabledLoginBtn, setIsDisabledLoginBtn] = useState(true);
+  const [accountType, setAccountType] = useState<'semi-digital' | 'digital' | ''>('');
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [rmAssisted, setRmAssisted] = useState(false);
+  const [employeeId, setEmployeeId] = useState('');
 
-  // OTP state
+  const phoneInputRef = useRef<HTMLInputElement>(null);
+  const itiRef = useRef<Iti | null>(null);
+  const toastRef = useRef<Toast>(null);
+
+  // OTP state — kept for API integration (getMobileOtpVerify / startTimer)
   const [otpMobile, setOtpMobile] = useState('');
-  const [otpEmail, setOtpEmail] = useState('');
   const [isWrongOTP, setIsWrongOTP] = useState(false);
   const [isRightOTP, setIsRightOTP] = useState(false);
-  const [isMobileVerifyBtn, setIsMobileVerifyBtn] = useState(true);
-  const [isEmailDisableBtn, setIsEmailDisableBtn] = useState(true);
 
-  // Timer state
+  // Timer state — kept for API integration (startTimer)
   const [timeLeft, setTimeLeft] = useState(30);
   const [timeroff, setTimeroff] = useState(true);
   const [displayMobile, setDisplayMobile] = useState(30);
 
-  // Email state
-  const [googleHideBtn, setGoogleHideBtn] = useState(false);
-  const [googlebtn, setGooglebtn] = useState(false);
-  const [emailFormatVal, setEmailFormatVal] = useState(false);
+  // FATF Modal state
+  const [showFatfModal, setShowFatfModal] = useState(false);
+
+  const FATF_COUNTRIES = [
+    'South Sudan',
+    'Netherlands',
+    'Algeria',
+    'Angola',
+    'Bolivia',
+    'British Virgin Islands',
+    'Bulgaria',
+    'Burkina Faso',
+    'Myanmar',
+    'Algeria',
+    'Algeria',
+    'Cameroon',
+    'Republic of the Congo',
+    'Democratic Republic of the Congo',
+    'Haiti',
+    'Iran',
+    'Kenya',
+    'Laos',
+    'Lebanon',
+    'Monaco',
+    'Mozambique',
+    'Namibia',
+    'Nepal',
+    'Nigeria',
+    'North Korea',
+    'Sao Tome and Principe',
+    'South Africa',
+    'South Sudan',
+    'Vietnam',
+    'Yemen'
+  ];
 
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const clientid = typeof window !== 'undefined' ? sessionStorage.getItem('clientid') ?? '' : '';
@@ -90,34 +164,78 @@ export default function HomeComponent() {
     document.title =
       'Open Demat Account - Free Demat & Trading Account Opening Online | SBI Securities';
 
-    // Pre-fill from session
-    const savedMobile = sessionStorage.getItem('mobile');
-    const savedName = sessionStorage.getItem('NameSubmitted');
-    if (savedMobile || savedName) {
-      setSendOtp((prev) => ({
-        ...prev,
-        mobile: savedMobile ?? '',
-        fullname: savedName ?? '',
-      }));
-    }
+    let mounted = true;
+    const cleanupRef = { fn: undefined as (() => void) | undefined };
 
-    // UTM source check — hide Google button if non-organic
-    const utmSource = searchParams?.get('utm_source');
-    if (!utmSource || ['search-engine', 'search_engine', 'NA', ''].includes(utmSource)) {
-      setGoogleHideBtn(false);
-    } else {
-      setGoogleHideBtn(true);
-    }
+    // Dynamically import intl-tel-input so it never runs during SSR
+    import('intl-tel-input/intlTelInputWithUtils').then(({ default: intlTelInput }) => {
+      if (!mounted || !phoneInputRef.current) return;
+
+      const iti = intlTelInput(phoneInputRef.current, {
+        initialCountry: 'in',
+        separateDialCode: true,
+        countrySearch: true,
+        formatAsYouType: true,
+        formatOnDisplay: true,
+        excludeCountries: [
+          'dz', 'ao', 'bo', 'vg', 'bg', 'bf', 'mm', 'cm', 'cg', 'cd',
+          'ht', 'ir', 'ke', 'la', 'lb', 'mc', 'mz', 'na', 'np', 'ng',
+          'kp', 'st', 'za', 'ss', 'vn', 'ye',
+        ],
+      });
+      itiRef.current = iti;
+
+      // Pre-fill from session
+      const savedMobile = sessionStorage.getItem('mobile');
+      if (savedMobile) {
+        const e164 = savedMobile.startsWith('+') ? savedMobile : `+91${savedMobile}`;
+        iti.setNumber(e164);
+        const isValid = iti.isValidNumber() === true;
+        setSendOtp((prev) => ({ ...prev, mobile: e164 }));
+        setIsPhoneValid(isValid);
+      }
+
+      const handlePhoneChange = () => {
+        const fullNumber = iti.getNumber();
+        const nationalInput = phoneInputRef.current?.value ?? '';
+        const isValid = iti.isValidNumber() === true;
+        setSendOtp((prev) => ({ ...prev, mobile: fullNumber }));
+        setMobileDigitReq(nationalInput.length > 0 && !isValid);
+        setIsPhoneValid(isValid);
+      };
+
+      const inputEl = phoneInputRef.current;
+      inputEl.addEventListener('input', handlePhoneChange);
+      inputEl.addEventListener('countrychange', handlePhoneChange);
+
+      // Prevent page scroll when wheeling inside the country dropdown list
+      const countryListEl = inputEl.closest('.iti')?.querySelector('.iti__country-list') as HTMLElement | null;
+      const stopPageScroll = (e: WheelEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        (e.currentTarget as HTMLElement).scrollTop += e.deltaY;
+      };
+      countryListEl?.addEventListener('wheel', stopPageScroll as EventListener, { passive: false });
+
+      cleanupRef.fn = () => {
+        inputEl.removeEventListener('input', handlePhoneChange);
+        inputEl.removeEventListener('countrychange', handlePhoneChange);
+        countryListEl?.removeEventListener('wheel', stopPageScroll as EventListener);
+        iti.destroy();
+        if (intervalRef.current) clearInterval(intervalRef.current);
+      };
+    });
 
     // Handle status query params
     const status = searchParams?.get('status');
     if (status === 'exhausted') {
-      toast.warning(
-        'Your Mobile OTP request limit is exhausted, please retry to log in after 15 minutes',
-        { position: 'bottom-center', autoClose: 5000 }
-      );
+      toastRef.current?.show({
+        severity: 'warn',
+        detail: 'Your Mobile OTP request limit is exhausted, please retry to log in after 15 minutes',
+        life: 5000,
+      });
     } else if (status === 'internal_server_error') {
-      toast.error('Internal Server Error', { position: 'bottom-center', autoClose: 2000 });
+      toastRef.current?.show({ severity: 'error', detail: 'Internal Server Error', life: 2000 });
     }
 
     // Handle Google OAuth callback params
@@ -130,14 +248,26 @@ export default function HomeComponent() {
       getEmailOtpVerify(false);
     } else if (emailError) {
       moengagesdkService.MoeInit();
-      toast.error('Google Authentication Failed, Please Try Again...', {
-        position: 'bottom-center',
-        autoClose: 5000,
+      toastRef.current?.show({
+        severity: 'error',
+        detail: 'Google Authentication Failed, Please Try Again...',
+        life: 5000,
       });
     }
+
+    return () => {
+      mounted = false;
+      cleanupRef.fn?.();
+    };
   }, []);
 
-  // ===== Validation =====
+  // Reactive button enable/disable: name + phone + account type + terms
+  useEffect(() => {
+    const nameValid = sendOtp.fullname.trim().length >= 3 && !/[^a-zA-Z\s]/.test(sendOtp.fullname);
+    setIsDisabledLoginBtn(!(nameValid && isPhoneValid && accountType !== '' && termsAccepted));
+  }, [sendOtp.fullname, isPhoneValid, accountType, termsAccepted]);
+
+  // ===== Name Validation =====
   const checkInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     const hasSpecial = /[^a-zA-Z\s]/.test(val);
@@ -147,40 +277,18 @@ export default function HomeComponent() {
     setMoreThanTwoValues(val.trim().length > 0 && val.trim().length < 3);
   };
 
-  const onKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    const char = e.key;
-    if (!/^[a-zA-Z\s]$/.test(char)) {
-      e.preventDefault();
-    }
+  const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    // Allow navigation / editing keys and clipboard shortcuts
+    const PASSTHROUGH = ['Backspace', 'Delete', 'Tab', 'Enter', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'];
+    if (PASSTHROUGH.includes(e.key) || e.ctrlKey || e.metaKey) return;
+    // Block anything that isn't a letter or space
+    if (!/^[a-zA-Z\s]$/.test(e.key)) e.preventDefault();
   };
 
   const updateDisplayedName = (name: string) => {
     setSendOtp((prev) => ({ ...prev, fullname: name }));
-    validateForm(name, sendOtp.mobile);
   };
 
-  const updateDisplayedName2 = (e: React.FocusEvent<HTMLInputElement>) => {
-    const val = e.target.value.trim();
-    setPanFullNameReqSpace(val.length === 0 || val.split(' ').length < 2);
-  };
-
-  const mobileNoValidation = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value.replace(/\D/g, '').slice(0, 10);
-    setSendOtp((prev) => ({ ...prev, mobile: val }));
-    setMobileDigitReq(val.length > 0 && (val.length !== 10 || !/^[6-9]/.test(val)));
-    validateForm(sendOtp.fullname, val);
-  };
-
-  const mobileNoValidation2 = (e: React.FocusEvent<HTMLInputElement>) => {
-    const val = e.target.value;
-    setMobileDigitReq(val.length > 0 && (val.length !== 10 || !/^[6-9]/.test(val)));
-  };
-
-  const validateForm = (name: string, mobile: string) => {
-    const nameValid = name.trim().length >= 3 && !/[^a-zA-Z\s]/.test(name);
-    const mobileValid = mobile.length === 10 && /^[6-9]/.test(mobile);
-    setIsDisabledLoginBtn(!(nameValid && mobileValid));
-  };
 
   // ===== Mobile OTP =====
   const startTimer = () => {
@@ -201,34 +309,51 @@ export default function HomeComponent() {
     }, 1000);
   };
 
-  const getMobileOtp = async (isResend: boolean) => {
-    showSpinner();
-    try {
-      const payload = {
-        mobile: sendOtp.mobile,
-        fullname: sendOtp.fullname,
-        utm_source: searchParams?.get('utm_source') || 'NA',
-        utm_medium: searchParams?.get('utm_medium') || 'NA',
-        utm_campaign: searchParams?.get('utm_campaign') || 'NA',
-        isResend,
-      };
-      const response = await apiService.postRequest('SendMobileOTP', payload, hideSpinner);
-      if (response) {
-        sessionStorage.setItem('mobile', sendOtp.mobile);
-        sessionStorage.setItem('NameSubmitted', sendOtp.fullname);
-        sessionStorage.setItem('clientid', response.clientid ?? '');
-        startTimer();
-        // Open mobile OTP modal
-        const modal = document.getElementById('mobileOTPModal');
-        if (modal) {
-          const bsModal = (window as any).bootstrap?.Modal?.getOrCreateInstance(modal);
-          bsModal?.show();
-        } else {
-          router.push('/mobile-home-otp');
-        }
-      }
-    } catch {
-      hideSpinner();
+  const getMobileOtp = async (_isResend: boolean) => {
+    // TODO: Re-enable when API is ready
+    // showSpinner();
+    // try {
+    //   const payload = {
+    //     mobile: sendOtp.mobile,
+    //     fullname: sendOtp.fullname,
+    //     utm_source: searchParams?.get('utm_source') || 'NA',
+    //     utm_medium: searchParams?.get('utm_medium') || 'NA',
+    //     utm_campaign: searchParams?.get('utm_campaign') || 'NA',
+    //     isResend,
+    //   };
+    //   const response = await apiService.postRequest('SendMobileOTP', payload, hideSpinner);
+    //   if (response) {
+    //     sessionStorage.setItem('mobile', sendOtp.mobile);
+    //     sessionStorage.setItem('NameSubmitted', sendOtp.fullname);
+    //     sessionStorage.setItem('clientid', response.clientid ?? '');
+    //     startTimer();
+    //     const modal = document.getElementById('mobileOTPModal');
+    //     if (modal) {
+    //       const bsModal = (window as any).bootstrap?.Modal?.getOrCreateInstance(modal);
+    //       bsModal?.show();
+    //     } else {
+    //       router.push('/mobile-home-otp');
+    //     }
+    //   }
+    // } catch {
+    //   hideSpinner();
+    // }
+
+    sessionStorage.setItem('mobile', sendOtp.mobile);
+    sessionStorage.setItem('accountType', accountType);
+
+    const isIndian = sendOtp.mobile.startsWith('+91');
+    // Store channel so the OTP screen knows how the code was sent
+    sessionStorage.setItem('otpChannel', isIndian ? 'sms' : 'whatsapp');
+
+    // TODO: Replace with real API call — API will return the correct route.
+    // Dummy routing based on account type selection:
+    //   Semi-Digital (NRE/NRO)  → email verification first
+    //   Digital (NRO, Aadhaar)  → mobile OTP first
+    if (accountType === 'semi-digital') {
+      router.push('/email');
+    } else {
+      router.push('/mobile-home-otp');
     }
   };
 
@@ -263,7 +388,7 @@ export default function HomeComponent() {
     try {
       const emailParam = searchParams?.get('email') ?? '';
       const payload = {
-        email: emailParam || sendOtp.email,
+        email: emailParam,
         clientid,
       };
       const response = await apiService.postRequest('VerifyEmailOTP', payload, hideSpinner);
@@ -277,14 +402,6 @@ export default function HomeComponent() {
       hideSpinner();
     }
   };
-
-  // ===== Testimonial Template =====
-  const testimonialTemplate = (item: (typeof TESTIMONIALS)[0]) => (
-    <div className={styles.cardCss}>
-      <p>{item.message}</p>
-      <span>-{item.author}</span>
-    </div>
-  );
 
   const videoTemplate = (item: (typeof VIDEOS)[0]) => (
     <div className={styles.carouselCls}>
@@ -307,40 +424,55 @@ export default function HomeComponent() {
     <>
       {/* Banner Section */}
       <section aria-label="Open Demat and Trading Account" className={`${styles.banner} banner`}>
+        {/* Decorative circles */}
+        <div className={styles.decorCirclePink} aria-hidden="true" />
+        <div className={styles.decorCircleBlue} aria-hidden="true" />
+
         <div className="container">
           <div className={`row ${styles.bannerImg}`}>
-            <div className="col-md-6 col-lg-6 col-12 px-0 px-xxl-2 px-lg-2 px-md-2 px-sm-0">
-              <div className={styles.bannerTxt}>
-                <div className={styles.desktopBanner}>
-                  <Image
-                    draggable={false}
-                    src="/assets/images/diy/Website-Banner-DIY2-Foreground.webp"
-                    alt="Open Demat Account"
-                    width={600}
-                    height={400}
-                    loading="lazy"
-                    style={{ width: '100%', height: 'auto' }}
+            {/* Left — headline + phone mockup + floating cards */}
+            <div className="col-md-6 col-lg-6 col-12">
+              <div className={styles.bannerLeft}>
+                <h1 className={styles.bannerHeadline}>
+                  Trade Fast,<br />Invest Smarter
+                </h1>
+                <div className={styles.phoneContainer}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="https://www.figma.com/api/mcp/asset/dac2bf21-4ad6-487b-ac39-ae36a3a99c3b"
+                    alt="SBI Securities Trading App"
+                    className={styles.phoneMockup}
                   />
-                </div>
-                <div className={styles.mobileBanner}>
-                  <Image
-                    draggable={false}
-                    src="/assets/images/diy/Website-Banner-DIY2-Mobile-Foreground.webp"
-                    alt="Open Demat Account"
-                    width={400}
-                    height={300}
-                    loading="lazy"
-                    style={{ width: '100%', height: 'auto' }}
-                  />
+                  {/* ZERO brokerage card */}
+                  <div className={`${styles.floatingCard} ${styles.cardZero}`}>
+                    <span className={styles.cardValuePrimary}>ZERO</span>
+                    <span className={styles.cardDesc}>Brokerage on Intraday</span>
+                  </div>
+                  {/* ₹20 per order card */}
+                  <div className={`${styles.floatingCard} ${styles.cardRate}`}>
+                    <span className={styles.cardValueBlue}>
+                      <span className={styles.rupeeSymbol}>₹</span>20
+                    </span>
+                    <span className={styles.cardDesc}>per order for carry forward trades</span>
+                  </div>
+                  {/* Free 1st Year AMC card */}
+                  <div className={`${styles.floatingCard} ${styles.cardFree}`}>
+                    <span className={styles.cardValueRed}>Free</span>
+                    <span className={styles.cardDesc}>
+                      1<sup>st</sup> Year AMC
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
+
+            {/* Right — NRI form card */}
             <div className="col-md-6 col-lg-6 col-12">
               <div className={styles.mobileForm}>
-                <form aria-label="Open Demat Account Registration Form">
-                  <h1>Open Your Demat &amp; Trading Account Now</h1>
+                <form aria-label="Open NRI Account Registration Form">
+                  <h1>Open Your NRI Account Now!</h1>
 
-                  {/* Full Name Input */}
+                  {/* Full Name */}
                   <div>
                     <input
                       type="text"
@@ -351,15 +483,12 @@ export default function HomeComponent() {
                       name="fullname_as_pancard"
                       placeholder="Full Name as per PAN"
                       value={sendOtp.fullname}
-                      onChange={(e) => {
-                        updateDisplayedName(e.target.value);
-                        checkInput(e);
-                      }}
-                      onKeyPress={onKeyPress}
-                      onBlur={updateDisplayedName2}
+                      onChange={(e) => { updateDisplayedName(e.target.value); checkInput(e); }}
+                      onKeyDown={onKeyDown}
                       onPaste={(e) => e.preventDefault()}
                       maxLength={100}
                       autoComplete="name"
+                      suppressHydrationWarning
                     />
                     {moreThanTwoValues && (
                       <span className="red_warning">More than 2 characters are allowed</span>
@@ -370,61 +499,174 @@ export default function HomeComponent() {
                     {panFullNameReqDigit && (
                       <span className="red_warning">Digits are not allowed</span>
                     )}
-                    {panFullNameReqSpace && (
-                      <span className="red_warning">*Please enter your name as per your PAN</span>
-                    )}
                   </div>
 
-                  {/* Mobile Input */}
+                  {/* Mobile with country code */}
                   <div>
                     <input
-                      type="text"
+                      ref={phoneInputRef}
+                      type="tel"
                       className="form-control otp_field"
-                      id="mobile-number"
+                      placeholder="Mobile Number *"
                       aria-label="Mobile Number"
                       aria-required="true"
                       name="MobileNo"
-                      placeholder="Mobile Number"
                       inputMode="numeric"
-                      pattern="[0-9]*"
-                      maxLength={10}
-                      value={sendOtp.mobile}
-                      onChange={mobileNoValidation}
-                      onBlur={mobileNoValidation2}
+                      suppressHydrationWarning
                     />
                     {mobileDigitReq && (
-                      <span className="red_warning">
-                        *Please enter your valid 10 digit mobile number.
-                      </span>
+                      <span className="red_warning">*Please enter a valid mobile number.</span>
                     )}
                   </div>
 
+                  {/* Account Type */}
+                  <div className={styles.accountTypeSection}>
+                    <span className={styles.accountTypeLabel}>
+                      Choose Account<br />Type :
+                    </span>
+                    <div className={styles.radioGroup}>
+                      <label className={styles.radioOption}>
+                        <input
+                          type="radio"
+                          name="accountType"
+                          value="semi-digital"
+                          checked={accountType === 'semi-digital'}
+                          onChange={() => setAccountType('semi-digital')}
+                        />
+                        <span>
+                          Semi-Digital Journey - NRE/NRO account{' '}
+                          <small>(Outside India / without Aadhar)</small>
+                        </span>
+                      </label>
+                      <label className={styles.radioOption}>
+                        <input
+                          type="radio"
+                          name="accountType"
+                          value="digital"
+                          checked={accountType === 'digital'}
+                          onChange={() => setAccountType('digital')}
+                        />
+                        <span>
+                          Digital Journey - NRO Account<br />
+                          <small>( Available only in India with Aadhar e-sign)</small>
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+
                   <div className={styles.btnAlign}>
+                    {/* Terms & FATF */}
+                    <div className={styles.termsRow}>
+                      <input
+                        type="checkbox"
+                        id="termsCheck"
+                        className={styles.termsCheck}
+                        checked={termsAccepted}
+                        onChange={(e) => setTermsAccepted(e.target.checked)}
+                      />
+                      <label htmlFor="termsCheck" className={styles.termsLabel}>
+                        By submitting this, I accept all the{' '}
+                        <span
+                          role="link"
+                          tabIndex={0}
+                          className={`${styles.textGradient} ${styles.linkText}`}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            window.open(
+                              'https://www.sbisecurities.in/fileserver/regulation/terms-and-conditions.html',
+                              '_blank',
+                              'noopener,noreferrer'
+                            );
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault();
+                              window.open(
+                                'https://www.sbisecurities.in/fileserver/regulation/terms-and-conditions.html',
+                                '_blank',
+                                'noopener,noreferrer'
+                              );
+                            }
+                          }}
+                        >
+                          Terms &amp; Conditions
+                        </span>
+                        {' '}&amp; also confirming that I am not resident of{' '}
+                        <span
+                          role="button"
+                          tabIndex={0}
+                          className={`${styles.textGradient} ${styles.linkText}`}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setShowFatfModal(true);
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault();
+                              setShowFatfModal(true);
+                            }
+                          }}
+                          aria-label="View FATF Sanction Countries"
+                        >
+                          FATF
+                        </span>
+                        {' '}Sanction Country list.
+                      </label>
+                    </div>
+
+                    {/* RM */}
+                    <div className={styles.termsRow}>
+                      <input
+                        type="checkbox"
+                        id="rmCheck"
+                        className={styles.termsCheck}
+                        checked={rmAssisted}
+                        onChange={(e) => {
+                          setRmAssisted(e.target.checked);
+                          if (!e.target.checked) setEmployeeId('');
+                        }}
+                      />
+                      <label htmlFor="rmCheck" className={styles.termsLabel}>
+                        Are you being assisted by a RM?
+                      </label>
+                    </div>
+                    {rmAssisted && (
+                      <div>
+                        <input
+                          type="text"
+                          className="form-control otp_field"
+                          placeholder="Employee ID *"
+                          aria-label="Employee ID"
+                          value={employeeId}
+                          onChange={(e) => setEmployeeId(e.target.value)}
+                          maxLength={20}
+                        />
+                      </div>
+                    )}
+
+                    <div className={styles.resumeRow}>
+                      <a href="/resume-application" className={styles.resumeLink}>
+                        Resume Application
+                      </a>
+                    </div>
                     <button
                       type="button"
-                      className="btn btn_cls"
+                      className={`btn ${styles.submitBtn}`}
                       disabled={isDisabledLoginBtn}
                       aria-disabled={isDisabledLoginBtn}
                       onClick={() => getMobileOtp(false)}
                     >
                       Get Started
                     </button>
-                    <div className="terms_css">
-                      By clicking on &apos;Get Started&apos;, I agree to the{' '}
-                      <a
-                        href="https://www.sbisecurities.in/fileserver/regulation/terms-and-conditions.html"
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        Terms &amp; Condition
-                      </a>
-                    </div>
                   </div>
                 </form>
               </div>
             </div>
           </div>
         </div>
+
       </section>
 
       {/* Why Open Demat Section */}
@@ -437,20 +679,22 @@ export default function HomeComponent() {
             <div className={styles.align}>
               <h2 className="page-heading">Why Open Demat Account With SBI Securities?</h2>
               <div className={styles.cardAlign}>
-                {[
-                  { src: '/assets/images/diy/trusticon-1.avif', alt: 'SBI Legacy & Trust', label: "SBI's Legacy & Trust" },
-                  { src: '/assets/images/diy/communityicon-1.avif', alt: 'SBI Investors Community', label: 'Community of 6+ million investors' },
-                  { src: '/assets/images/diy/productsicon-1.avif', alt: 'SBI Securities Trading App', label: 'Invest in multiple products with a single app' },
-                  { src: '/assets/images/diy/networkicon-1.avif', alt: 'Wide Network of SBI Securities Branches', label: 'Wide Network of 160+ Branches across India' },
-                  { src: '/assets/images/diy/researchstocksicon-1.avif', alt: 'Well Researched Investment Recommendations', label: 'Research recommended stocks' },
-                ].map((card) => (
+                {WHY_DEMAT_CARDS.map((card) => (
                   <div key={card.label} className={styles.cardCls}>
-                    <div>
-                      <Image src={card.src} alt={card.alt} width={60} height={60} draggable={false} />
+                    <div className={styles.iconWrapper}>
+                      {card.imgs.map((img, i) => (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          key={i}
+                          src={img.src}
+                          alt={i === 0 ? card.alt : ''}
+                          className={styles.iconLayer}
+                          style={{ inset: img.inset }}
+                          draggable={false}
+                        />
+                      ))}
                     </div>
-                    <div>
-                      <p>{card.label}</p>
-                    </div>
+                    <p>{card.label}</p>
                   </div>
                 ))}
               </div>
@@ -506,7 +750,7 @@ export default function HomeComponent() {
           <div className="row">
             <div className={styles.align}>
               <h2 className="page-heading">
-                Documents Required for Opening Demat Account with SBI Securities
+                Documents Required to Open a Demat &amp; Trading A/C
               </h2>
               <div className={styles.cardAlign}>
                 {[
@@ -536,7 +780,7 @@ export default function HomeComponent() {
       <section aria-label="Educational Videos" className={styles.benefitsSection}>
         <div className="container">
           <div className={styles.trustCss}>
-            <h2 className="page-heading">Videos</h2>
+            <h2 className="page-heading">Explore Our Trading Platforms</h2>
             <Carousel
               value={VIDEOS}
               numVisible={2}
@@ -554,20 +798,50 @@ export default function HomeComponent() {
       <section aria-label="Customer Testimonials" className={styles.trustSection}>
         <div className="container">
           <div className="row">
-            <div className="col-lg-12">
-              <h2 className="page-heading">Trust Aur Growth, Dono</h2>
-              <h6>India&apos;s trusted investment partner of choice</h6>
+            <div className="col-lg-12 text-center">
+              <h2 className={styles.trustHeading}>Trust Aur Growth, Dono</h2>
+              <p className={styles.trustSubtitle}>India&apos;s trusted investment partner of choice</p>
             </div>
             <div className="col-lg-12">
-              <Carousel
-                value={TESTIMONIALS}
-                numVisible={2}
-                numScroll={1}
-                circular={false}
-                autoplayInterval={0}
-                responsiveOptions={RESPONSIVE_OPTIONS}
-                itemTemplate={testimonialTemplate}
-              />
+              <Splide
+                options={{
+                  type: 'loop',
+                  perPage: 3,
+                  perMove: 1,
+                  gap: '24px',
+                  pagination: false,
+                  arrows: true,
+                  breakpoints: {
+                    1024: { perPage: 2 },
+                    767: { perPage: 1 },
+                  },
+                }}
+                className={styles.testimonialSplide}
+                aria-label="Customer testimonials"
+              >
+                {TESTIMONIALS.map((item, idx) => (
+                  <SplideSlide key={idx}>
+                    <div className={styles.testimonialCard}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src="/assets/images/trust-section/quote-icon.svg"
+                        alt=""
+                        className={styles.quoteIcon}
+                        draggable={false}
+                      />
+                      <p className={styles.testimonialText}>{item.message}</p>
+                      <span className={styles.testimonialAuthor}>-{item.author}</span>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src="/assets/images/trust-section/line-divider.svg"
+                        alt=""
+                        className={styles.testimonialLine}
+                        draggable={false}
+                      />
+                    </div>
+                  </SplideSlide>
+                ))}
+              </Splide>
             </div>
           </div>
         </div>
@@ -601,6 +875,34 @@ export default function HomeComponent() {
         </div>
       </section>
 
+      <Toast ref={toastRef} position="bottom-center" />
+
+      {/* FATF Modal */}
+      {showFatfModal && (
+        <div className={styles.modalOverlay} onClick={() => setShowFatfModal(false)}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h2>FATF Countries</h2>
+              <button
+                type="button"
+                className={styles.closeBtn}
+                onClick={() => setShowFatfModal(false)}
+                aria-label="Close modal"
+              >
+                ×
+              </button>
+            </div>
+            <div className={styles.modalBody}>
+              <ol className={styles.countriesList}>
+                {FATF_COUNTRIES.map((country, index) => (
+                  <li key={index}>{country}</li>
+                ))}
+              </ol>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* FAQ Section */}
       <section aria-label="Frequently Asked Questions" className={styles.faqSection}>
         <div className="container">
@@ -611,22 +913,28 @@ export default function HomeComponent() {
                 <div className="accordion" id="accordionExample">
                   {[
                     {
-                      id: 'Three',
-                      question: 'How does a Demat account work?',
+                      id: 'One',
+                      question: 'Why do I need a Demat account?',
                       answer:
-                        'Imagine your Demat account as a secure digital locker for your investments, like stocks and bonds. Instead of physical certificates, these investments are stored electronically. When you buy or sell stocks, it is like moving them in or out of this digital locker.',
+                        'A Demat account is required to hold securities like stocks and bonds in electronic form. It is mandatory for trading in the Indian stock market and eliminates the need for physical certificates, making buying, selling, and transferring shares seamless.',
+                    },
+                    {
+                      id: 'Two',
+                      question: 'Who can open a Demat account?',
+                      answer:
+                        'Any Indian resident aged 18 years or older can open a Demat account. NRIs can also open one with specific documentation. You need a valid PAN card, Aadhaar card, a linked bank account, and a signature as primary requirements.',
+                    },
+                    {
+                      id: 'Three',
+                      question: 'How do I open a Demat account?',
+                      answer:
+                        'You can open a Demat account online through SBI Securities in a few easy steps: sign up with your name and mobile number, verify your bank account, select a brokerage plan, upload required documents (PAN, Aadhaar, signature), and complete e-signing. The entire process takes just minutes.',
                     },
                     {
                       id: 'Four',
-                      question: 'What are the benefits of a Demat account?',
+                      question: 'What types of securities can I hold in a Demat account?',
                       answer:
-                        'A Demat account offers multiple benefits including safe storage of securities, easy transfer of shares, elimination of risks associated with physical certificates, quick settlement of trades, and the ability to access your portfolio from anywhere at any time.',
-                    },
-                    {
-                      id: 'Five',
-                      question: 'Is there any fee for opening a Demat account with SBI Securities?',
-                      answer:
-                        'SBI Securities offers a free Demat account opening with Zero AMC for the first year. Flat brokerage of ₹20/order* and ₹0 brokerage till ₹75 lakh trades.',
+                        'A Demat account can hold equities (stocks), bonds, mutual funds, ETFs, government securities, debentures, and other financial instruments. SBI Securities allows you to invest across multiple asset classes through a single account.',
                     },
                   ].map((faq) => (
                     <div
@@ -645,6 +953,7 @@ export default function HomeComponent() {
                           aria-expanded="false"
                           aria-controls={`collapse${faq.id}`}
                           itemProp="name"
+                          suppressHydrationWarning
                         >
                           {faq.question}
                         </button>

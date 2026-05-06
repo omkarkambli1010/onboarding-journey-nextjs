@@ -7,6 +7,7 @@ import 'primeicons/primeicons.css';
 import 'primeflex/primeflex.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'react-toastify/dist/ReactToastify.css';
+import '@splidejs/react-splide/css/core';
 import Providers from '@/lib/providers';
 import AppShell from '@/components/app-shell/AppShell';
 

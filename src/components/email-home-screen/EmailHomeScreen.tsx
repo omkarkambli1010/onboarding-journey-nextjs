@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSpinner } from '@/components/spinner/Spinner';
 import { toast } from 'react-toastify';
@@ -9,15 +9,19 @@ import navigationService from '@/services/navigation.service';
 import styles from './email-home-screen.module.scss';
 
 // EmailHomeScreen — equivalent to Angular EmailHomeScreenComponent
-// Handles Google OAuth and email verification method selection
+// Email ID Verification — choose Google OAuth or manual email entry
+// Figma: SEMI--FULL-NRE-NRO — Desktop 1:76220, Mobile 1:72658
+
+const BackArrowSvg = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M15 18L9 12L15 6" stroke="#2B2B2B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
 
 export default function EmailHomeScreen() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { show: showSpinner, hide: hideSpinner } = useSpinner();
-
-  const [responsePayload, setResponsePayload] = useState<any>(null);
-  const [googlebtn, setGooglebtn] = useState(false);
 
   const utmSource = searchParams.get('utm_source') || 'NA';
   const utmMedium = searchParams.get('utm_medium') || 'NA';
@@ -32,7 +36,6 @@ export default function EmailHomeScreen() {
 
     if (emailParam && emailVerified === 'true') {
       const payload = { email: emailParam, email_verified: emailVerified, name: nameParam };
-      setResponsePayload(payload);
       getEmailOtpVerify(payload);
     } else if (emailError) {
       toast.error('Google Authentication Failed, Please Try Again...', {
@@ -58,12 +61,11 @@ export default function EmailHomeScreen() {
     try {
       if (response.credential) {
         const payload = decodeJwtResponse(response.credential);
-        setResponsePayload(payload);
         if (payload.email_verified === true) {
           getEmailOtpVerify(payload);
         }
       }
-    } catch (error) {
+    } catch {
       toast.error('Google Authentication Failed', { position: 'bottom-center' });
     }
   };
@@ -99,16 +101,15 @@ export default function EmailHomeScreen() {
             ? (notification.getNotDisplayedReason?.() || 'Prompt Not Displayed')
             : (notification.getSkippedMomentReason?.() || 'Prompt Skipped');
           sessionStorage.setItem('GoogleError', reason);
-          toast.warning('Please provide permission to fetch your data from Google or please enter Email ID manually', {
-            position: 'bottom-center',
-            autoClose: 3000,
-          });
+          toast.warning(
+            'Please provide permission to fetch your data from Google or please enter Email ID manually',
+            { position: 'bottom-center', autoClose: 3000 }
+          );
           setTimeout(hideSpinner, 2500);
         }
       });
       setTimeout(hideSpinner, 2500);
     } else {
-      setGooglebtn(true);
       const formNumber = sessionStorage.getItem('FormNumber');
       const routeurl = process.env.NEXT_PUBLIC_BACKEND_URL || '';
       window.location.href = `${routeurl}GoogleAuthentication/GoogleSignIn.aspx?clientcode=${formNumber}`;
@@ -148,75 +149,91 @@ export default function EmailHomeScreen() {
   const emailTextPage = () => {
     showSpinner();
     setTimeout(() => {
-      router.push('/email-home-textpage');
+      router.push('/email-home-page');
       hideSpinner();
     }, 200);
   };
 
-  return (
-    <section aria-label="Email ID Verification — choose verification method" className="pan_details_form">
-      <div className="container">
-        <div className="row">
-          <div className="col-lg-8 col-md-12 col-12 p-0 p-sm-0 m-auto">
-            <div className="mobile_css">
-              <div className="back_cls">
-                <div className="d-flex flex-column align-items-start gap-2">
-                  <h5>Email ID Verification</h5>
-                  <p className="sub_title">
-                    All communication related to your account will be sent to this email
-                  </p>
-                </div>
-              </div>
-            </div>
+  const goBack = () => {
+    sessionStorage.removeItem('mobile');
+    sessionStorage.removeItem('NameSubmitted');
+    router.push('/');
+  };
 
-            <form aria-label="Email Verification Form" method="post">
-              <div className="div">
-                <div className="col-lg-12 col-md-12 col-12 desktop_css">
-                  <div className="header_padding">
-                    <div className="help_faq_css">
-                      <div className="d-flex flex-column gap-2">
-                        <h5>Email ID Verification</h5>
-                        <p className="sub_title">
-                          All communication related to your account will be sent to this email
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="desktop_css">
-                  <div className="line_css"></div>
-                </div>
-                <div className="col-lg-12 col-md-12 col-12">
-                  <div className="mobile_section">
-                    <div className="desktop_align">
-                      <div className="email_screen">
-                        <div className="google_btn" onClick={signInWithGoogle} style={{ cursor: 'pointer' }}>
-                          <span>
-                            <img src="/assets/images/diy/google_icon_mini.png" alt="Google Icon Mini Image" aria-hidden="true" />
-                          </span>
-                          <span className="google_txt">Continue with Google</span>
-                        </div>
-                        <div className="desktop_css">
-                          <img className="" src="/assets/images/diy/or_sec_img.png" alt="Or Sec Image" aria-hidden="true" />
-                        </div>
-                        <div className="mobile_css">
-                          <img className="" src="/assets/images/diy/or_sec_img_mobile.png" alt="Or Sec Image" aria-hidden="true" />
-                        </div>
-                        <div className="email_text_section">
-                          <h6 onClick={emailTextPage} style={{ cursor: 'pointer' }}>
-                            Use another E-mail ID
-                          </h6>
-                          <h6>(Require OTP Verification)</h6>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </form>
+  const googleButton = (
+    <button type="button" className={styles.googleBtn} onClick={signInWithGoogle}>
+      <img
+        src="/assets/images/diy/google_icon_mini.png"
+        alt="Google"
+        className={styles.googleIcon}
+      />
+      <span>Continue with Google</span>
+    </button>
+  );
+
+  const orDivider = (
+    <div className={styles.orDivider}>
+      <div className={styles.orLine} />
+      <span className={styles.orText}>Or</span>
+      <div className={styles.orLine} />
+    </div>
+  );
+
+  const altEmail = (
+    <div className={styles.altEmailBlock} onClick={emailTextPage} role="button" tabIndex={0}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') emailTextPage(); }}>
+      <span className={styles.altEmailLink}>Use another E-mail ID</span>
+      <span className={styles.altEmailNote}>(Require OTP Verification)</span>
+    </div>
+  );
+
+  return (
+    <>
+      {/* ── MOBILE  (< 768px) ── */}
+      <section aria-label="Email ID Verification" className={styles.mobilePage}>
+        <div className={styles.mobileHeader}>
+          <div className={styles.mobileHeaderInner}>
+            <button type="button" className={styles.mobileBackBtn} onClick={goBack} aria-label="Go back">
+              <BackArrowSvg />
+            </button>
+            <div className={styles.mobileTitleBlock}>
+              <h5 className={styles.mobileTitle}>Email ID Verification</h5>
+              <p className={styles.mobileSubtitle}>
+                All communication related to your account will be sent to this email
+              </p>
+            </div>
           </div>
         </div>
-      </div>
-    </section>
+        <div className={styles.mobileCard}>
+          {googleButton}
+          {orDivider}
+          {altEmail}
+        </div>
+      </section>
+
+      {/* ── DESKTOP  (≥ 768px) ── */}
+      <section aria-label="Email ID Verification" className={styles.desktopPage}>
+        <div className={styles.desktopCard}>
+          <div className={styles.desktopCardHeader}>
+            <button type="button" className={styles.desktopBackBtn} onClick={goBack} aria-label="Go back">
+              <BackArrowSvg />
+            </button>
+            <div className={styles.desktopTitleBlock}>
+              <h5 className={styles.desktopCardTitle}>Email ID Verification</h5>
+              <p className={styles.desktopCardSubtitle}>
+                All communication related to your account will be sent to this email
+              </p>
+            </div>
+          </div>
+          <div className={styles.desktopCardBody}>
+            <div className={styles.desktopContentGroup}>
+              {googleButton}
+              {orDivider}
+              {altEmail}
+            </div>
+          </div>
+        </div>
+      </section>
+    </>
   );
 }
