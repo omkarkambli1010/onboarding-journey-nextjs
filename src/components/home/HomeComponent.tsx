@@ -646,11 +646,6 @@ export default function HomeComponent() {
                       </div>
                     )}
 
-                    <div className={styles.resumeRow}>
-                      <a href="/resume-application" className={styles.resumeLink}>
-                        Resume Application
-                      </a>
-                    </div>
                     <button
                       type="button"
                       className={`btn ${styles.submitBtn}`}
