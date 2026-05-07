@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { InputOtp } from 'primereact/inputotp';
 import { useSpinner } from '@/components/spinner/Spinner';
-import { toast } from 'react-toastify';
+import { toast } from '@/services/toast.service';
 import apiService from '@/services/api.service';
 import navigationService from '@/services/navigation.service';
 import styles from './email-home-otp-screen.module.scss';

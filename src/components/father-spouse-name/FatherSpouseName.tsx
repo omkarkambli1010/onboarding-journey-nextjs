@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSpinner } from '@/components/spinner/Spinner';
-import { toast } from 'react-toastify';
+import { toast } from '@/services/toast.service';
 import apiService from '@/services/api.service';
 import navigationService from '@/services/navigation.service';
 import styles from './father-spouse-name.module.scss';
@@ -11,14 +11,12 @@ import styles from './father-spouse-name.module.scss';
 // FatherSpouseName — step 5: Father/Spouse Name (KYC)
 // Equivalent to Angular FatherSpouseNameComponent
 
-const SAMPLE_FATHER_NAME = 'Kevin S Shah';
-
 export default function FatherSpouseName() {
   const router = useRouter();
   const { show: showSpinner, hide: hideSpinner } = useSpinner();
 
-  const [fatherName, setFatherName] = useState(SAMPLE_FATHER_NAME);
-  const [isPersonalForm, setIsPersonalForm] = useState(false);
+  const [fatherName, setFatherName] = useState('');
+  const [isPersonalForm, setIsPersonalForm] = useState(true);
   const [showEmptyWarning, setShowEmptyWarning] = useState(false);
   const [fatherNameSpecial, setFatherNameSpecial] = useState(false);
   const [fatherNameDigit, setFatherNameDigit] = useState(false);
@@ -74,7 +72,7 @@ export default function FatherSpouseName() {
     let value = e.target.value;
     if (/^\s/.test(value)) value = value.trimStart();
     value = value.replace(/\s{2,}/g, ' ');
-    value = value.replace(/[^a-zA-Z\s]/g, '');
+    value = value.replace(/[^a-zA-Z\s]/g, '').toUpperCase();
     setFatherName(value);
     updateFatherName(value, 'change');
   };
@@ -86,43 +84,46 @@ export default function FatherSpouseName() {
 
   const PersonalDetailsave = async () => {
     showSpinner();
-    const reqData = {
-      Flag: 'nameMF',
-      FatherName: fatherName,
-      MotherName: '',
-      FormNumber: typeof window !== 'undefined' ? sessionStorage.getItem('FormNumber') : '',
-      utm_source: 'search-engine',
-      utm_medium: 'organic',
-      utm_campaign: 'Onboarding-DIY',
-      Guid: guid,
-      Stage: '5',
-    };
-    try {
-      const response = await apiService.postRequest('api/v1/personalDetail/save', reqData, hideSpinner);
-      if (response?.status === true) {
-        const mode = typeof window !== 'undefined' ? sessionStorage.getItem('mode') : '';
-        const yonobankstatus = typeof window !== 'undefined' ? sessionStorage.getItem('yonobank') : '';
-        const IsYonoClient = typeof window !== 'undefined' ? sessionStorage.getItem('IsYono') : '';
+    // const reqData = {
+    //   Flag: 'nameMF',
+    //   FatherName: fatherName,
+    //   MotherName: '',
+    //   FormNumber: typeof window !== 'undefined' ? sessionStorage.getItem('FormNumber') : '',
+    //   utm_source: 'search-engine',
+    //   utm_medium: 'organic',
+    //   utm_campaign: 'Onboarding-DIY',
+    //   Guid: guid,
+    //   Stage: '5',
+    // };
+    // try {
+    //   const response = await apiService.postRequest('api/v1/personalDetail/save', reqData, hideSpinner);
+    //   if (response?.status === true) {
+    //     const mode = typeof window !== 'undefined' ? sessionStorage.getItem('mode') : '';
+    //     const yonobankstatus = typeof window !== 'undefined' ? sessionStorage.getItem('yonobank') : '';
+    //     const IsYonoClient = typeof window !== 'undefined' ? sessionStorage.getItem('IsYono') : '';
 
-        if (rejectStatus === 'R') {
-          hideSpinner();
-          navigationService.navigateToNextStep();
-        } else if (yonobankstatus === 'UNIQUE' && (IsYonoClient === 'YONO' || IsYonoClient === 'Branch Portal')) {
-          setTimeout(() => { router.push('/planprocess/1'); hideSpinner(); }, 200);
-        } else {
-          if (mode === 'Penny Drop') {
-            setTimeout(() => { router.push('/PennyDrop/2'); hideSpinner(); }, 200);
-          } else if (mode === 'RevPennyDrop') {
-            setTimeout(() => { router.push('/reversePennyDrop/2'); hideSpinner(); }, 200);
-          } else {
-            setTimeout(() => { router.push('/personalDetailsForm/6'); hideSpinner(); }, 200);
-          }
-        }
-      } else {
-        toast.error(response?.message || 'Error', { position: 'bottom-center', autoClose: 4000 });
-        hideSpinner();
-      }
-    } catch { hideSpinner(); }
+    //     if (rejectStatus === 'R') {
+    //       hideSpinner();
+    //       navigationService.navigateToNextStep();
+    //     } else if (yonobankstatus === 'UNIQUE' && (IsYonoClient === 'YONO' || IsYonoClient === 'Branch Portal')) {
+    //       setTimeout(() => { router.push('/planprocess/1'); hideSpinner(); }, 200);
+    //     } else {
+    //       if (mode === 'Penny Drop') {
+    //         setTimeout(() => { router.push('/PennyDrop/2'); hideSpinner(); }, 200);
+    //       } else if (mode === 'RevPennyDrop') {
+    //         setTimeout(() => { router.push('/reversePennyDrop/2'); hideSpinner(); }, 200);
+    //       } else {
+    //         setTimeout(() => { router.push('/personalDetailsForm/6'); hideSpinner(); }, 200);
+    //       }
+    //     }
+    //   } else {
+    //     toast.error(response?.message || 'Error', { position: 'bottom-center', autoClose: 4000 });
+    //     hideSpinner();
+    //   }
+    // } catch { hideSpinner(); }
+
+    // Direct redirect to personalDetailsForm/6 without API call
+    setTimeout(() => { router.push('/personalDetailsForm/6'); hideSpinner(); }, 200);
   };
 
   const BackToFour = () => {

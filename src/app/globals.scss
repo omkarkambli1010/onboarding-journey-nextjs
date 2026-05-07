@@ -771,30 +771,42 @@ section {
       }
     }
 
-    // ── Severity: Success ───────────────────────────────────────────────────
+    // ── Severity: Success (#28a745) ─────────────────────────────────────────
     &.p-toast-message-success {
-      .p-toast-message-content { border-left-color: #16a34a !important; }
-      .p-toast-message-icon { color: #16a34a !important; }
-      .p-toast-summary { color: #14532d !important; }
+      .p-toast-message-content {
+        background: rgba(40, 167, 69, 0.06) !important;
+        border-left-color: #28a745 !important;
+      }
+      .p-toast-message-icon { color: #28a745 !important; }
+      .p-toast-summary { color: #155724 !important; }
     }
 
-    // ── Severity: Warning ───────────────────────────────────────────────────
+    // ── Severity: Warning (#d97706) ─────────────────────────────────────────
     &.p-toast-message-warn {
-      .p-toast-message-content { border-left-color: #d97706 !important; }
+      .p-toast-message-content {
+        background: rgba(217, 119, 6, 0.06) !important;
+        border-left-color: #d97706 !important;
+      }
       .p-toast-message-icon { color: #d97706 !important; }
       .p-toast-summary { color: #78350f !important; }
     }
 
-    // ── Severity: Error ─────────────────────────────────────────────────────
+    // ── Severity: Error (#dc3545) ───────────────────────────────────────────
     &.p-toast-message-error {
-      .p-toast-message-content { border-left-color: #dc2626 !important; }
-      .p-toast-message-icon { color: #dc2626 !important; }
-      .p-toast-summary { color: #7f1d1d !important; }
+      .p-toast-message-content {
+        background: rgba(220, 53, 69, 0.06) !important;
+        border-left-color: #dc3545 !important;
+      }
+      .p-toast-message-icon { color: #dc3545 !important; }
+      .p-toast-summary { color: #721c24 !important; }
     }
 
-    // ── Severity: Info (brand purple) ───────────────────────────────────────
+    // ── Severity: Info (brand purple #280071) ───────────────────────────────
     &.p-toast-message-info {
-      .p-toast-message-content { border-left-color: #280071 !important; }
+      .p-toast-message-content {
+        background: rgba(40, 0, 113, 0.05) !important;
+        border-left-color: #280071 !important;
+      }
       .p-toast-message-icon { color: #280071 !important; }
       .p-toast-summary { color: #280071 !important; }
     }
@@ -1159,8 +1171,8 @@ section {
     padding: 8px 12px;
 
     &.selected {
-      background: #280071;
-      border-color: #280071;
+      background: #694d9c;
+      border-color: #694d9c;
       color: #fff;
     }
   }

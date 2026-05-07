@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSpinner } from '@/components/spinner/Spinner';
-import { toast } from 'react-toastify';
+import { toast } from '@/services/toast.service';
 import apiService from '@/services/api.service';
 import navigationService from '@/services/navigation.service';
 import styles from './upload-supporting.module.scss';

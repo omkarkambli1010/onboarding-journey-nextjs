@@ -1,6 +1,6 @@
-// LinkBankAccount — step 6: Bank Details (Select Bank Account Type)
+// ManualBankDetails — Add bank details manually
 // Figma: MzSMJbkZfKDT6S8z3G0rVU
-//   Desktop node 0-101583 · Mobile node 0-101800
+//   Desktop node 0-99176 · Mobile node 0-100804
 
 $primary:     #280071;
 $bg-page:     #f8f8f8;
@@ -23,10 +23,11 @@ $shadow-desk: 0px 2px 10px 0px rgba(0, 0, 0, 0.05);
   background: $bg-page;
   padding: 0;
 
-  @media (min-width: 768px) { display: none; }
+  @media (min-width: 768px) { 
+    display: none; 
+  }
 }
 
-// Gray header — rounded-bottom-20, flex-col, gap-8
 .mobileHeader {
   background: $bg-page;
   border-bottom-left-radius: 20px;
@@ -36,6 +37,13 @@ $shadow-desk: 0px 2px 10px 0px rgba(0, 0, 0, 0.05);
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+// Back arrow on left, Need Help on right
+.mobileHeaderTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .mobileBackBtn {
@@ -51,23 +59,17 @@ $shadow-desk: 0px 2px 10px 0px rgba(0, 0, 0, 0.05);
   justify-content: center;
 }
 
-.backPlaceholder {
-  width: 24px;
-  height: 24px;
-  flex-shrink: 0;
-}
-
 .mobileTitleBlock {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-// Figma: 16px SemiBold #2b2b2b
+// Figma: 18px SemiBold #222 (mobile uses 18px per Figma)
 .mobileTitle {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 600;
-  color: $text-dark-2;
+  color: $text-dark;
   margin: 0;
   line-height: normal;
 }
@@ -81,7 +83,7 @@ $shadow-desk: 0px 2px 10px 0px rgba(0, 0, 0, 0.05);
   line-height: 1.5;
 }
 
-// White card — rounded-tl-24, rounded-tr-24, shadow, flex-1, p-24, gap-16
+// White card — scrollable
 .mobileCard {
   background: $bg-white;
   border-radius: 24px 24px 0 0;
@@ -90,12 +92,11 @@ $shadow-desk: 0px 2px 10px 0px rgba(0, 0, 0, 0.05);
   padding: 24px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 24px;
   overflow-y: auto;
   min-height: 0;
 }
 
-// Figma: pb-16, centered, bg same as page
 .mobileProceedArea {
   background: $bg-page;
   padding: 12px 16px 16px;
@@ -133,7 +134,6 @@ $shadow-desk: 0px 2px 10px 0px rgba(0, 0, 0, 0.05);
   @media (min-width: 768px) { display: flex; }
 }
 
-// Figma: w-800, rounded-24, border #d9d9d9, shadow
 .desktopCard {
   width: 100%;
   max-width: 800px;
@@ -144,7 +144,6 @@ $shadow-desk: 0px 2px 10px 0px rgba(0, 0, 0, 0.05);
   overflow: hidden;
 }
 
-// Figma: flex, gap-8, p-24, border-bottom 0.5px
 .desktopCardHeader {
   display: flex;
   align-items: flex-start;
@@ -170,9 +169,19 @@ $shadow-desk: 0px 2px 10px 0px rgba(0, 0, 0, 0.05);
 }
 
 .desktopTitleBlock {
+  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  min-width: 0;
+}
+
+// Title + Need Help in same row
+.desktopTitleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
 }
 
 // Figma: 18px SemiBold #222
@@ -202,15 +211,20 @@ $shadow-desk: 0px 2px 10px 0px rgba(0, 0, 0, 0.05);
   justify-content: space-between;
 }
 
-.desktopContentArea {
+.desktopScrollArea {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 24px;
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
 }
 
 .desktopProceedWrapper {
   display: flex;
   justify-content: center;
+  padding-top: 32px;
+  flex-shrink: 0;
 }
 
 // Figma: w-350, h-56, bg #280071, 16px SemiBold white, rounded-8
@@ -228,84 +242,170 @@ $shadow-desk: 0px 2px 10px 0px rgba(0, 0, 0, 0.05);
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
-// SHARED — checkbox components
+// SHARED — Need Help chip
 // ══════════════════════════════════════════════════════════════════════════════
 
-// Figma: 14px Regular #666, line-height 20px
-.sectionLabel {
+// Figma: pill, border #d9d9d9 0.5px, bg rgba(207,169,255,0.09), text #280071
+.needHelpBtn {
+  background: rgba(207, 169, 255, 0.09);
+  border: 0.5px solid $border;
+  border-radius: 25px;
+  padding: 8px 11px;
+  font-size: 14px;
+  font-weight: 400;
+  color: $primary;
+  cursor: pointer;
+  white-space: nowrap;
+  line-height: normal;
+  flex-shrink: 0;
+
+  @media (max-width: 767px) {
+    font-size: 12px;
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// SHARED — Bank banner
+// ══════════════════════════════════════════════════════════════════════════════
+
+// Figma: bg #f3f1ff, dashed border #d9d9d9, rounded-12, h-56 (desk) / h-51 (mob), gap-12, px-12 py-6
+.bankBanner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #f3f1ff;
+  border: 1px dashed $border;
+  border-radius: 12px;
+  padding: 6px 12px;
+  min-height: 51px;
+  flex-shrink: 0;
+}
+
+.bankBannerText {
+  font-size: 14px;
+  font-weight: 600;
+  color: $text-dark-2;
+  line-height: normal;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// SHARED — Bank section (title + fields)
+// ══════════════════════════════════════════════════════════════════════════════
+
+.bankSection {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+// Figma: 16px SemiBold #2b2b2b
+.sectionTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: $text-dark-2;
+  margin: 0;
+  line-height: normal;
+}
+
+// Desktop: label + input side by side (flex-row)
+// Mobile: label above input (flex-col)
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  @media (min-width: 768px) {
+    flex-direction: row;
+    align-items: center;
+    gap: 24px;
+  }
+}
+
+// Figma: 16px Regular/Medium #666, width 231px on desktop
+.fieldLabel {
   font-size: 14px;
   font-weight: 400;
   color: $text-label;
   line-height: 20px;
-  margin: 0;
-}
-
-// Mobile: flex-col gap-16 · Desktop: flex-row gap-16
-.checkboxGroup {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+  white-space: nowrap;
 
   @media (min-width: 768px) {
-    flex-direction: row;
+    font-size: 16px;
+    width: 231px;
+    flex-shrink: 0;
   }
 }
 
-// Figma: flex, gap-8, items-center, py-4
-.checkboxItem {
+// Figma: w-250 on desktop, full width on mobile
+.inputWrapper {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 4px 0;
+  position: relative;
+
+  @media (min-width: 768px) {
+    width: 250px;
+    flex-shrink: 0;
+  }
 }
 
-// Figma: 24×24 button wrapper
-.checkboxBtn {
+// Figma: bg white, border #d9d9d9, h-40, rounded-8, px-16 py-10, 14px Regular #222
+.input {
+  width: 100%;
+  height: 40px;
+  background: $bg-white;
+  border: 1px solid $border;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 400;
+  color: $text-dark;
+  line-height: 20px;
+  outline: none;
+
+  &:focus {
+    border-color: $primary;
+  }
+
+  &::placeholder {
+    color: #b0b0b0;
+    font-weight: 400;
+  }
+
+  // leave room for eye button
+  &.withEye {
+    padding-right: 40px;
+  }
+}
+
+.eyeBtn {
+  position: absolute;
+  right: 10px;
   background: none;
   border: none;
-  padding: 4px;
+  padding: 0;
   cursor: pointer;
-  flex-shrink: 0;
-  width: 24px;
-  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-// Figma: 18×18, rounded-2px — unchecked: border #999
-.checkboxBox {
-  width: 18px;
-  height: 18px;
-  border-radius: 2px;
-  border: 1.5px solid #999999;
-  background: $bg-white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: 20px;
+  height: 20px;
   flex-shrink: 0;
-  transition: background 0.15s ease, border-color 0.15s ease;
 }
 
-// Figma: checked — bg #280071
-.checkboxBoxChecked {
-  background: $primary;
-  border-color: $primary;
+// Figma: bg rgba(236,238,255,0.5), dashed border #c3c7ed, rounded-8, p-16
+.addressBox {
+  background: rgba(236, 238, 255, 0.5);
+  border: 1px dashed #c3c7ed;
+  border-radius: 8px;
+  padding: 16px;
 }
 
-// Figma: unchecked label — 14px Regular #2b2b2b
-// Figma: checked label  — 14px SemiBold #280071
-.checkboxLabel {
+.addressText {
   font-size: 14px;
   font-weight: 400;
   color: $text-dark-2;
-  white-space: nowrap;
-  line-height: normal;
-}
-
-.checkboxLabelChecked {
-  font-weight: 600;
-  color: $primary;
+  line-height: 21px;
+  margin: 0;
 }
 
 .btnDisabled {

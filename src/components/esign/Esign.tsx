@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { toast } from 'react-toastify';
+import { toast } from '@/services/toast.service';
 import { useSpinner } from '@/components/spinner/Spinner';
 import apiService from '@/services/api.service';
 import styles from './esign.module.scss';

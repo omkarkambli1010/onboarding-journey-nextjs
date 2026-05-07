@@ -18,6 +18,7 @@ $text-gray: #666666;
   flex-direction: column;
   min-height: calc(100vh - 90px);
   background: $bg-page;
+  padding: 0;
 
   @media (min-width: 768px) { display: none; }
 }
@@ -60,7 +61,8 @@ $text-gray: #666666;
   line-height: normal;
 }
 
-// Figma: bg white, border-top-radius 24px, shadow 0 3px 10px, flex-1, overflow-hidden
+// Figma: bg white, border-top-radius 24px, shadow 0 3px 10px, flex-1, scrollable
+// padding-bottom reserves space for the fixed Verify button (48px + 16px*2 = 80px)
 .mobileCard {
   background: white;
   border-radius: 24px 24px 0 0;
@@ -68,17 +70,22 @@ $text-gray: #666666;
   flex: 1;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow-y: auto;
   min-height: 0;
+  padding-bottom: 80px;
 }
 
-// Figma: pb-16, centered
+// Fixed to viewport bottom so it never falls off-screen
 .mobileProceedArea {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
   background: $bg-page;
-  padding: 12px 16px 16px;
+  padding: 16px 16px env(safe-area-inset-bottom, 16px);
   display: flex;
   justify-content: center;
-  flex-shrink: 0;
+  z-index: 200;
 }
 
 // ── DESKTOP ───────────────────────────────────────────────────────────────────
@@ -232,8 +239,7 @@ $text-gray: #666666;
   max-width: 420px;
 }
 
-// Gray highlight band — full-width, breaks out of card padding
-// Mobile: margin -24px counteracts mobileCard padding
+// Gray highlight band — full-width
 // Figma: rgba(241,241,246,0.5), h~185, flex-col, gap-12, items-center
 .highlightSection {
   background: rgba(241, 241, 246, 0.5);
@@ -243,7 +249,6 @@ $text-gray: #666666;
   align-items: center;
   gap: 12px;
   text-align: center;
-  flex: 1;
 }
 
 // Desktop highlight band — full-width within the 800px card
@@ -304,7 +309,7 @@ $text-gray: #666666;
 }
 
 // Figma: bg #280071, rounded-8, 16px SemiBold white
-// Desktop: w-350, h-56 · Mobile: w-328, h-48
+// Desktop: w-350, h-56 · Mobile: fluid w (calc 100%-32px, max 328px), h-48
 .proceedBtn {
   width: 350px;
   height: 56px;
@@ -318,8 +323,11 @@ $text-gray: #666666;
   line-height: 20px;
   white-space: nowrap;
 
+  &:hover { background: #1a004d; }
+
   @media (max-width: 767px) {
-    width: 328px;
+    width: calc(100% - 32px);
+    max-width: 328px;
     height: 48px;
   }
 }

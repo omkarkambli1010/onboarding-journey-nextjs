@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { toast } from 'react-toastify';
+import { toast } from '@/services/toast.service';
 import { useSpinner } from '@/components/spinner/Spinner';
 import apiService from '@/services/api.service';
 import aesService from '@/services/aes.service';
@@ -57,36 +57,12 @@ export default function DigilockerScreen() {
     window.location.href = `/faq?stageName=${encodeURIComponent(encodedStageName)}`;
   };
 
-  const redirectDigiLocker = async () => {
+  const redirectDigiLocker = () => {
     showSpinner();
-    try {
-      const response = await apiService.postRequest('api/v1/Digilocker/getRedirectURL', {
-        formNumber: sessionStorage.getItem('FormNumber'),
-      });
-      if (response?.status === true) {
-        const decrypted = JSON.parse(
-          JSON.parse(aesService.decrypt(response.data, clientid, clientid))
-        );
-        const redirectUrl = decrypted?.data;
-        moengagesdkService.trackEvent('Digilocker Redirection', {
-          product_id: sessionStorage.getItem('FormNumber') ?? '',
-          product_name: 'Onboarding DIY',
-          category: 'Digilocker Redirection',
-          Redirection_URL: redirectUrl,
-        });
-        if (redirectUrl) {
-          window.location.href = redirectUrl;
-        } else {
-          toast.warning(response.message, { position: 'bottom-center', autoClose: 2000 });
-          hideSpinner();
-        }
-      } else {
-        toast.warning(response?.message, { position: 'bottom-center', autoClose: 2000 });
-        hideSpinner();
-      }
-    } catch {
+    setTimeout(() => {
+      router.push('/personalDetailsForm/1');
       hideSpinner();
-    }
+    }, 200);
   };
 
   const handleBack = () => router.back();

@@ -2,9 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { toast } from 'react-toastify';
+import { toast } from '@/services/toast.service';
 import { Splide, SplideSlide } from '@splidejs/react-splide';
-import '@splidejs/react-splide/css/core';
 import { Calendar } from 'primereact/calendar';
 import { useSpinner } from '@/components/spinner/Spinner';
 import apiService from '@/services/api.service';
@@ -28,9 +27,7 @@ const dateToStr = (d: Date | null | undefined): string => {
 //        1:5501 — mobile verifying bottom sheet
 // Route: /uploadProcess/[formNumber]
 
-const ASSET_BACK_ARROW = 'https://www.figma.com/api/mcp/asset/6cbc6140-1def-4b19-b701-3293cbb7d815';
-const ASSET_LOADING    = 'https://www.figma.com/api/mcp/asset/708a088c-d80e-4503-ab43-24807612c81e';
-const ASSET_DASH       = 'https://www.figma.com/api/mcp/asset/e556b2bb-fa97-49aa-8a1a-dd995454a5e9';
+const ASSET_LOADING = '/assets/images/diy/loading.gif';
 
 // ── Chevron icon for accordion ────────────────────────────────────────────────
 function ChevronSvg({ open }: { open: boolean }) {
@@ -94,6 +91,19 @@ function PanCardCarousel() {
         <SplideSlide><PanCardFront /></SplideSlide>
         <SplideSlide><PanCardBack /></SplideSlide>
       </Splide>
+    </div>
+  );
+}
+
+// ── Security banner — Figma 1:64494 ──────────────────────────────────────────
+function SecurityBanner() {
+  return (
+    <div className={styles.securityBanner}>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M12 2L4 6V12C4 16.42 7.56 20.56 12 22C16.44 20.56 20 16.42 20 12V6L12 2Z" fill="#666666" />
+        <path d="M9 12L11 14L15 10" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+      <span className={styles.securityText}>Your PAN details are safe and secure with us.</span>
     </div>
   );
 }
@@ -169,33 +179,19 @@ export default function UploadProcess() {
     return valid;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
 
     setShowVerifying(true);
-    try {
-      const response = await apiService.postRequest('api/v1/pan/upload/manual', {
-        PAN: pan,
-        Name: name,
-        DOB: dob,
-        FormNumber: formNumber,
-        flag: 'ManualPanEntry',
-      }, hideSpinner);
 
-      if (response?.status === true) {
-        const nextRoute = response.data?.NextRoute ?? '/uploadPan';
-        router.push(nextRoute);
-      } else {
-        setShowVerifying(false);
-        toast.error(response?.message ?? 'Failed to save PAN details. Please try again.', {
-          position: 'bottom-center',
-          autoClose: 3500,
-        });
-      }
-    } catch {
-      setShowVerifying(false);
-    }
+    const accountType = sessionStorage.getItem('accountType');
+    const nextRoute =
+      accountType === 'digital'      ? '/permanent-address-details' :
+      accountType === 'semi-digital' ? '/personalDetailsForm/1'     :
+      '/uploadPan';
+
+    setTimeout(() => router.push(nextRoute), 1500);
   };
 
   const handleBack = () => router.back();
@@ -211,7 +207,7 @@ export default function UploadProcess() {
         <div className={styles.mobileHeader}>
           <div className={styles.mobileHeaderInner}>
             <button type="button" className={styles.mobileBackBtn} onClick={handleBack} aria-label="Go back" suppressHydrationWarning>
-              <img src={ASSET_BACK_ARROW} alt="" width={24} height={24} aria-hidden="true" />
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12H19" stroke="#2b2b2b" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M5 12L11 18" stroke="#2b2b2b" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M5 12L11 6" stroke="#2b2b2b" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
             </button>
             <div className={styles.mobileTitleBlock}>
               <h1 className={styles.mobileTitle}>Enter PAN Card Details</h1>
@@ -264,6 +260,7 @@ export default function UploadProcess() {
                 iconPos="right"
                 touchUI
                 className={`p-prime-cal p-prime-cal-h48${dobError ? ' p-prime-cal-error' : ''}`}
+                suppressHydrationWarning
               />
               {dobError && <p className={styles.mobileErrorText}>{dobError}</p>}
             </div>
@@ -275,7 +272,7 @@ export default function UploadProcess() {
                 id="mob-name"
                 type="text"
                 value={name}
-                onChange={(e) => { setName(e.target.value); setNameError(''); }}
+                onChange={(e) => { setName(e.target.value.toUpperCase()); setNameError(''); }}
                 placeholder="Enter name as on PAN"
                 className={`${styles.mobileInput}${nameError ? ` ${styles.mobileInputError}` : ''}`}
                 suppressHydrationWarning
@@ -283,6 +280,11 @@ export default function UploadProcess() {
               {nameError && <p className={styles.mobileErrorText}>{nameError}</p>}
             </div>
 
+          </div>
+
+          {/* Figma 1:64494: security banner above button */}
+          <div className={styles.mobileSecurityArea}>
+            <SecurityBanner />
           </div>
 
           {/* Figma: 328×48, bg #280071, 16px SemiBold white */}
@@ -306,7 +308,7 @@ export default function UploadProcess() {
           {/* Figma: p-24, flex, gap-8, border-bottom 0.5px #d9d9d9 */}
           <div className={styles.desktopCardHeader}>
             <button type="button" className={styles.desktopBackBtn} onClick={handleBack} aria-label="Go back" suppressHydrationWarning>
-              <img src={ASSET_BACK_ARROW} alt="" width={24} height={24} aria-hidden="true" />
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12H19" stroke="#2b2b2b" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M5 12L11 18" stroke="#2b2b2b" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M5 12L11 6" stroke="#2b2b2b" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
             </button>
             <div className={styles.desktopHeaderContent}>
               {/* Row: title + Need Help? */}
@@ -376,6 +378,7 @@ export default function UploadProcess() {
                       iconPos="right"
                       touchUI
                       className={`p-prime-cal${dobError ? ' p-prime-cal-error' : ''}`}
+                      suppressHydrationWarning
                     />
                     {dobError && <p className={styles.desktopErrorText}>{dobError}</p>}
                   </div>
@@ -392,7 +395,7 @@ export default function UploadProcess() {
                       id="desk-name"
                       type="text"
                       value={name}
-                      onChange={(e) => { setName(e.target.value); setNameError(''); }}
+                      onChange={(e) => { setName(e.target.value.toUpperCase()); setNameError(''); }}
                       placeholder="Enter name as on PAN"
                       className={`${styles.desktopInput}${nameError ? ` ${styles.desktopInputError}` : ''}`}
                       suppressHydrationWarning
@@ -403,11 +406,15 @@ export default function UploadProcess() {
 
               </div>
 
-              {/* Figma: centered, w-350, h-56, bg #280071, 16px SemiBold white */}
-              <div className={styles.desktopProceedWrapper}>
-                <button type="submit" className={styles.desktopProceedBtn} suppressHydrationWarning>
-                  Verify PAN
-                </button>
+              {/* Figma 1:64493: security banner + button, 32px gap */}
+              <div className={styles.desktopBottomSection}>
+                <SecurityBanner />
+                {/* Figma: centered, w-350, h-56, bg #280071, 16px SemiBold white */}
+                <div className={styles.desktopProceedWrapper}>
+                  <button type="submit" className={styles.desktopProceedBtn} suppressHydrationWarning>
+                    Verify PAN
+                  </button>
+                </div>
               </div>
             </div>
           </form>
@@ -435,7 +442,7 @@ export default function UploadProcess() {
           <div className={styles.verifyingSheet}>
             {/* Figma: dash handle — 100×24px, centered */}
             <button type="button" className={styles.sheetDashBtn} aria-label="Close">
-              <img src={ASSET_DASH} alt="" className={styles.sheetDashImg} aria-hidden="true" />
+              <div className={styles.sheetDashImg} aria-hidden="true" />
             </button>
             <div className={styles.sheetContent}>
               <VerifyingContent />

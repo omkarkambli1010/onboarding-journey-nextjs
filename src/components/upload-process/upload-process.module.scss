@@ -483,6 +483,38 @@ $text-gray: #666666;
   );
 }
 
+// ── Security banner (above Verify PAN button) ─────────────────────────────────
+// Figma 1:64494: icon + "Your PAN details are safe and secure with us."
+
+.securityBanner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  justify-content: center;
+}
+
+.securityText {
+  font-size: 14px;
+  font-weight: 400;
+  color: $text-gray;
+  margin: 0;
+}
+
+// Mobile: security banner area sits between scrollable card and button footer
+.mobileSecurityArea {
+  background: $bg-page;
+  padding: 12px 16px 0;
+  flex-shrink: 0;
+}
+
+// Desktop: wraps security banner + button together with 32px gap
+.desktopBottomSection {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
 // ── Desktop proceed ───────────────────────────────────────────────────────────
 
 .desktopProceedWrapper {
@@ -606,9 +638,10 @@ $text-gray: #666666;
 }
 
 .sheetDashImg {
-  width: 100px;
-  height: 24px;
-  object-fit: contain;
+  width: 40px;
+  height: 4px;
+  background: #d9d9d9;
+  border-radius: 2px;
 }
 
 .sheetContent {

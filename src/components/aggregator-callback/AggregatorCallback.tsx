@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSpinner } from '@/components/spinner/Spinner';
-import { toast } from 'react-toastify';
+import { toast } from '@/services/toast.service';
 import apiService from '@/services/api.service';
 import moengagesdkService from '@/services/moengagesdk.service';
 

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter/*, useSearchParams*/ } from 'next/navigation'; // TODO: Re-enable useSearchParams when API is ready
 import { useSpinner } from '@/components/spinner/Spinner';
-// import { toast } from 'react-toastify';         // TODO: Re-enable when API is ready
+// import { toast } from '@/services/toast.service';         // TODO: Re-enable when API is ready
 // import apiService from '@/services/api.service'; // TODO: Re-enable when API is ready
 import navigationService from '@/services/navigation.service';
 import styles from './email-home-page.module.scss';

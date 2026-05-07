@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { Calendar } from 'primereact/calendar';
 import { useSpinner } from '@/components/spinner/Spinner';
-import { toast } from 'react-toastify';
+import { toast } from '@/services/toast.service';
 import apiService from '@/services/api.service';
 import navigationService from '@/services/navigation.service';
 import styles from './add-nominee.module.scss';

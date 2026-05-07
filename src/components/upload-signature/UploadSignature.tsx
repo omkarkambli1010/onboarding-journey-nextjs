@@ -6,7 +6,7 @@ import SignatureCanvas from 'react-signature-canvas';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const SigCanvas = SignatureCanvas as any;
 import { useSpinner } from '@/components/spinner/Spinner';
-import { toast } from 'react-toastify';
+import { toast } from '@/services/toast.service';
 import apiService from '@/services/api.service';
 import navigationService from '@/services/navigation.service';
 import styles from './upload-signature.module.scss';

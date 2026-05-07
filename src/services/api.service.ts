@@ -1,7 +1,7 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 import aesService from './aes.service';
 import { moengagesdkService } from './moengagesdk.service';
-import { toast } from 'react-toastify';
+import { toast } from '@/services/toast.service';
 
 // Equivalent to Angular's environment import
 const backendurl = process.env.NEXT_PUBLIC_BACKEND_URL ?? 'https://udn.sbisecurities.in/';

@@ -23,6 +23,7 @@
 // 'personalDetailsForm/4'            → src/app/personalDetailsForm/4/page.tsx
 // 'personalDetailsForm/5'            → src/app/personalDetailsForm/5/page.tsx
 // 'personalDetailsForm/6'            → src/app/personalDetailsForm/6/page.tsx
+// 'manual-bankdetails'               → src/app/manual-bankdetails/page.tsx
 // 'PennyDrop/:formNumber'            → src/app/PennyDrop/[formNumber]/page.tsx
 // 'reversePennyDrop/:formNumber'     → src/app/reversePennyDrop/[formNumber]/page.tsx
 // 'reversePennyDropRpd/:formNumber'  → src/app/reversePennyDropRpd/[formNumber]/page.tsx
