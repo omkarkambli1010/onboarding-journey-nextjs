@@ -15,11 +15,10 @@
 // ── Desktop card header [800x100] ────────────────────────────────────────────
 .deskHeader {
   width: 100%;
-  height: 100px;
   background: #fff;
   border-bottom: 0.5px solid #d9d9d9;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
   padding: 24px;
   box-sizing: border-box;
@@ -28,8 +27,25 @@
 .deskHeaderText {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
   flex: 1;
+
+  p {
+    font-size: 14px;
+    font-weight: 400;
+    color: #666666;
+    margin: 0;
+    line-height: 1.4;
+  }
+}
+
+// Title row: title text + "Need Help?" chip
+.deskTitleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 24px;
 
   h5 {
     font-size: 18px;
@@ -38,13 +54,24 @@
     margin: 0;
     line-height: 1.4;
   }
+}
 
-  p {
+// "Need Help?" pill chip — shared mobile + desktop
+.needHelpChip {
+  background: rgba(207, 169, 255, 0.09);
+  border: 0.5px solid #d9d9d9;
+  border-radius: 25px;
+  padding: 8px 11px;
+  font-size: 12px;
+  font-weight: 400;
+  color: #280071;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  line-height: 1;
+
+  @media (min-width: 992px) {
     font-size: 14px;
-    font-weight: 400;
-    color: #666666;
-    margin: 0;
-    line-height: 1.4;
   }
 }
 
@@ -64,24 +91,11 @@
 // ── Desktop card body [800x581] ──────────────────────────────────────────────
 .deskBody {
   padding: 24px;
+  padding-top: 40px;
   background: #fff;
   display: flex;
   flex-direction: column;
   gap: 24px;
-}
-
-// Security row: shield + text
-.securityRow {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-
-  p {
-    font-size: 14px;
-    font-weight: 400;
-    color: #666666;
-    margin: 0;
-  }
 }
 
 // ── Two-column content [752x328] ─────────────────────────────────────────────
@@ -89,6 +103,7 @@
   display: flex;
   gap: 40px;
   align-items: center;
+  justify-content: center;
 }
 
 // Left column: illustration [359x328]
@@ -111,14 +126,14 @@
   flex: 0 0 359px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 40px;
 }
 
 // ── Guide section (Do's / Dont's) ────────────────────────────────────────────
 .guideSection {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 24px;
 }
 
 .guideTitle {
@@ -143,13 +158,6 @@
   align-items: center;
   gap: 4px;
 
-  img {
-    width: 48px;
-    height: 48px;
-    display: block;
-    object-fit: contain;
-  }
-
   p {
     font-size: 12px;
     font-weight: 400;
@@ -161,17 +169,65 @@
   }
 }
 
+// ── Icon circle container with light-purple background ───────────────────────
+.iconWrap {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  background: rgba(243, 241, 255, 0.6);
+  border-radius: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  img {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+    display: block;
+  }
+}
+
+// Green checkmark badge (Do's) — positioned bottom-right of icon circle
+.badgeDo {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// Red X badge (Don'ts) — positioned bottom-right of icon circle
+.badgeDont {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 // ── "No webcam" banner [752x56] fill=rgb(241,246,255) r=16 ──────────────────
 .noWebcamBanner {
   width: 100%;
-  height: 56px;
   background: rgb(241, 246, 255);
+  border: 0.5px solid #d9d9d9;
   border-radius: 16px;
   display: flex;
   align-items: center;
-  padding: 0 24px;
+  padding: 16px 24px;
   gap: 8px;
   box-sizing: border-box;
+  cursor: pointer;
+  // reset button styles when used as <button>
+  font-family: inherit;
+  text-align: left;
 
   p {
     flex: 1;
@@ -179,6 +235,12 @@
     font-weight: 400;
     color: #222222;
     margin: 0;
+    line-height: 1.25;
+
+    strong {
+      font-weight: 600;
+      color: #280071;
+    }
   }
 }
 
@@ -191,36 +253,15 @@
   flex-shrink: 0;
 }
 
-// ── Bottom button row [752x56] ───────────────────────────────────────────────
+// ── Bottom button row — single centered "Capture Now" button ─────────────────
 .deskBtnRow {
   display: flex;
-  gap: 52px;
+  justify-content: center;
   width: 100%;
 }
 
-.continueWithMobileBtn {
-  flex: 0 0 350px;
-  height: 56px;
-  background: #ffffff;
-  border: 1.5px solid #280071;
-  border-radius: 8px;
-  color: #280071;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  transition: background 0.2s;
-
-  &:hover {
-    background: rgba(40, 0, 113, 0.04);
-  }
-}
-
 .captureNowBtn {
-  flex: 0 0 350px;
+  width: 350px;
   height: 56px;
   background: #280071;
   border: none;
@@ -244,7 +285,7 @@
 // Mobile — Step 1: Prep screen
 // ─────────────────────────────────────────────────────────────────────────────
 
-// Gray header area [360x156 minus status bar]
+// Gray header area
 .mobGrayHeader {
   background: #f8f8f8;
   padding: 12px 16px 20px;
@@ -276,6 +317,14 @@
   gap: 4px;
 }
 
+// Title row: title text + "Need Help?" chip side by side
+.mobTitleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
 .mobTitle {
   font-size: 16px;
   font-weight: 600;
@@ -297,10 +346,10 @@
   background: #ffffff;
   border-radius: 24px 24px 0 0;
   box-shadow: 0 3px 10px 0 rgba(0, 0, 0, 0.05);
-  padding: 24px 24px 100px;
+  padding: 30px 24px 100px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 40px;
   min-height: 548px;
 }
 
@@ -317,11 +366,11 @@
   }
 }
 
-// Do's / Dont's section on mobile [312x120]
+// Do's / Dont's section on mobile
 .mobGuideSection {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
 }
 
 .mobGuideTitle {
@@ -333,7 +382,7 @@
 
 .mobGuideItemRow {
   display: flex;
-  gap: 0;
+  gap: 16px;
   width: 312px;
 }
 
@@ -342,14 +391,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-
-  img {
-    width: 48px;
-    height: 48px;
-    display: block;
-    object-fit: contain;
-  }
+  gap: 4px;
 
   p {
     font-size: 12px;
@@ -368,12 +410,11 @@
   bottom: 0;
   left: 0;
   right: 0;
-  height: 64px;
   background: #f8f8f8;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 8px 16px;
+  padding: 8px 16px 16px;
   z-index: 100;
 }
 
@@ -387,6 +428,118 @@
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
+
+  &:hover {
+    background: #3d0087;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Location Permission Modal
+// ─────────────────────────────────────────────────────────────────────────────
+
+.locationOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+  padding: 16px;
+  animation: locFadeIn 0.2s ease;
+
+  @keyframes locFadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+}
+
+.locationModalCard {
+  background: #fff;
+  border: 1px solid #d9d9d9;
+  border-radius: 20px;
+  box-shadow: 3px 4px 5px rgba(0, 0, 0, 0.15);
+  padding: 24px;
+  width: 100%;
+  max-width: 485px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  align-items: center;
+  overflow-y: auto;
+  max-height: 90vh;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  animation: locSlideUp 0.2s ease;
+
+  @keyframes locSlideUp {
+    from { transform: translateY(16px); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+  }
+}
+
+.locationModalTop {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+  width: 100%;
+}
+
+.locationIconBox {
+  width: 80px;
+  height: 80px;
+  background: #f3f1ff;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.locationModalTitle {
+  font-size: 18px;
+  font-weight: 600;
+  color: #222;
+  margin: 0;
+  text-align: center;
+}
+
+.locationModalBody {
+  font-size: 16px;
+  color: #222;
+  width: 100%;
+  line-height: 1.6;
+
+  p {
+    margin: 0 0 8px;
+  }
+
+  ol {
+    margin: 0;
+    padding-left: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  strong {
+    font-weight: 600;
+  }
+}
+
+.locationRefreshBtn {
+  width: 100%;
+  height: 52px;
+  background: #280071;
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
 
   &:hover {
     background: #3d0087;

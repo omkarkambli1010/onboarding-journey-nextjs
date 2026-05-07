@@ -210,7 +210,7 @@ export default function UploadProcess() {
         {/* Gray header */}
         <div className={styles.mobileHeader}>
           <div className={styles.mobileHeaderInner}>
-            <button type="button" className={styles.mobileBackBtn} onClick={handleBack} aria-label="Go back">
+            <button type="button" className={styles.mobileBackBtn} onClick={handleBack} aria-label="Go back" suppressHydrationWarning>
               <img src={ASSET_BACK_ARROW} alt="" width={24} height={24} aria-hidden="true" />
             </button>
             <div className={styles.mobileTitleBlock}>
@@ -235,6 +235,7 @@ export default function UploadProcess() {
                 onChange={(e) => { setPan(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '')); setPanError(''); }}
                 placeholder="e.g. ABCDE1234F"
                 className={`${styles.mobileInput}${panError ? ` ${styles.mobileInputError}` : ''}`}
+                suppressHydrationWarning
               />
               {panError && <p className={styles.mobileErrorText}>{panError}</p>}
               <button
@@ -242,6 +243,7 @@ export default function UploadProcess() {
                 className={styles.accordionToggle}
                 onClick={() => setShowSamplePan(v => !v)}
                 aria-expanded={showSamplePan}
+                suppressHydrationWarning
               >
                 <span className={styles.accordionToggleText}>View sample PAN</span>
                 <ChevronSvg open={showSamplePan} />
@@ -276,6 +278,7 @@ export default function UploadProcess() {
                 onChange={(e) => { setName(e.target.value); setNameError(''); }}
                 placeholder="Enter name as on PAN"
                 className={`${styles.mobileInput}${nameError ? ` ${styles.mobileInputError}` : ''}`}
+                suppressHydrationWarning
               />
               {nameError && <p className={styles.mobileErrorText}>{nameError}</p>}
             </div>
@@ -302,7 +305,7 @@ export default function UploadProcess() {
           {/* Card header */}
           {/* Figma: p-24, flex, gap-8, border-bottom 0.5px #d9d9d9 */}
           <div className={styles.desktopCardHeader}>
-            <button type="button" className={styles.desktopBackBtn} onClick={handleBack} aria-label="Go back">
+            <button type="button" className={styles.desktopBackBtn} onClick={handleBack} aria-label="Go back" suppressHydrationWarning>
               <img src={ASSET_BACK_ARROW} alt="" width={24} height={24} aria-hidden="true" />
             </button>
             <div className={styles.desktopHeaderContent}>
@@ -311,7 +314,7 @@ export default function UploadProcess() {
                 {/* Figma: 18px SemiBold #222 */}
                 <h1 className={styles.desktopCardTitle}>Enter PAN Card Details</h1>
                 {/* Figma: pill badge bg rgba(207,169,255,0.09), border 0.5px #d9d9d9, rounded-25px */}
-                <button type="button" className={styles.needHelpBadge}>Need Help?</button>
+                <button type="button" className={styles.needHelpBadge} suppressHydrationWarning>Need Help?</button>
               </div>
               {/* Figma: 14px Regular #666 */}
               <p className={styles.desktopCardSubtitle}>Enter details exactly as per your PAN</p>
@@ -339,6 +342,7 @@ export default function UploadProcess() {
                       onChange={(e) => { setPan(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '')); setPanError(''); }}
                       placeholder="e.g. ABCDE1234F"
                       className={`${styles.desktopInput}${panError ? ` ${styles.desktopInputError}` : ''}`}
+                      suppressHydrationWarning
                     />
                     {panError && <p className={styles.desktopErrorText}>{panError}</p>}
                     <button
@@ -346,6 +350,7 @@ export default function UploadProcess() {
                       className={styles.accordionToggle}
                       onClick={() => setShowSamplePan(v => !v)}
                       aria-expanded={showSamplePan}
+                      suppressHydrationWarning
                     >
                       <span className={styles.accordionToggleText}>View sample PAN</span>
                       <ChevronSvg open={showSamplePan} />
@@ -390,6 +395,7 @@ export default function UploadProcess() {
                       onChange={(e) => { setName(e.target.value); setNameError(''); }}
                       placeholder="Enter name as on PAN"
                       className={`${styles.desktopInput}${nameError ? ` ${styles.desktopInputError}` : ''}`}
+                      suppressHydrationWarning
                     />
                     {nameError && <p className={styles.desktopErrorText}>{nameError}</p>}
                   </div>
@@ -399,7 +405,7 @@ export default function UploadProcess() {
 
               {/* Figma: centered, w-350, h-56, bg #280071, 16px SemiBold white */}
               <div className={styles.desktopProceedWrapper}>
-                <button type="submit" className={styles.desktopProceedBtn}>
+                <button type="submit" className={styles.desktopProceedBtn} suppressHydrationWarning>
                   Verify PAN
                 </button>
               </div>
