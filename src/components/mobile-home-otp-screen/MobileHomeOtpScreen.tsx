@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { InputOtp } from 'primereact/inputotp';
-import { toast } from 'react-toastify';
+import { toast } from '@/services/toast.service';
 import { useSpinner } from '@/components/spinner/Spinner';
 import apiService from '@/services/api.service';
 import styles from './mobile-home-otp-screen.module.scss';

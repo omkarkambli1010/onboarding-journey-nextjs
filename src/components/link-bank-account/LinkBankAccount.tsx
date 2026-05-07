@@ -1,15 +1,17 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSpinner } from '@/components/spinner/Spinner';
+// import { toast } from '@/services/toast.service';
+// import apiService from '@/services/api.service';
+import navigationService from '@/services/navigation.service';
 import styles from './link-bank-account.module.scss';
 
-// LinkBankAccount — step 6: Select Bank Account Type ("Bank Details")
-// Figma: Onboarding-Web-Permanentaddress-Aadhaar (0:22846) — desktop
-//        Onboarding-Mob-Permanentaddress-Aadhaar (0:23063) — mobile
-// Route: /personalDetailsForm/6
-
-const ASSET_CHECK_ICON = 'https://www.figma.com/api/mcp/asset/a29b0ec8-33dd-4545-95e9-e78a45281469';
+// LinkBankAccount — step 6: Bank Details (Select Bank Account Type)
+// Figma: MzSMJbkZfKDT6S8z3G0rVU
+//   Desktop node 0-101583 · Mobile node 0-101800
+// Both checkboxes must be checked to enable Proceed
 
 const ACCOUNT_TYPES = [
   { id: 'nro', label: 'NRO (Savings Account)' },
@@ -18,9 +20,18 @@ const ACCOUNT_TYPES = [
 
 function BackArrow() {
   return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M19 12H5" stroke="#2B2B2B" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M12 19L5 12L12 5" stroke="#2B2B2B" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="M5 12H19" stroke="#2B2B2B" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M5 12L11 18" stroke="#2B2B2B" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M5 12L11 6" stroke="#2B2B2B" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function CheckIcon() {
+  return (
+    <svg width="12" height="10" viewBox="0 0 12 10" fill="none" aria-hidden="true">
+      <path d="M1 5L4.5 8.5L11 1.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -44,9 +55,7 @@ function CheckboxOption({
         aria-label={label}
       >
         <div className={`${styles.checkboxBox}${checked ? ` ${styles.checkboxBoxChecked}` : ''}`}>
-          {checked && (
-            <img src={ASSET_CHECK_ICON} alt="" aria-hidden="true" className={styles.checkIcon} />
-          )}
+          {checked && <CheckIcon />}
         </div>
       </button>
       <span className={`${styles.checkboxLabel}${checked ? ` ${styles.checkboxLabelChecked}` : ''}`}>
@@ -58,8 +67,53 @@ function CheckboxOption({
 
 export default function LinkBankAccount() {
   const router = useRouter();
-  // Both pre-selected to match Figma default state
-  const [selected, setSelected] = useState<string[]>(['nro', 'nre']);
+  const { show: showSpinner, hide: hideSpinner } = useSpinner();
+
+  // Both unchecked by default — both must be checked to enable Proceed
+  const [selected, setSelected] = useState<string[]>([]);
+
+  const rejectStatus = typeof window !== 'undefined' ? sessionStorage.getItem('RejectStatus') : null;
+
+  useEffect(() => {
+    navigationService.setRouter(router, hideSpinner);
+  }, []);
+
+  // const fetchBankAccountData = async () => {
+  //   showSpinner();
+  //   const reqData = {
+  //     flag: 'BankAccountType',
+  //     formnumber: typeof window !== 'undefined' ? sessionStorage.getItem('FormNumber') : '',
+  //   };
+  //   try {
+  //     const response = await apiService.postRequest('api/v1/WorkflowDetails/getworkflowdata', reqData, hideSpinner);
+  //     if (response?.status === true && response?.data?.length) {
+  //       setSelected(response.data[0].accountTypes || []);
+  //     }
+  //     hideSpinner();
+  //   } catch { hideSpinner(); }
+  // };
+
+  // const saveBankAccountType = async () => {
+  //   showSpinner();
+  //   const reqData = {
+  //     Flag: 'bankaccounttype',
+  //     AccountTypes: selected,
+  //     FormNumber: typeof window !== 'undefined' ? sessionStorage.getItem('FormNumber') : '',
+  //   };
+  //   try {
+  //     const response = await apiService.postRequest('api/v1/personalDetail/save', reqData, hideSpinner);
+  //     if (response?.status === true) {
+  //       if (rejectStatus !== 'R') {
+  //         setTimeout(() => { router.push('/PennyDrop/1'); hideSpinner(); }, 200);
+  //       } else {
+  //         navigationService.navigateToNextStep();
+  //       }
+  //     } else {
+  //       toast.error(response?.message || 'Error', { autoClose: 4000 });
+  //       hideSpinner();
+  //     }
+  //   } catch { hideSpinner(); }
+  // };
 
   const toggle = (id: string) => {
     setSelected(prev =>
@@ -67,60 +121,57 @@ export default function LinkBankAccount() {
     );
   };
 
-  const handleBack = () => router.push('/personalDetailsForm/5');
-  const handleProceed = () => router.push('/PennyDrop/1');
+  const goBack = () => {
+    showSpinner();
+    setTimeout(() => { router.back(); hideSpinner(); }, 200);
+  };
 
-  const isDisabled = selected.length === 0;
+  const handleProceed = () => {
+    showSpinner();
+    setTimeout(() => { router.push('/manual-bankdetails'); hideSpinner(); }, 200);
+  };
+
+  // Disabled unless BOTH checkboxes are checked
+  const isDisabled = selected.length < ACCOUNT_TYPES.length;
+
+  const checkboxGroup = (
+    <div className={styles.checkboxGroup}>
+      {ACCOUNT_TYPES.map(({ id, label }) => (
+        <CheckboxOption
+          key={id}
+          label={label}
+          checked={selected.includes(id)}
+          onToggle={() => toggle(id)}
+        />
+      ))}
+    </div>
+  );
 
   return (
     <>
-      {/* ═══ MOBILE ════════════════════════════════════════════════════════════
-          Figma: 0:23063 — Onboarding-Mob-Permanentaddress-Aadhaar (360 × 800)
-      ═══════════════════════════════════════════════════════════════════════ */}
-      <div className={styles.mobilePage} aria-label="Bank Details">
-
-        {/* Gray header */}
+      {/* ── MOBILE (< 768px) ─────────────────────────────────────────────────── */}
+      <section aria-label="Bank Details" className={styles.mobilePage}>
         <div className={styles.mobileHeader}>
-          <div className={styles.mobileHeaderInner}>
-            <button
-              type="button"
-              className={styles.mobileBackBtn}
-              onClick={handleBack}
-              aria-label="Go back"
-            >
+          {rejectStatus !== 'R' ? (
+            <button type="button" className={styles.mobileBackBtn} onClick={goBack} aria-label="Go back">
               <BackArrow />
             </button>
-            <div className={styles.mobileTitleBlock}>
-              {/* Figma: 16px SemiBold #2b2b2b */}
-              <h1 className={styles.mobileTitle}>Bank Details</h1>
-              {/* Figma: 12px Regular #2b2b2b */}
-              <p className={styles.mobileSubtitle}>
-                Make your fund transfer easy by just verifying your account!
-              </p>
-            </div>
+          ) : (
+            <div className={styles.backPlaceholder} aria-hidden="true" />
+          )}
+          <div className={styles.mobileTitleBlock}>
+            <h1 className={styles.mobileTitle}>Bank Details</h1>
+            <p className={styles.mobileSubtitle}>
+              Make your fund transfer easy by just verifying your account!
+            </p>
           </div>
         </div>
 
-        {/* White scrollable card */}
-        {/* Figma: bg white, border-top-radius 24px, shadow, p-24, gap-16 */}
         <div className={styles.mobileCard}>
-          {/* Figma: 14px Regular #666, line-height 20px */}
           <p className={styles.sectionLabel}>Select Bank Account Type</p>
-          {/* Figma: flex-col, gap-16 */}
-          <div className={styles.checkboxGroup}>
-            {ACCOUNT_TYPES.map(({ id, label }) => (
-              <CheckboxOption
-                key={id}
-                label={label}
-                checked={selected.includes(id)}
-                onToggle={() => toggle(id)}
-              />
-            ))}
-          </div>
+          {checkboxGroup}
         </div>
 
-        {/* Fixed bottom button */}
-        {/* Figma: pb-16, w-328, h-48, bg #280071, 16px SemiBold white, rounded-8 */}
         <div className={styles.mobileProceedArea}>
           <button
             type="button"
@@ -131,57 +182,31 @@ export default function LinkBankAccount() {
             Proceed
           </button>
         </div>
+      </section>
 
-      </div>
-
-      {/* ═══ DESKTOP ═══════════════════════════════════════════════════════════
-          Figma: 0:22846 — Onboarding-Web-Permanentaddress-Aadhaar (1440 × 1024)
-      ═══════════════════════════════════════════════════════════════════════ */}
-      <div className={styles.desktopPage} aria-label="Bank Details">
-        {/* Figma: w-800, rounded-24, border #d9d9d9, shadow, centered */}
+      {/* ── DESKTOP (≥ 768px) ────────────────────────────────────────────────── */}
+      <section aria-label="Bank Details" className={styles.desktopPage}>
         <div className={styles.desktopCard}>
-
-          {/* Card header */}
-          {/* Figma: p-24, flex, gap-8, border-bottom 0.5px #d9d9d9 */}
           <div className={styles.desktopCardHeader}>
-            <button
-              type="button"
-              className={styles.desktopBackBtn}
-              onClick={handleBack}
-              aria-label="Go back"
-            >
-              <BackArrow />
-            </button>
+            {rejectStatus !== 'R' ? (
+              <button type="button" className={styles.desktopBackBtn} onClick={goBack} aria-label="Go back">
+                <BackArrow />
+              </button>
+            ) : null}
             <div className={styles.desktopTitleBlock}>
-              {/* Figma: 18px SemiBold #222 */}
               <h1 className={styles.desktopCardTitle}>Bank Details</h1>
-              {/* Figma: 14px Regular #666 */}
               <p className={styles.desktopCardSubtitle}>
                 Make your fund transfer easy by just verifying your account!
               </p>
             </div>
           </div>
 
-          {/* Card body */}
-          {/* Figma: p-24, flex col, justify-between, h-581 */}
           <div className={styles.desktopCardBody}>
             <div className={styles.desktopContentArea}>
-              {/* Figma: 14px Regular #666, line-height 20px */}
               <p className={styles.sectionLabel}>Select Bank Account Type</p>
-              {/* Figma: flex-row, gap-16 */}
-              <div className={styles.checkboxGroup}>
-                {ACCOUNT_TYPES.map(({ id, label }) => (
-                  <CheckboxOption
-                    key={id}
-                    label={label}
-                    checked={selected.includes(id)}
-                    onToggle={() => toggle(id)}
-                  />
-                ))}
-              </div>
+              {checkboxGroup}
             </div>
 
-            {/* Figma: centered, w-350, h-56, bg #280071, 16px SemiBold white, rounded-8 */}
             <div className={styles.desktopProceedWrapper}>
               <button
                 type="button"
@@ -193,9 +218,8 @@ export default function LinkBankAccount() {
               </button>
             </div>
           </div>
-
         </div>
-      </div>
+      </section>
     </>
   );
 }

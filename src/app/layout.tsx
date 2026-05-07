@@ -11,6 +11,21 @@ import '@splidejs/react-splide/css/core';
 import Providers from '@/lib/providers';
 import AppShell from '@/components/app-shell/AppShell';
 
+// Suppress hydration warnings from browser extensions (e.g., FormData, password managers)
+// that inject attributes like fdprocessedid into form elements
+if (typeof window !== 'undefined') {
+  const originalError = console.error;
+  console.error = (...args: any[]) => {
+    if (
+      args[0]?.includes?.('Hydration mismatch') &&
+      args[0]?.includes?.('fdprocessedid')
+    ) {
+      return;
+    }
+    originalError(...args);
+  };
+}
+
 // Root layout — equivalent to Angular AppModule + AppComponent
 export const metadata: Metadata = {
   title: 'Open Demat Account - Free Demat & Trading Account Opening Online | SBI Securities',

@@ -3,6 +3,13 @@ import { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.share
 // Navigation Service — equivalent to Angular NavigationService
 // Manages allowed route stack for step-by-step onboarding flow
 
+// Routes that must never be visited when the user chose Semi-Digital journey
+const SEMI_DIGITAL_SKIP: string[] = [
+  '/CaptureSelfie',
+  '/uploadSignature',
+  '/esign',
+];
+
 class NavigationService {
   private allowedRoutes: string[] = [];
   private historyStack: string[] = [];
@@ -12,6 +19,18 @@ class NavigationService {
   setRouter(router: AppRouterInstance, onHideSpinner?: () => void) {
     this.router = router;
     this.onSpinnerHide = onHideSpinner;
+  }
+
+  private isSemiDigital(): boolean {
+    return (
+      typeof window !== 'undefined' &&
+      sessionStorage.getItem('accountType') === 'semi-digital'
+    );
+  }
+
+  private shouldSkip(route: string): boolean {
+    if (!this.isSemiDigital()) return false;
+    return SEMI_DIGITAL_SKIP.some((skip) => route.startsWith(skip));
   }
 
   navigateToNextStep(): void {
@@ -27,6 +46,12 @@ class NavigationService {
         return;
       }
     }
+
+    // Drop any routes that are not applicable to the current journey type
+    while (this.allowedRoutes.length > 0 && this.shouldSkip(this.allowedRoutes[0])) {
+      this.allowedRoutes.shift();
+    }
+    sessionStorage.setItem('allowedRoutes', JSON.stringify(this.allowedRoutes));
 
     if (this.allowedRoutes.length > 0) {
       const nextRoute = this.allowedRoutes.shift()!;

@@ -40,7 +40,7 @@ export default function PermanentAddressDetails() {
     showSpinner();
     setTimeout(() => {
       if (aadhaarLinked === 'yes') {
-        router.push('/aadhar');
+        router.push('/digilocker-screen');
       } else {
         router.push('/permanentAddress');
       }
@@ -48,17 +48,17 @@ export default function PermanentAddressDetails() {
     }, 200);
   };
 
-  const questionContent = (
+  const renderQuestion = (groupName: string) => (
     <div className={styles.questionBlock}>
       <p className={styles.questionLabel}>Is your mobile number linked to Aadhaar?</p>
       <div className={styles.radioGroup}>
         <label className={styles.radioOption}>
           <input
             type="radio"
-            name="aadhaarLinked"
+            name={groupName}
             value="yes"
             checked={aadhaarLinked === 'yes'}
-            onChange={() => setAadhaarLinked('yes')}
+            onChange={(e) => setAadhaarLinked(e.target.value as AadhaarLinked)}
             className={styles.radioInput}
           />
           <span className={styles.radioLabel}>Yes</span>
@@ -66,10 +66,10 @@ export default function PermanentAddressDetails() {
         <label className={styles.radioOption}>
           <input
             type="radio"
-            name="aadhaarLinked"
+            name={groupName}
             value="no"
             checked={aadhaarLinked === 'no'}
-            onChange={() => setAadhaarLinked('no')}
+            onChange={(e) => setAadhaarLinked(e.target.value as AadhaarLinked)}
             className={styles.radioInput}
           />
           <span className={styles.radioLabel}>No</span>
@@ -84,7 +84,7 @@ export default function PermanentAddressDetails() {
       <section aria-label="Enter Permanent (Indian) Address Details" className={styles.mobilePage}>
         <div className={styles.mobileHeader}>
           <div className={styles.mobileHeaderInner}>
-            <button type="button" className={styles.mobileBackBtn} onClick={goBack} aria-label="Go back">
+            <button type="button" className={styles.mobileBackBtn} onClick={goBack} aria-label="Go back" suppressHydrationWarning>
               <BackArrowSvg />
             </button>
             <div className={styles.mobileTitleBlock}>
@@ -97,7 +97,7 @@ export default function PermanentAddressDetails() {
         </div>
 
         <div className={styles.mobileCard}>
-          {questionContent}
+          {renderQuestion('aadhaarLinked-mob')}
         </div>
 
         <div className={styles.mobileProceedArea}>
@@ -106,6 +106,7 @@ export default function PermanentAddressDetails() {
             className={`${styles.mobileProceedBtn}${isProceedDisabled ? ` ${styles.mobileProceedBtnDisabled}` : ''}`}
             onClick={handleProceed}
             disabled={isProceedDisabled}
+            suppressHydrationWarning
           >
             Proceed
           </button>
@@ -116,7 +117,7 @@ export default function PermanentAddressDetails() {
       <section aria-label="Enter Permanent (Indian) Address Details" className={styles.desktopPage}>
         <div className={styles.desktopCard}>
           <div className={styles.desktopCardHeader}>
-            <button type="button" className={styles.desktopBackBtn} onClick={goBack} aria-label="Go back">
+            <button type="button" className={styles.desktopBackBtn} onClick={goBack} aria-label="Go back" suppressHydrationWarning>
               <BackArrowSvg />
             </button>
             <div className={styles.desktopTitleBlock}>
@@ -129,7 +130,7 @@ export default function PermanentAddressDetails() {
 
           <div className={styles.desktopCardBody}>
             <div className={styles.desktopScrollArea}>
-              {questionContent}
+              {renderQuestion('aadhaarLinked-desk')}
             </div>
             <div className={styles.desktopProceedWrapper}>
               <button
@@ -137,6 +138,7 @@ export default function PermanentAddressDetails() {
                 className={`${styles.desktopProceedBtn}${isProceedDisabled ? ` ${styles.desktopProceedBtnDisabled}` : ''}`}
                 onClick={handleProceed}
                 disabled={isProceedDisabled}
+                suppressHydrationWarning
               >
                 Proceed
               </button>
