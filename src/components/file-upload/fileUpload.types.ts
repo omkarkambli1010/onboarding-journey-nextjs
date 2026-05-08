@@ -8,6 +8,9 @@ export interface UploadedFile {
   previewUrl?: string;
   errorMessage?: string;
   isValidationError?: boolean;
+  isPasswordProtected?: boolean;
+  passwordError?: string;
+  isUnlocking?: boolean;
 }
 
 export interface FileUploadConfig {

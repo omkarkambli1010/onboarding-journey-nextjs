@@ -16,6 +16,7 @@ interface Props {
   onDrop: (e: DragEvent<HTMLDivElement>) => void;
   onClick: () => void;
   onKeyDown: (e: KeyboardEvent<HTMLDivElement>) => void;
+  onCameraClick: () => void;
 }
 
 function CloudUploadIcon() {
@@ -48,6 +49,21 @@ function PdfPreviewIcon() {
   );
 }
 
+function CameraIcon() {
+  return (
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"
+        stroke="#280071"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <circle cx="12" cy="13" r="4" stroke="#280071" strokeWidth="1.6" />
+    </svg>
+  );
+}
+
 function DocPreviewIcon() {
   return (
     <svg width="48" height="48" viewBox="0 0 48 48" fill="none" aria-hidden="true">
@@ -69,6 +85,7 @@ export function FileUploadDropzone({
   onDrop,
   onClick,
   onKeyDown,
+  onCameraClick,
 }: Props) {
   const isDisabled = !!config.disabled;
   const showFilePreview = activeFile && !activeFile.isValidationError;
@@ -115,27 +132,55 @@ export function FileUploadDropzone({
       {/* ── Empty / add-more state ── */}
       {!isDragOver && !showFilePreview && (
         <div className={styles.dropzoneEmpty}>
-          <div className={styles.uploadIconWrapper}>
-            <CloudUploadIcon />
+          {/* Left: drag-and-drop / click to browse */}
+          <div className={styles.dropzoneUploadPart}>
+            <div className={styles.uploadIconWrapper}>
+              <CloudUploadIcon />
+            </div>
+            <div>
+              <p className={styles.dropzoneMainText}>
+                {hasFiles ? (
+                  <>
+                    Drop <span className={styles.dropzoneBrowseLink}>more files</span> or click to
+                    browse
+                  </>
+                ) : (
+                  <>
+                    Drag &amp; drop or{' '}
+                    <span className={styles.dropzoneBrowseLink}>click to browse</span>
+                  </>
+                )}
+              </p>
+              <p className={styles.dropzoneSubText}>
+                {hasFiles ? 'Add another file' : 'Drop your file here'}
+              </p>
+            </div>
           </div>
-          <div>
-            <p className={styles.dropzoneMainText}>
-              {hasFiles ? (
-                <>
-                  Drop <span className={styles.dropzoneBrowseLink}>more files</span> or click to
-                  browse
-                </>
-              ) : (
-                <>
-                  Drag &amp; drop or{' '}
-                  <span className={styles.dropzoneBrowseLink}>click to browse</span>
-                </>
-              )}
-            </p>
-            <p className={styles.dropzoneSubText}>
-              {hasFiles ? 'Add another file to upload' : 'Drop your file here to upload'}
-            </p>
+
+          {/* Divider */}
+          <div className={styles.dropzoneDivider} aria-hidden="true">
+            <span className={styles.dropzoneDividerLine} />
+            <span className={styles.dropzoneDividerText}>OR</span>
+            <span className={styles.dropzoneDividerLine} />
           </div>
+
+          {/* Right: camera capture */}
+          <button
+            type="button"
+            className={styles.dropzoneCameraPart}
+            onClick={(e) => { e.stopPropagation(); onCameraClick(); }}
+            tabIndex={isDisabled ? -1 : 0}
+            aria-label="Take a photo with camera"
+            suppressHydrationWarning
+          >
+            <div className={styles.cameraIconWrapper}>
+              <CameraIcon />
+            </div>
+            <div>
+              <p className={styles.dropzoneMainText}>Take a Photo</p>
+              <p className={styles.dropzoneSubText}>Use your camera</p>
+            </div>
+          </button>
         </div>
       )}
 

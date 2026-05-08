@@ -15,9 +15,10 @@ interface FileUploadProps {
 }
 
 export function FileUpload({ title, config, className }: FileUploadProps) {
-  const { files, addFiles, removeFile, retryFile } = useFileUpload(config);
+  const { files, addFiles, removeFile, retryFile, unlockFile } = useFileUpload(config);
   const [isDragOver, setIsDragOver] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
   const dragCounterRef = useRef(0);
 
   // In single-file mode the dropzone transforms into the file preview
@@ -26,7 +27,13 @@ export function FileUpload({ title, config, className }: FileUploadProps) {
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files?.length) {
       addFiles(Array.from(e.target.files));
-      // Reset so the same file can be re-selected after removal
+      e.target.value = '';
+    }
+  };
+
+  const handleCameraChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files?.length) {
+      addFiles(Array.from(e.target.files));
       e.target.value = '';
     }
   };
@@ -75,7 +82,7 @@ export function FileUpload({ title, config, className }: FileUploadProps) {
     <div className={[styles.uploadSection, className].filter(Boolean).join(' ')}>
       {title && <p className={styles.uploadTitle}>{title}</p>}
 
-      {/* Hidden native file input */}
+      {/* Hidden file inputs */}
       <input
         ref={inputRef}
         type="file"
@@ -83,6 +90,17 @@ export function FileUpload({ title, config, className }: FileUploadProps) {
         accept={getAcceptString(config.accept)}
         multiple={!!config.multiple}
         onChange={handleInputChange}
+        aria-hidden="true"
+        tabIndex={-1}
+        suppressHydrationWarning
+      />
+      <input
+        ref={cameraInputRef}
+        type="file"
+        className={styles.hiddenInput}
+        accept="image/*"
+        capture="environment"
+        onChange={handleCameraChange}
         aria-hidden="true"
         tabIndex={-1}
         suppressHydrationWarning
@@ -99,6 +117,7 @@ export function FileUpload({ title, config, className }: FileUploadProps) {
         onDrop={handleDrop}
         onClick={handleClick}
         onKeyDown={handleKeyDown}
+        onCameraClick={() => { if (!config.disabled) cameraInputRef.current?.click(); }}
       />
 
       {/* Metadata row — mirrors Figma "Files supported / Maximum size" */}
@@ -111,7 +130,7 @@ export function FileUpload({ title, config, className }: FileUploadProps) {
       {files.length > 0 && (
         <div className={styles.fileList} role="list" aria-label="Uploaded files">
           {files.map(f => (
-            <FileUploadItem key={f.id} file={f} onRemove={removeFile} onRetry={retryFile} />
+            <FileUploadItem key={f.id} file={f} onRemove={removeFile} onRetry={retryFile} onUnlock={unlockFile} />
           ))}
         </div>
       )}

@@ -9,6 +9,7 @@ import {
   useRef,
   useState,
 } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useSpinner } from '@/components/spinner/Spinner';
 import navigationService from '@/services/navigation.service';
@@ -428,6 +429,14 @@ export default function ManualBankDetails() {
   const router = useRouter();
   const { show: showSpinner, hide: hideSpinner } = useSpinner();
 
+  // Modal state
+  const [showModal, setShowModal] = useState(false);
+  const modalTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => { if (modalTimerRef.current) clearTimeout(modalTimerRef.current); };
+  }, []);
+
   // File upload state
   const [nroStatementFiles, setNroStatementFiles] = useState<UploadedFile[]>([]);
   const [nreStatementFiles, setNreStatementFiles] = useState<UploadedFile[]>([]);
@@ -454,8 +463,12 @@ export default function ManualBankDetails() {
   };
 
   const handleProceed = () => {
-    showSpinner();
-    setTimeout(() => { router.push('/PennyDrop/1'); hideSpinner(); }, 200);
+    setShowModal(true);
+    modalTimerRef.current = setTimeout(() => {
+      setShowModal(false);
+      showSpinner();
+      setTimeout(() => { router.push('/manualBankInfo'); hideSpinner(); }, 200);
+    }, 2500);
   };
 
   const handleNroChange = (field: 'accountNo' | 'reAccountNo' | 'ifsc', value: string) => {
@@ -546,12 +559,13 @@ export default function ManualBankDetails() {
     />
   );
 
-  const bankBanner = (
-    <div className={styles.bankBanner}>
-      <InfoIcon />
-      <span className={styles.bankBannerText}>State Bank of India</span>
-    </div>
-  );
+  // #sym:bankBanner
+  // const bankBanner = (
+  //   <div className={styles.bankBanner}>
+  //     <InfoIcon />
+  //     <span className={styles.bankBannerText}>State Bank of India</span>
+  //   </div>
+  // );
 
   const needHelpBtn = (
     <button type="button" className={styles.needHelpBtn} suppressHydrationWarning>
@@ -577,7 +591,7 @@ export default function ManualBankDetails() {
         </div>
 
         <div className={styles.mobileCard}>
-          {bankBanner}
+          {/* {bankBanner} */}
           {uploadStatementsSection}
           {nroSection}
           {nreSection}
@@ -616,7 +630,7 @@ export default function ManualBankDetails() {
 
           <div className={styles.desktopCardBody}>
             <div className={styles.desktopScrollArea}>
-              {bankBanner}
+              {/* {bankBanner} */}
               {uploadStatementsSection}
               {nroSection}
               {nreSection}
@@ -636,6 +650,40 @@ export default function ManualBankDetails() {
           </div>
         </div>
       </section>
+
+      {/* ── Verifying Details Modal ──────────────────────────────────────── */}
+      {showModal && (
+        <div
+          className={styles.modalOverlay}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="verify-modal-title"
+        >
+          <div className={styles.modalCard}>
+            {/* Dash handle — visible on mobile only */}
+            <div className={styles.modalDash} aria-hidden="true" />
+
+            {/* Shared content */}
+            <div className={styles.modalContent}>
+              <Image
+                src="/verifying-animation.gif"
+                alt=""
+                width={300}
+                height={75}
+                unoptimized
+                className={styles.modalAnimation}
+                aria-hidden="true"
+              />
+              <p id="verify-modal-title" className={styles.modalTitle}>
+                Verifying details
+              </p>
+              <p className={styles.modalSubtitle}>
+                This usually takes less than a minute.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

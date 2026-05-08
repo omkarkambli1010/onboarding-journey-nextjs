@@ -108,18 +108,107 @@ $primary-medium: rgba(40, 0, 113, 0.12);
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
-// Empty / add-more state
+// Empty / add-more state — split layout (drag+drop | OR | camera)
 // ──────────────────────────────────────────────────────────────────────────────
 
 .dropzoneEmpty {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  padding: 36px 24px;
-  text-align: center;
+  align-items: stretch;
   width: 100%;
   pointer-events: none;
+
+  // Mobile: stack vertically
+  flex-direction: column;
+
+  @media (min-width: 480px) {
+    flex-direction: row;
+  }
+}
+
+// Left half — drag & drop / click to browse
+.dropzoneUploadPart {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 28px 16px;
+  text-align: center;
+  flex: 1;
+}
+
+// Vertical (desktop) or horizontal (mobile) OR divider
+.dropzoneDivider {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  pointer-events: none;
+
+  // Mobile: horizontal row
+  flex-direction: row;
+  padding: 0 16px;
+
+  @media (min-width: 480px) {
+    flex-direction: column;
+    padding: 16px 0;
+    align-self: stretch;
+  }
+}
+
+.dropzoneDividerLine {
+  display: block;
+  background: $border;
+  flex: 1;
+
+  // Mobile: thin horizontal line
+  height: 1px;
+
+  @media (min-width: 480px) {
+    // Desktop: thin vertical line
+    height: auto;
+    width: 1px;
+    min-height: 20px;
+  }
+}
+
+.dropzoneDividerText {
+  font-size: 11px;
+  color: $text-label;
+  font-weight: 500;
+  letter-spacing: 0.4px;
+  flex-shrink: 0;
+}
+
+// Right half — camera capture button
+.dropzoneCameraPart {
+  // Reset button defaults
+  background: none;
+  border: none;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  // Layout
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 28px 16px;
+  flex: 1;
+  text-align: center;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: background-color 0.18s ease;
+
+  &:hover {
+    background-color: $primary-light;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary;
+    outline-offset: -3px;
+  }
 }
 
 .uploadIconWrapper {
@@ -134,6 +223,22 @@ $primary-medium: rgba(40, 0, 113, 0.12);
   transition: background 0.2s;
 
   .dropzone:hover & {
+    background: $primary-medium;
+  }
+}
+
+.cameraIconWrapper {
+  width: 54px;
+  height: 54px;
+  background: $primary-light;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.2s;
+
+  .dropzoneCameraPart:hover & {
     background: $primary-medium;
   }
 }
@@ -439,6 +544,127 @@ $primary-medium: rgba(40, 0, 113, 0.12);
   &:hover {
     color: $error;
   }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Password protection panel
+// ══════════════════════════════════════════════════════════════════════════════
+
+// Removes bottom radius on the fileItem row when the panel is attached below
+.fileItemPasswordTop {
+  border-bottom-left-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+}
+
+// Lock badge shown inside the file info row
+.passwordBadge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  color: #b45309; // amber-700
+  margin: 0;
+}
+
+// Panel sits flush below the fileItem, sharing the error border
+.passwordPanel {
+  background: #fffbf5;
+  border: 1px solid #fca5a5;
+  border-top: none;
+  border-radius: 0 0 10px 10px;
+  padding: 10px 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.passwordInputRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.passwordInputWrapper {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 160px;
+  border: 1px solid $border;
+  border-radius: 7px;
+  background: $bg-white;
+  padding: 0 8px;
+  gap: 6px;
+  height: 36px;
+
+  &:focus-within {
+    border-color: $primary;
+  }
+}
+
+.passwordInput {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 13px;
+  color: $text-dark;
+  min-width: 0;
+
+  &::placeholder {
+    color: #b0b0b0;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+  }
+}
+
+.passwordToggleBtn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  color: $text-label;
+  flex-shrink: 0;
+  line-height: 0;
+
+  &:hover {
+    color: $text-dark;
+  }
+}
+
+.unlockBtn {
+  height: 36px;
+  padding: 0 16px;
+  background: $primary;
+  color: #ffffff;
+  border: none;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: opacity 0.15s;
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+}
+
+.passwordError {
+  font-size: 11px;
+  color: $error;
+  margin: 0;
+  line-height: 1.4;
 }
 
 // ══════════════════════════════════════════════════════════════════════════════

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { FileUploadConfig, UploadedFile } from './fileUpload.types';
-import { generateId, isDuplicateFile, isImageFile, validateFile } from './fileUpload.utils';
+import { generateId, isDuplicateFile, isImageFile, isPdfPasswordProtected, unlockPdf, validateFile } from './fileUpload.utils';
 
 export function useFileUpload(config: FileUploadConfig) {
   const [files, setFiles] = useState<UploadedFile[]>([]);
@@ -62,7 +62,7 @@ export function useFileUpload(config: FileUploadConfig) {
   }, []);
 
   const addFiles = useCallback(
-    (incoming: File[]) => {
+    async (incoming: File[]) => {
       const cfg = configRef.current;
       if (cfg.disabled) return;
 
@@ -73,8 +73,23 @@ export function useFileUpload(config: FileUploadConfig) {
         if (cfg.multiple && isDuplicateFile(file, files)) continue;
 
         const error = validateFile(file, cfg);
-        let previewUrl: string | undefined;
 
+        if (!error) {
+          const passwordProtected = await isPdfPasswordProtected(file);
+          if (passwordProtected) {
+            toAdd.push({
+              id: generateId(),
+              file,
+              status: 'error',
+              isPasswordProtected: true,
+              isValidationError: false,
+              progress: 0,
+            });
+            continue;
+          }
+        }
+
+        let previewUrl: string | undefined;
         if (!error && isImageFile(file)) {
           previewUrl = URL.createObjectURL(file);
           urlsRef.current.add(previewUrl);
@@ -94,7 +109,6 @@ export function useFileUpload(config: FileUploadConfig) {
       if (toAdd.length === 0) return;
 
       if (!cfg.multiple) {
-        // Revoke old preview URLs before replacing
         setFiles(prev => {
           prev.forEach(f => {
             if (f.previewUrl) {
@@ -108,7 +122,7 @@ export function useFileUpload(config: FileUploadConfig) {
         setFiles(prev => [...prev, ...toAdd]);
       }
 
-      toAdd.filter(f => !f.isValidationError).forEach(f => runUpload(f.id, f.file));
+      toAdd.filter(f => !f.isValidationError && !f.isPasswordProtected).forEach(f => runUpload(f.id, f.file));
     },
     [files, runUpload]
   );
@@ -139,9 +153,52 @@ export function useFileUpload(config: FileUploadConfig) {
     [files, runUpload]
   );
 
+  const unlockFile = useCallback(
+    async (id: string, password: string) => {
+      const found = files.find(f => f.id === id);
+      if (!found || !found.isPasswordProtected) return;
+
+      setFiles(prev =>
+        prev.map(f =>
+          f.id === id ? { ...f, isUnlocking: true, passwordError: undefined } : f
+        )
+      );
+
+      try {
+        const unlockedFile = await unlockPdf(found.file, password);
+
+        const newEntry: UploadedFile = {
+          id,
+          file: unlockedFile,
+          status: 'uploading',
+          progress: 0,
+          isPasswordProtected: false,
+          isUnlocking: false,
+          isValidationError: false,
+        };
+
+        setFiles(prev => prev.map(f => (f.id === id ? newEntry : f)));
+        runUpload(id, unlockedFile);
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err);
+        const passwordError =
+          msg === 'WRONG_PASSWORD'
+            ? 'Incorrect password. Please try again.'
+            : 'Unable to unlock automatically. Please remove the password manually and re-upload.';
+
+        setFiles(prev =>
+          prev.map(f =>
+            f.id === id ? { ...f, isUnlocking: false, passwordError } : f
+          )
+        );
+      }
+    },
+    [files, runUpload]
+  );
+
   useEffect(() => {
     configRef.current.onFilesChange?.(files);
   }, [files]);
 
-  return { files, addFiles, removeFile, retryFile };
+  return { files, addFiles, removeFile, retryFile, unlockFile };
 }
