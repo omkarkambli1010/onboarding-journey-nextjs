@@ -32,28 +32,144 @@ const DEFAULT_POLITICAL_EXPOSED_TEXT = `
 
 const DEFAULT_QUESTIONNAIRE_RESPONSE = [
   {
-    Title: 'Trading preference acceptance',
-    Description: 'Please confirm the default setups for your trading account.',
-    TitleId: 'default-1',
+    Title: 'Automatic Credit',
+    TitleId: 'automatic-credit',
     Questions: [
       {
-        QuestionId: 'q-automatic-credit',
-        Question: 'Automatic credit to my bank account',
-        SelectedAns: 'YES',
-        Answer: [{ Key: 'YES' }, { Key: 'NO' }],
+        QuestionId: 'q-auto-credit',
+        Question: 'I/We authorise you to receive credit in my / our account without any instruction from me/ us.',
+        SelectedAns: 'Yes',
+        Answer: [{ Key: 'Yes' }, { Key: 'No' }],
       },
+    ],
+  },
+  {
+    Title: 'Pledge',
+    TitleId: 'pledge',
+    Questions: [
       {
         QuestionId: 'q-pledge',
-        Question: 'Pledge instructions for holdings',
-        SelectedAns: 'YES',
-        Answer: [{ Key: 'YES' }, { Key: 'NO' }],
+        Question: "I / We would like to instruct the DP to accept all the pledge instructions in my / our account with out any other further instruction from my / our end (If not marked, the default option would be 'No')",
+        SelectedAns: 'Yes',
+        Answer: [{ Key: 'Yes' }, { Key: 'No' }],
       },
+    ],
+  },
+  {
+    Title: 'DDPI Operation',
+    TitleId: 'ddpi',
+    Questions: [
+      {
+        QuestionId: 'q-ddpi',
+        Question: 'Account to be operated through Demat Debit And Pledge Instruction (DDPI)',
+        SelectedAns: 'Yes',
+        Answer: [{ Key: 'Yes' }, { Key: 'No' }],
+      },
+    ],
+  },
+  {
+    Title: 'DIS',
+    TitleId: 'dis',
+    Questions: [
       {
         QuestionId: 'q-dis',
-        Question: 'DIS instructions',
-        SelectedAns: 'NO',
-        Answer: [{ Key: 'YES' }, { Key: 'NO' }],
+        Question: 'I/We require Delivery Instruction Slip (DIS)',
+        SelectedAns: 'No',
+        Answer: [{ Key: 'Yes' }, { Key: 'No' }],
       },
+    ],
+  },
+  {
+    Title: 'SMS Alert Facility',
+    TitleId: 'sms-alert',
+    Description: 'Mandatory if you are giving Demat Debit And Pledge Instruction (DDPI). Ensure that the mobile number is provided in the KYC Application Form.',
+    inlineLayout: true,
+    Questions: [
+      { QuestionId: 'q-sms-first', Question: 'First Holder', SelectedAns: 'Yes', Answer: [{ Key: 'Yes' }, { Key: 'No' }] },
+      { QuestionId: 'q-sms-second', Question: 'Second Holder', SelectedAns: 'Yes', Answer: [{ Key: 'Yes' }, { Key: 'No' }] },
+      { QuestionId: 'q-sms-third', Question: 'Third Holder', SelectedAns: 'Yes', Answer: [{ Key: 'Yes' }, { Key: 'No' }] },
+    ],
+  },
+  {
+    Title: 'ECS Mandate',
+    TitleId: 'ecs',
+    Questions: [
+      {
+        QuestionId: 'q-ecs',
+        Question: 'Do you wish to receive dividend / interest directly in to your Designated Bank Account through ECS?',
+        SelectedAns: 'Yes',
+        Answer: [{ Key: 'Yes' }, { Key: 'No' }],
+        note: "ECS (If not marked, the default option would be 'Yes') [ECS is mandatory for locations notified by SEBI from time to time]",
+      },
+    ],
+  },
+  {
+    Title: 'BSDA Facility',
+    TitleId: 'bsda',
+    Questions: [
+      {
+        QuestionId: 'q-bsda',
+        Question: 'I/We wish to avail the BSDA facility^',
+        SelectedAns: 'No',
+        Answer: [{ Key: 'Yes' }, { Key: 'No' }],
+      },
+    ],
+  },
+  {
+    Title: 'Account Statement',
+    TitleId: 'account-statement',
+    Questions: [
+      {
+        QuestionId: 'q-acct-stmt',
+        Question: '',
+        SelectedAns: 'As per SEBI Regulation',
+        Answer: [
+          { Key: 'As per SEBI Regulation' },
+          { Key: 'Daily' },
+          { Key: 'Weekly' },
+          { Key: 'Fortnightly' },
+          { Key: 'Monthly' },
+        ],
+        note: '(If not marked the default option would be in Physical)',
+      },
+    ],
+  },
+  {
+    Title: 'RTA',
+    TitleId: 'rta',
+    Questions: [
+      {
+        QuestionId: 'q-rta',
+        Question: 'I / We would like to share the email ID with the RTA',
+        SelectedAns: 'Yes',
+        Answer: [{ Key: 'Yes' }, { Key: 'No' }],
+      },
+    ],
+  },
+  {
+    Title: 'Standard Documents / Annual Report',
+    TitleId: 'std-docs',
+    Questions: [
+      {
+        QuestionId: 'q-std-docs',
+        Question: '',
+        SelectedAns: 'Electronic',
+        Answer: [
+          { Key: 'Electronic' },
+          { Key: 'Physical' },
+          { Key: 'Both Physical and Electronic' },
+        ],
+        note: '(If not marked the default option would be in Physical)',
+      },
+    ],
+  },
+  {
+    Title: 'Easi / Ideas',
+    TitleId: 'easi-ideas',
+    Questions: [],
+    textLines: [
+      'If yes, please complete registration through depository website.',
+      '[BO can view his/her ISIN balances, transactions and value of the portfolio online through Depository website]',
     ],
   },
 ];
@@ -341,6 +457,9 @@ export default function Declaration() {
   };
 
   const declarationAPICall = async () => {
+    router.push('/planprocess/2');
+    return;
+    // TODO: replace with API call
     const diff = checkIfPreferenceChanged(questionnaireResponse);
     if (diff) {
       setShowConfirmPrefModal(true);
@@ -778,42 +897,39 @@ export default function Declaration() {
 
       {/* Terms & Conditions Modal */}
       {showTermsModal && (
-        <>
-          <div
-            className="modal fade show uploadPan"
-            style={{ display: 'block' }}
-            tabIndex={-1}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="termsModalTitle"
-          >
-            <div className="modal-dialog">
-              <div className="modal-content">
-                <div className="modal-header d-block" style={{ cursor: 'pointer' }} onClick={() => setShowTermsModal(false)}>
-                  <h1 className="modal-title fs-5" id="termsModalTitle" />
-                  <button type="button" className="btn-horizontal-line" aria-label="Close modal" onClick={() => setShowTermsModal(false)} />
-                </div>
-                <div className="modal-body">
-                  <h5 className="text-start">Terms and Conditions</h5>
-                  <div dangerouslySetInnerHTML={{ __html: termsConditionData }} />
-                </div>
-                <div className="modal-footer p-0">
-                  <button
-                    type="button"
-                    className="btn btn_cls"
-                    onClick={() => {
-                      setShowTermsModal(false);
-                      if (typeof window !== 'undefined') sessionStorage.setItem('AcceptTerms', 'Yes');
-                    }}
-                  >
-                    I accept
-                  </button>
-                </div>
-              </div>
+        <div
+          className={styles.fscOverlay}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="termsModalTitle"
+          onClick={() => setShowTermsModal(false)}
+        >
+          <div className={styles.fscSheet} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.fscDash} aria-hidden="true" />
+
+            <div className={styles.fscContent}>
+              <p id="termsModalTitle" className={styles.pepTitle}>
+                Terms and Conditions
+              </p>
+
+              <div
+                className={styles.sheetScrollContent}
+                dangerouslySetInnerHTML={{ __html: termsConditionData }}
+              />
             </div>
+
+            <button
+              type="button"
+              className={styles.fscDoneBtn}
+              onClick={() => {
+                setShowTermsModal(false);
+                if (typeof window !== 'undefined') sessionStorage.setItem('AcceptTerms', 'Yes');
+              }}
+            >
+              I accept
+            </button>
           </div>
-          <div className="modal-backdrop fade show" />
-        </>
+        </div>
       )}
 
       {/* Tax Payer Modal */}
@@ -851,118 +967,148 @@ export default function Declaration() {
 
       {/* Politically Exposed Person Modal */}
       {showPoliticalModal && (
-        <>
-          <div
-            className="modal fade show uploadPan"
-            style={{ display: 'block' }}
-            tabIndex={-1}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="pepModalTitle"
-          >
-            <div className="modal-dialog">
-              <div className="modal-content">
-                <div className="modal-header d-block" style={{ cursor: 'pointer' }} onClick={() => setShowPoliticalModal(false)}>
-                  <h1 className="modal-title fs-5" id="pepModalTitle" />
-                  <button type="button" className="btn-horizontal-line" aria-label="Close modal" onClick={() => setShowPoliticalModal(false)} />
+        <div
+          className={styles.fscOverlay}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="pepModalTitle"
+          onClick={() => setShowPoliticalModal(false)}
+        >
+          <div className={styles.fscSheet} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.fscDash} aria-hidden="true" />
+
+            <div className={styles.fscContent}>
+              <p id="pepModalTitle" className={styles.pepTitle}>
+                Who is a politically exposed or related person
+              </p>
+
+              <p className={styles.pepSubtitle}>
+                Politically exposed or related person include, but are not limited to:
+              </p>
+
+              <div className={styles.pepBulletList}>
+                <div className={styles.pepBulletItem}>
+                  <p>Senior executives of state-owned corporations</p>
                 </div>
-                <div className="modal-body">
-                  <h5 className="text-start">Who is a politically exposed or related person</h5>
-                  <p>Politically exposed or related person include, but are not limited to:</p>
-                  <div dangerouslySetInnerHTML={{ __html: politicalExposedData }} />
+                <div className={styles.pepBulletItem}>
+                  <p>Important political party officials</p>
                 </div>
-                <div className="modal-footer p-0">
-                  <button type="button" className="btn btn_cls" onClick={() => setShowPoliticalModal(false)}>
-                    Done
-                  </button>
+                <div className={styles.pepBulletItem}>
+                  <p>Family members and close relatives of all of the above</p>
                 </div>
               </div>
             </div>
+
+            <button
+              type="button"
+              className={styles.fscDoneBtn}
+              onClick={() => setShowPoliticalModal(false)}
+            >
+              Done
+            </button>
           </div>
-          <div className="modal-backdrop fade show" />
-        </>
+        </div>
       )}
+
 
       {/* Trading Preference Modal */}
       {showTradingPrefModal && (
-        <>
-          <div
-            className="modal fade show uploadPan"
-            style={{ display: 'block' }}
-            tabIndex={-1}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="tradePrefModalTitle"
-          >
-            <div className="modal-dialog">
-              <div className="modal-content">
-                <div className="modal-header d-block" style={{ cursor: 'pointer' }} onClick={() => setShowTradingPrefModal(false)}>
-                  <h1 className="modal-title fs-5" id="tradePrefModalTitle" />
-                  <button type="button" className="btn-horizontal-line" aria-label="Close modal" onClick={() => setShowTradingPrefModal(false)} />
-                </div>
-                <div className="modal-body">
-                  <h5>Trading preference acceptance</h5>
-                  <form method="post">
-                    {questionnaireResponse.map((group: any, gi: number) => (
-                      <div key={gi} className={styles.tradingQnaGroup}>
-                        <h4>{group.Title}</h4>
-                        {group.Description && <p>{group.Description}</p>}
-                        {(group.Questions || []).map((q: any, qi: number) => (
-                          <div key={qi}>
-                            <p>{q.Question}</p>
-                            <div className={styles.tradingQnaAnswers}>
-                              {(q.Answer || []).map((ans: any, ai: number) => (
-                                <label key={ai} className={styles.radioItem}>
-                                  <input
-                                    type="radio"
-                                    name={`radio-${q.QuestionId}`}
-                                    value={ans.Key}
-                                    checked={q.SelectedAns === ans.Key}
-                                    onChange={() => {
-                                      const updated = [...questionnaireResponse];
-                                      updated[gi].Questions[qi].SelectedAns = ans.Key;
-                                      setQuestionnaireResponse(updated);
-                                    }}
-                                  />
-                                  {ans.Key}
-                                </label>
-                              ))}
-                            </div>
-                          </div>
+        <div
+          className={styles.fscOverlay}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="tradePrefModalTitle"
+        >
+          <div className={styles.fscSheet} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.fscDash} aria-hidden="true" />
+
+            <div className={styles.fscContent}>
+              <p id="tradePrefModalTitle" className={styles.pepTitle}>
+                Trading preference acceptance
+              </p>
+
+              <div className={styles.sheetScrollContent} data-lenis-prevent>
+                <form method="post" className={styles.tradingQnaList}>
+                  {questionnaireResponse.map((group: any, gi: number) => (
+                    <div key={gi} className={styles.tradingQnaCard}>
+                      {group.Title && (
+                        <div className={styles.tradingQnaCardHeader}>{group.Title}</div>
+                      )}
+                      <div className={styles.tradingQnaCardBody}>
+                        {group.Description && (
+                          <p className={styles.tradingQnaText}>{group.Description}</p>
+                        )}
+                        {(group.textLines || []).map((line: string, li: number) => (
+                          <p key={li} className={styles.tradingQnaText}>{line}</p>
                         ))}
+                        {(group.Questions || []).map((q: any, qi: number) =>
+                          group.inlineLayout ? (
+                            <div key={qi} className={styles.tradingQnaInlineRow}>
+                              <span className={styles.tradingQnaInlineLabel}>{q.Question}</span>
+                              <div className={styles.tradingQnaAnswers}>
+                                {(q.Answer || []).map((ans: any, ai: number) => (
+                                  <label key={ai} className={styles.radioItem}>
+                                    <input
+                                      type="radio"
+                                      name={`radio-${q.QuestionId}`}
+                                      value={ans.Key}
+                                      checked={q.SelectedAns === ans.Key}
+                                      onChange={() => {
+                                        const updated = [...questionnaireResponse];
+                                        updated[gi].Questions[qi].SelectedAns = ans.Key;
+                                        setQuestionnaireResponse(updated);
+                                      }}
+                                    />
+                                    {ans.Key}
+                                  </label>
+                                ))}
+                              </div>
+                            </div>
+                          ) : (
+                            <div key={qi} className={styles.tradingQnaQuestionRow}>
+                              {q.Question && (
+                                <p className={styles.tradingQnaText}>{q.Question}</p>
+                              )}
+                              <div className={styles.tradingQnaAnswers}>
+                                {(q.Answer || []).map((ans: any, ai: number) => (
+                                  <label key={ai} className={styles.radioItem}>
+                                    <input
+                                      type="radio"
+                                      name={`radio-${q.QuestionId}`}
+                                      value={ans.Key}
+                                      checked={q.SelectedAns === ans.Key}
+                                      onChange={() => {
+                                        const updated = [...questionnaireResponse];
+                                        updated[gi].Questions[qi].SelectedAns = ans.Key;
+                                        setQuestionnaireResponse(updated);
+                                      }}
+                                    />
+                                    {ans.Key}
+                                  </label>
+                                ))}
+                              </div>
+                              {q.note && (
+                                <p className={styles.tradingQnaNote}>{q.note}</p>
+                              )}
+                            </div>
+                          )
+                        )}
                       </div>
-                    ))}
-                  </form>
-                  <div className={styles.noteBox}>
-                    <h4>easi / Ideas:</h4>
-                    <h6>Note:</h6>
-                    <ul>
-                      <li>
-                        To register for easi, please visit:{' '}
-                        <a href="https://www.cdslindia.com" target="_blank" rel="noopener noreferrer">
-                          www.cdslindia.com
-                        </a>
-                      </li>
-                      <li>
-                        For IDEAS, please visit:{' '}
-                        <a href="https://eservices.nsdl.com/" target="_blank" rel="noopener noreferrer">
-                          https://eservices.nsdl.com/
-                        </a>
-                      </li>
-                      <li>IDEAS/easi enables a BO to view ISIN balances, transactions, and the value of the portfolio online.</li>
-                    </ul>
-                  </div>
-                </div>
-                <div className="modal-footer">
-                  <button type="button" className="btn btn_cls" onClick={saveTradePreferenceQA}>
-                    I Agree
-                  </button>
-                </div>
+                    </div>
+                  ))}
+                </form>
               </div>
             </div>
+
+            <button
+              type="button"
+              className={styles.fscDoneBtn}
+              onClick={() => setShowTradingPrefModal(false)}
+            >
+              I Agree
+            </button>
           </div>
-          <div className="modal-backdrop fade show" />
-        </>
+        </div>
       )}
 
       {/* Fund Settlement Cycle Modal — Figma 0:105487 (desktop) / 0:105189 (mobile) */}

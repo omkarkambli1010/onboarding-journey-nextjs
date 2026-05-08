@@ -1,237 +1,545 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useSpinner } from '@/components/spinner/Spinner';
-import { toast } from '@/services/toast.service';
-import apiService from '@/services/api.service';
-import navigationService from '@/services/navigation.service';
+import { Splide, SplideSlide } from '@splidejs/react-splide';
 import styles from './plan-preference.module.scss';
 
-// PlanPreference — Brokerage plan selection screen
-// Equivalent to Angular PlanPreferenceComponent
+// ─── Static Plan Data ──────────────────────────────────────────
 
-const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || '';
+const PLAN_NAMES = ['Basic', 'Special', 'Premium'];
 
-interface Plan {
-  schemeCode: string;
-  schemeType: string;
-  schemeTypeLogo: string;
-  description?: string;
-  features?: string[];
-  selected?: boolean;
-}
+const PLAN_STATIC = [
+  {
+    desktopPrice: '0',
+    priceGst: 'Excl. GST',
+    feeLabel: 'Account Opening Fees',
+    brokerageMain: '₹20',
+    brokerageNote: '*On Equity Intraday Trades',
+    highlighted: false,
+    mobilePriceGst: '',
+    benefits: [
+      { text: '0.50% on Delivery Trade' },
+      { text: '₹50/Lot on Options' },
+      { text: '0.50% on E-Margin', sub: '*0% interest for 23 trading days' },
+    ],
+    equity: [
+      { val: '₹20/order', lbl: 'on Intraday' },
+      { val: '0.50%', lbl: 'on Delivery' },
+      { val: '₹20/order', lbl: 'on ETF' },
+      { val: '0.50%', lbl: 'on E-Margin' },
+    ],
+    derivatives: [
+      { val: '₹20/order', lbl: 'on Intraday' },
+      { val: '₹50/Lot', lbl: 'on Options' },
+      { val: '0.05%', lbl: 'on Futures' },
+    ],
+  },
+  {
+    desktopPrice: '99',
+    priceGst: 'Excl. GST',
+    feeLabel: 'One-time Account Opening Fees',
+    brokerageMain: 'Zero',
+    brokerageNote: '*On all Intraday Trades',
+    highlighted: true,
+    mobilePriceGst: '+ GST',
+    benefits: [
+      { text: '0.20% on Equity Delivery' },
+      { text: '₹20/Order on Carry Forward Options' },
+      { text: '0.50% on E-Margin', sub: '*0% interest for 23 trading days' },
+    ],
+    equity: [
+      { val: '₹0', lbl: 'on Intraday' },
+      { val: '0.20%', lbl: 'on Delivery' },
+      { val: '₹0', lbl: 'on ETF' },
+      { val: '0.50%', lbl: 'on E-Margin' },
+    ],
+    derivatives: [
+      { val: '₹0', lbl: 'on Intraday' },
+      { val: '₹20/order', lbl: 'on Options' },
+      { val: '₹20/order', lbl: 'on Futures' },
+    ],
+  },
+  {
+    desktopPrice: '10,000',
+    priceGst: 'Excl. GST',
+    feeLabel: 'One-time Account Opening Fees',
+    brokerageMain: 'Zero',
+    brokerageNote: '*Till 75 Lacs Delivery Trade Value',
+    highlighted: false,
+    mobilePriceGst: '+ GST',
+    benefits: [
+      { text: '₹20 on Equity Intraday' },
+      { text: '0.20% on Equity Delivery' },
+      { text: '₹20/Order on Carry Forward Options' },
+      { text: '0.40% on E-Margin', sub: '*0% interest for 23 trading days' },
+    ],
+    equity: [
+      { val: '₹20/order', lbl: 'on Intraday' },
+      { val: '0.10%', lbl: 'on Delivery*' },
+      { val: '₹0', lbl: 'on ETF' },
+      { val: '0.40%', lbl: 'on E-Margin' },
+    ],
+    derivatives: [
+      { val: '₹20/order', lbl: 'on Intraday' },
+      { val: '₹20/order', lbl: 'on Options' },
+      { val: '₹20/order', lbl: 'on Futures' },
+    ],
+  },
+];
+
+// ─── Inline SVG Icons ─────────────────────────────────────────
+
+const BackArrow = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+    <path d="M5 12H19" stroke="black" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M5 12L11 18" stroke="black" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M5 12L11 6" stroke="black" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+const CloseIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+    <path d="M18 6L6 18M6 6l12 12" stroke="#222" strokeWidth="1.5" strokeLinecap="round" />
+  </svg>
+);
+
+const PdfIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+    <rect x="2" y="1" width="9" height="12" rx="1" stroke="#280071" strokeWidth="1.2" />
+    <path d="M9 1v4h4" stroke="#280071" strokeWidth="1.2" strokeLinejoin="round" />
+    <path d="M9 1l4 4" stroke="#280071" strokeWidth="1.2" strokeLinecap="round" />
+    <path d="M5 7.5h6M5 9.5h4" stroke="#280071" strokeWidth="1.1" strokeLinecap="round" />
+  </svg>
+);
+
+const DoneIcon = ({ size = 12 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 12 12" fill="none" style={{ flexShrink: 0 }}>
+    <circle cx="6" cy="6" r="6" fill="#280071" fillOpacity="0.12" />
+    <path d="M3.5 6.2l1.8 1.8 3.2-3.8" stroke="#280071" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+const CheckCircleIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
+    <circle cx="8" cy="8" r="7.5" stroke="#9d76ff" />
+    <path d="M4.5 8.5l2.5 2.5 4.5-5" stroke="#280071" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+const ModalDoneIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" style={{ flexShrink: 0 }}>
+    <circle cx="10" cy="10" r="9.5" stroke="#280071" strokeOpacity="0.3" />
+    <path d="M6 10.5l3 3 5-6" stroke="#280071" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+const ICON_FILLS = ['#E5E5E5', '#FFE5EE', '#EBE5FF'];
+const ICON_TEXTS = ['#666666', '#C0448A', '#280071'];
+
+const PlanIcon = ({ index, size = 28 }: { index: number; size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 28 28" fill="none" style={{ flexShrink: 0 }}>
+    <circle cx="14" cy="14" r="14" fill={ICON_FILLS[index]} />
+    <text
+      x="14" y="19"
+      textAnchor="middle"
+      fontSize="12"
+      fontWeight="700"
+      fill={ICON_TEXTS[index]}
+      fontFamily="sans-serif"
+    >
+      {PLAN_NAMES[index][0]}
+    </text>
+  </svg>
+);
+
+// ─── Component ────────────────────────────────────────────────
 
 export default function PlanPreference() {
   const router = useRouter();
-  const { show: showSpinner, hide: hideSpinner } = useSpinner();
-
-  const [plans, setPlans] = useState<Plan[]>([]);
-  const [selectedPlan, setSelectedPlan] = useState('');
-  const [isProceedDisabled, setIsProceedDisabled] = useState(true);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const [showKnowMore, setShowKnowMore] = useState(false);
+  const [knowMoreIndex, setKnowMoreIndex] = useState(0);
 
   const rejectStatus = typeof window !== 'undefined' ? sessionStorage.getItem('RejectStatus') : null;
 
-  useEffect(() => {
-    navigationService.setRouter(router, hideSpinner);
-    getPlanData();
-  }, []);
-
-  const getPlanData = async () => {
-    showSpinner();
-    try {
-      const response = await apiService.postRequest('api/v1/masters/get', {
-        flag: 'all',
-        formnumber: typeof window !== 'undefined' ? sessionStorage.getItem('FormNumber') : '',
-      }, hideSpinner);
-
-      if (response?.status === true && response?.data) {
-        const planList: Plan[] = response.data.data5 || [];
-        // Get previously selected plan
-        const reqPlan = {
-          flag: 'segmentpreference',
-          formnumber: typeof window !== 'undefined' ? sessionStorage.getItem('FormNumber') : '',
-        };
-        try {
-          const planResp = await apiService.postRequest('api/v1/WorkflowDetails/getworkflowdata', reqPlan, hideSpinner);
-          if (planResp?.status === true && planResp?.data?.[0]?.schemeType) {
-            const prevSelected = planResp.data[0].schemeType;
-            planList.forEach((p: Plan) => { p.selected = p.schemeType === prevSelected; });
-            setSelectedPlan(prevSelected);
-            setIsProceedDisabled(false);
-          }
-        } catch {}
-        setPlans(planList);
-      }
-    } catch {}
-    hideSpinner();
-  };
-
-  const selectPlan = (plan: Plan) => {
-    const updated = plans.map((p) => ({ ...p, selected: p.schemeCode === plan.schemeCode }));
-    setPlans(updated);
-    setSelectedPlan(plan.schemeType);
-    setIsProceedDisabled(false);
-  };
-
-  const proceedWithPlan = async () => {
-    if (!selectedPlan) {
-      toast.warning('Please select a plan to continue.', { position: 'bottom-center', autoClose: 2000 });
-      return;
-    }
-    showSpinner();
-    const selectedPlanObj = plans.find((p) => p.schemeType === selectedPlan);
-    const reqData = {
-      flag: 'schemeselection',
-      FormNumber: typeof window !== 'undefined' ? sessionStorage.getItem('FormNumber') : '',
-      schemeCode: selectedPlanObj?.schemeCode || '',
-      schemeType: selectedPlan,
-    };
-    try {
-      const response = await apiService.postRequest('api/v1/schemeSegmentDetail/save', reqData, hideSpinner);
-      if (response?.status === true) {
-        if (rejectStatus !== 'R') {
-          setTimeout(() => { router.push('/planprocess/3'); hideSpinner(); }, 200);
-        } else {
-          setTimeout(() => { navigationService.navigateToNextStep(); hideSpinner(); }, 200);
-        }
-      } else {
-        toast.warning(response?.message || 'Error', { position: 'bottom-center', autoClose: 3000 });
-        hideSpinner();
-      }
-    } catch { hideSpinner(); }
+  const proceedWithPlan = () => {
+    router.push('/planprocess/3');
   };
 
   const backToDeclaration = () => {
-    showSpinner();
-    setTimeout(() => { router.push('/planprocess/1'); hideSpinner(); }, 200);
+    router.push('/planprocess/1');
   };
+
+  const openKnowMore = (index: number) => {
+    setKnowMoreIndex(index);
+    setShowKnowMore(true);
+  };
+
+  const kmStat = PLAN_STATIC[knowMoreIndex];
+  const kmName = PLAN_NAMES[knowMoreIndex];
 
   return (
     <>
-      {/* Desktop */}
-      <div className="desktop_css">
-        <section className="pan_details_form" aria-labelledby="plan-pref-heading-desk">
-          <div className="container">
-            <div className="row">
-              <div className="col-lg-10 col-12 m-auto">
-                <form method="post" aria-label="Plan Preference">
-                  <div>
-                    <div className="col-lg-12 col-md-12 col-12">
-                      <div className="d-flex align-items-start gap-2">
-                        {rejectStatus !== 'R' && (
-                          <div onClick={backToDeclaration} style={{ cursor: 'pointer' }}>
-                            <span>
-                              <svg width="24" height="25" viewBox="0 0 24 25" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <g clipPath="url(#clip0_plan)">
-                                  <path d="M5 12.5H19" stroke="black" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                  <path d="M5 12.5L11 18.5" stroke="black" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                  <path d="M5 12.5L11 6.5" stroke="black" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                </g>
-                                <defs><clipPath id="clip0_plan"><rect width="24" height="24" fill="white" transform="translate(0 0.5)" /></clipPath></defs>
-                              </svg>
-                            </span>
-                          </div>
+      {/* ─── Mobile ────────────────────────────────────────── */}
+      <main className={styles.mobilePage}>
+        <div className={styles.mobileHeader}>
+          <div className={styles.mobileHeaderTop}>
+            {rejectStatus !== 'R' && (
+              <button className={styles.mobileBackBtn} onClick={backToDeclaration} aria-label="Back">
+                <BackArrow />
+              </button>
+            )}
+            <button className={styles.dpTariffBtn} type="button">
+              <PdfIcon />
+              DP Tariff
+            </button>
+          </div>
+          <div>
+            <p className={styles.mobileTitle}>Plan Selection</p>
+            <p className={styles.mobileSubtitle}>Select a plan that works best for your investment and trading needs</p>
+          </div>
+        </div>
+
+        <div className={styles.mobilePlanCard}>
+          {/* Splide carousel — one plan card per slide */}
+          <div className={styles.splideWrapper}>
+            <Splide
+              options={{
+                type: 'loop',
+                perPage: 1,
+                perMove: 1,
+                pagination: true,
+                arrows: false,
+                gap: '16px',
+                padding: { left: '16px', right: '40px' },
+                autoWidth: false,
+              }}
+            >
+              {PLAN_STATIC.map((s, i) => {
+                const isSelected = selectedIndex === i;
+                const cardClass = [
+                  styles.slideCard,
+                  s.highlighted ? styles.slideCardHighlighted : '',
+                ].filter(Boolean).join(' ');
+                return (
+                  <SplideSlide key={i}>
+                    <div className={cardClass}>
+                      {/* Icon + name + badge */}
+                      <div className={styles.slideIconRow}>
+                        <PlanIcon index={i} size={28} />
+                        <p className={styles.slidePlanName}>{PLAN_NAMES[i]}</p>
+                        {isSelected && (
+                          <span className={styles.slideBadge}>
+                            <CheckCircleIcon />
+                            Selected
+                          </span>
                         )}
-                        <div className="d-flex flex-column align-items-start gap-2">
-                          <h5 id="plan-pref-heading-desk">Select Your Plan</h5>
-                          <p className="sub_title">Choose the brokerage plan that suits you best</p>
-                        </div>
                       </div>
-                    </div>
-                    <hr />
-                    {plans.map((plan, i) => (
-                      <div key={plan.schemeCode || i} className="col-lg-12 mb-3">
-                        <label
-                          htmlFor={`plan-desk-${i}`}
-                          className={`square-box p-3 d-block ${plan.selected ? 'selected' : ''}`}
-                          style={{ cursor: 'pointer' }}
-                        >
-                          <div className="pan_details_align">
-                            <input
-                              id={`plan-desk-${i}`}
-                              name="plan"
-                              className="form-check-input"
-                              type="radio"
-                              checked={!!plan.selected}
-                              onChange={() => selectPlan(plan)}
-                            />
-                            <div className="upload_css">
-                              {plan.schemeTypeLogo && (
-                                <img src={`${BASE_URL}${plan.schemeTypeLogo}`} alt={plan.schemeType} style={{ height: 40, marginBottom: 8 }} />
-                              )}
-                              <h5>{plan.schemeType}</h5>
-                              {plan.description && <p className="sub_title">{plan.description}</p>}
+
+                      {/* Price */}
+                      <div className={styles.slidePriceRow}>
+                        <div className={styles.slidePriceAmount}>
+                          {s.desktopPrice === '0' ? (
+                            <span style={{ fontSize: 32, fontWeight: 600, color: '#222', lineHeight: 'normal' }}>ZERO</span>
+                          ) : (
+                            <span className={styles.slidePriceValue}>{s.desktopPrice}</span>
+                          )}
+                          {s.mobilePriceGst && <span className={styles.slidePriceGst}>{s.mobilePriceGst}</span>}
+                        </div>
+                        <p className={styles.slideFeeLabel}>{s.feeLabel}</p>
+                      </div>
+
+                      <div className={styles.slideDivider} />
+
+                      {/* Brokerage */}
+                      <div className={styles.slideBrokerageBlock}>
+                        <p>
+                          <span className={styles.brokerageMain}>{s.brokerageMain}</span>
+                          {' '}
+                          <span className={styles.brokerageLabel}>Brokerage</span>
+                        </p>
+                        <span className={styles.brokerageNote}>{s.brokerageNote}</span>
+                      </div>
+
+                      <div className={styles.slideDivider} />
+
+                      {/* Benefits */}
+                      <div className={styles.slideBenefits}>
+                        <p className={styles.slideBenefitsTitle}>Lifetime Benefits Include:</p>
+                        {s.benefits.map((b, bi) => (
+                          <div key={bi} className={styles.slideBenefitItem}>
+                            <DoneIcon size={12} />
+                            <div>
+                              <p>{b.text}</p>
+                              {b.sub && <span className={styles.subLine}>{b.sub}</span>}
                             </div>
                           </div>
-                        </label>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                  <div className="proceed_btn">
-                    <button className="btn btn_cls" disabled={isProceedDisabled} onClick={proceedWithPlan}>Proceed</button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
-        </section>
-      </div>
 
-      {/* Mobile */}
-      <div className="mobile_css">
-        <section className="pan_details_form" aria-labelledby="plan-pref-heading-mob">
-          <div className="container">
-            <div className="row">
-              <div className="back_cls">
-                {rejectStatus !== 'R' && (
-                  <div onClick={backToDeclaration} style={{ cursor: 'pointer' }}>
-                    <img src="/assets/images/diy/ChevronLeft.png" aria-hidden="true" alt="" /> Back
-                  </div>
-                )}
-                {rejectStatus === 'R' && <div className="back_cls2"></div>}
-                <div className="d-flex flex-column align-items-start gap-2">
-                  <h5 id="plan-pref-heading-mob">Select Your Plan</h5>
-                  <p className="sub_title">Choose the brokerage plan that suits you best</p>
-                </div>
-              </div>
-              <form method="post">
-                <div className="group_btn">
-                  {plans.map((plan, i) => (
-                    <div
-                      key={plan.schemeCode || i}
-                      className="square-box p-3"
-                      style={{ cursor: 'pointer' }}
-                      onClick={() => selectPlan(plan)}
-                    >
-                      <div className="pan_details_align">
-                        <input
-                          id={`plan-mob-${i}`}
-                          name="plan"
-                          className="form-check-input"
-                          type="radio"
-                          checked={!!plan.selected}
-                          onChange={() => selectPlan(plan)}
-                        />
-                        <div className="upload_css">
-                          {plan.schemeTypeLogo && (
-                            <img src={`${BASE_URL}${plan.schemeTypeLogo}`} alt={plan.schemeType} style={{ height: 40, marginBottom: 8 }} />
-                          )}
-                          <h5>{plan.schemeType}</h5>
-                          {plan.description && <p className="sub_title">{plan.description}</p>}
-                        </div>
+                      {/* Actions */}
+                      <div className={styles.slideActions}>
+                        <button
+                          type="button"
+                          className={styles.slideProceedBtn}
+                          onClick={() => { setSelectedIndex(i); proceedWithPlan(); }}
+                        >
+                          Proceed
+                        </button>
+                        <button type="button" className={styles.slideKnowMore} onClick={() => openKnowMore(i)}>
+                          Know More
+                        </button>
                       </div>
+                    </div>
+                  </SplideSlide>
+                );
+              })}
+            </Splide>
+          </div>
+
+          {/* Comparison table */}
+          <div className={styles.comparisonBanner}>
+            <p><strong>ZERO</strong> Interest for 23 trading days for Margin Trading</p>
+            <p>and <strong>FREE</strong> AMC for 1 year</p>
+          </div>
+
+          <div className={styles.comparisonScrollArea}>
+            <div className={styles.comparisonSectionHeader}><p>Equity</p></div>
+            <div className={styles.comparisonDataRow}>
+              {PLAN_STATIC.map((s, i) => (
+                <div key={i} className={`${styles.comparisonCol} ${i === 1 ? styles.comparisonColMiddle : ''}`}>
+                  {s.equity.map((cell, ci) => (
+                    <div key={ci} className={styles.comparisonCell}>
+                      <p className={styles.cellVal}>{cell.val}</p>
+                      <p className={styles.cellLbl}>{cell.lbl}</p>
                     </div>
                   ))}
                 </div>
-              </form>
-              <div className="stickybtn">
-                <button className="btn btn_cls" disabled={isProceedDisabled} onClick={proceedWithPlan}>Proceed</button>
+              ))}
+            </div>
+
+            <div className={styles.comparisonSectionHeader}><p>Derivatives (F&amp;O)</p></div>
+            <div className={styles.comparisonDataRow}>
+              {PLAN_STATIC.map((s, i) => (
+                <div key={i} className={`${styles.comparisonCol} ${i === 1 ? styles.comparisonColMiddle : ''}`}>
+                  {s.derivatives.map((cell, ci) => (
+                    <div key={ci} className={styles.comparisonCell}>
+                      <p className={styles.cellVal}>{cell.val}</p>
+                      <p className={styles.cellLbl}>{cell.lbl}</p>
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+
+            <p className={styles.comparisonFootnote}>
+              *Zero Brokerage on Delivery till 75 lakh Delivery Trade Volume for Premium Plan
+            </p>
+          </div>
+        </div>
+
+        <div className={styles.mobileProceedArea}>
+          <button type="button" className={styles.mobileProceedBtn} onClick={proceedWithPlan}>
+            Proceed
+          </button>
+        </div>
+      </main>
+
+      {/* ─── Desktop ───────────────────────────────────────── */}
+      <div className={styles.desktopPage}>
+        <div className={styles.desktopCard}>
+          <div className={styles.desktopCardHeader}>
+            <div className={styles.desktopHeaderLeft}>
+              {rejectStatus !== 'R' && (
+                <button className={styles.desktopBackBtn} onClick={backToDeclaration} aria-label="Back">
+                  <BackArrow />
+                </button>
+              )}
+              <div>
+                <p className={styles.desktopCardTitle}>Plan Selection</p>
+                <p className={styles.desktopCardSubtitle}>
+                  Basis your trading preferences, we recommend the below plans.<br />
+                  Select 1 of these 3 plans to begin your investment journey.
+                </p>
               </div>
             </div>
+            <button className={styles.dpTariffBtn} type="button">
+              <PdfIcon />
+              DP Tariff
+            </button>
           </div>
-        </section>
+
+          <div className={styles.desktopCardBody}>
+            {PLAN_STATIC.map((s, i) => {
+              const isSelected = selectedIndex === i;
+              const cardClass = [
+                styles.planCard,
+                s.highlighted ? styles.planCardHighlighted : '',
+              ].filter(Boolean).join(' ');
+              return (
+                <div key={i} className={cardClass}>
+                  <div className={styles.planCardInner}>
+                    <div className={styles.planTopSection}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, width: '100%' }}>
+                        <div className={styles.planIconRow}>
+                          <PlanIcon index={i} size={31} />
+                          <p className={styles.planName}>{PLAN_NAMES[i]}</p>
+                          {isSelected && (
+                            <span className={styles.planBadge}>
+                              <CheckCircleIcon />
+                              Selected
+                            </span>
+                          )}
+                        </div>
+                        <div className={styles.planPriceRow}>
+                          <div className={styles.planPriceAmount}>
+                            <span className={styles.planPriceValue}>{s.desktopPrice}</span>
+                            <span className={styles.planPriceGst}>{s.priceGst}</span>
+                          </div>
+                          <p className={styles.planFeeLabel}>{s.feeLabel}</p>
+                        </div>
+                      </div>
+
+                      <div className={styles.planMiddleSection}>
+                        <div className={styles.planDivider} />
+                        <div className={styles.planBrokerageBlock}>
+                          <p>
+                            <span className={styles.brokerageMain}>{s.brokerageMain}</span>
+                            {' '}
+                            <span className={styles.brokerageLabel}>Brokerage</span>
+                          </p>
+                          <span className={styles.brokerageNote}>{s.brokerageNote}</span>
+                        </div>
+                        <div className={styles.planDivider} />
+                      </div>
+
+                      <div className={styles.planBenefitsSection}>
+                        <p className={styles.planBenefitsTitle}>Lifetime Benefits Include:</p>
+                        {s.benefits.map((b, bi) => (
+                          <div key={bi} className={styles.planBenefitItem}>
+                            <DoneIcon />
+                            <div>
+                              <p>{b.text}</p>
+                              {b.sub && <span className={styles.subLine}>{b.sub}</span>}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className={styles.planActionsSection}>
+                      <button
+                        type="button"
+                        className={styles.planProceedBtn}
+                        onClick={() => { setSelectedIndex(i); proceedWithPlan(); }}
+                      >
+                        Proceed
+                      </button>
+                      <button type="button" className={styles.planKnowMore} onClick={() => openKnowMore(i)}>
+                        Know More
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
+
+      {/* ─── Know More Modal ───────────────────────────────── */}
+      {showKnowMore && (
+        <div
+          className={styles.modalOverlay}
+          onClick={() => setShowKnowMore(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-label={`${kmName} plan details`}
+        >
+          <div className={styles.modalSheet} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalDash} aria-hidden="true" />
+
+            <div className={styles.modalCloseRow}>
+              <button className={styles.modalCloseBtn} onClick={() => setShowKnowMore(false)} aria-label="Close">
+                <CloseIcon />
+              </button>
+              <p className={styles.modalTitle}>{kmName} Plan Details</p>
+            </div>
+
+            <div className={styles.modalPlanHeader}>
+              <PlanIcon index={knowMoreIndex} size={30} />
+              <p>{kmName}</p>
+            </div>
+
+            <div className={styles.modalScrollContent}>
+              {/* Desktop: 2-column layout */}
+              <div className={styles.modalColumnsRow}>
+                <div style={{ flex: 1 }}>
+                  <p className={styles.modalColumnHeader}>Equity</p>
+                  <div className={styles.modalList}>
+                    {kmStat.equity.map((item, fi) => (
+                      <div key={fi}>
+                        <div className={styles.modalListItem}>
+                          <ModalDoneIcon />
+                          <p><strong>{item.val}</strong> {item.lbl}</p>
+                        </div>
+                        <div className={styles.modalItemDivider} />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <p className={styles.modalColumnHeader}>Derivatives (F&amp;O)</p>
+                  <div className={styles.modalList}>
+                    {kmStat.derivatives.map((item, fi) => (
+                      <div key={fi}>
+                        <div className={styles.modalListItem}>
+                          <ModalDoneIcon />
+                          <p><strong>{item.val}</strong> {item.lbl}</p>
+                        </div>
+                        <div className={styles.modalItemDivider} />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Mobile: single-column list */}
+              <div className={styles.modalListMobile}>
+                <p className={styles.modalColumnHeader}>Equity</p>
+                {kmStat.equity.map((item, fi) => (
+                  <div key={fi}>
+                    <div className={styles.modalListItem}>
+                      <ModalDoneIcon />
+                      <p><strong>{item.val}</strong> {item.lbl}</p>
+                    </div>
+                    <div className={styles.modalItemDivider} />
+                  </div>
+                ))}
+                <p className={styles.modalColumnHeader} style={{ marginTop: 16 }}>Derivatives (F&amp;O)</p>
+                {kmStat.derivatives.map((item, fi) => (
+                  <div key={fi}>
+                    <div className={styles.modalListItem}>
+                      <ModalDoneIcon />
+                      <p><strong>{item.val}</strong> {item.lbl}</p>
+                    </div>
+                    <div className={styles.modalItemDivider} />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <button
+              type="button"
+              className={styles.modalCloseActionBtn}
+              onClick={() => setShowKnowMore(false)}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 }
