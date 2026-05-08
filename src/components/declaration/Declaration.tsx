@@ -12,7 +12,7 @@ import styles from './declaration.module.scss';
 // Figma: Onboarding / Step 4 / Declaration → 0:25471 (mobile) + 0:25592 (desktop)
 
 const lifecycleDays = [
-  { Days: 'Daily', description: 'Daily' },
+  { Days: 'Daily', description: 'on or before 1st Friday of every month' },
   { Days: '30 Days', description: 'on or before 1st Friday of every month' },
   { Days: '90 Days', description: 'on or before 1st Friday of every quarter (Jan, Apr, Jul, Oct)' },
 ];
@@ -965,54 +965,56 @@ export default function Declaration() {
         </>
       )}
 
-      {/* Fund Settlement Cycle Modal */}
+      {/* Fund Settlement Cycle Modal — Figma 0:105487 (desktop) / 0:105189 (mobile) */}
       {showFundCycleModal && (
-        <>
-          <div
-            className="modal fade show uploadPan"
-            style={{ display: 'block' }}
-            tabIndex={-1}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="fundCycleModalTitle"
-          >
-            <div className="modal-dialog">
-              <div className="modal-content">
-                <div className="modal-header d-block p-3" style={{ cursor: 'pointer' }} onClick={() => setShowFundCycleModal(false)}>
-                  <h1 className="modal-title fs-5" id="fundCycleModalTitle" />
-                  <button type="button" className="btn-horizontal-line" aria-label="Close modal" onClick={() => setShowFundCycleModal(false)} />
-                </div>
-                <div className="modal-body">
-                  <h5 className="text-center mb-3">Fund settlement cycle</h5>
-                  {lifecycleDays.map((option, i) => (
-                    <label key={i} className={styles.fundOptionLabel}>
-                      <input
-                        type="radio"
-                        name="fundCycleRadio"
-                        checked={selectedOption.Days === option.Days}
-                        onChange={() => selectOption(option)}
-                      />
-                      <div className={styles.fundOptionText}>
-                        <h5>{option.Days}</h5>
-                        <span>{option.description}</span>
-                      </div>
-                    </label>
-                  ))}
-                  <p className={styles.fundNote}>
-                    <span>Note: </span>
-                    Fund settlement cycle — all unused funds from your SBI Securities account get transferred back to your bank account.
-                  </p>
-                </div>
-                <div className="modal-footer p-0">
-                  <button type="button" className="btn btn_cls" onClick={() => setShowFundCycleModal(false)}>
-                    Done
-                  </button>
-                </div>
+        <div
+          className={styles.fscOverlay}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="fsc-modal-title"
+          onClick={() => setShowFundCycleModal(false)}
+        >
+          <div className={styles.fscSheet} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.fscDash} aria-hidden="true" />
+
+            <div className={styles.fscContent}>
+              <p id="fsc-modal-title" className={styles.fscTitle}>Fund settlement cycle</p>
+
+              <div className={styles.fscOptions}>
+                {lifecycleDays.map((option) => (
+                  <label key={option.Days} className={styles.fscOption}>
+                    <input
+                      type="radio"
+                      name="fsc-radio"
+                      className={styles.fscRadio}
+                      checked={selectedOption.Days === option.Days}
+                      onChange={() => selectOption(option)}
+                    />
+                    <div className={styles.fscOptionContent}>
+                      <p className={styles.fscOptionTitle}>{option.Days}</p>
+                      <p className={styles.fscOptionDesc}>{option.description}</p>
+                    </div>
+                  </label>
+                ))}
+              </div>
+
+              <div className={styles.fscNote}>
+                <p>
+                  <strong>Note:</strong>{' '}
+                  Fund settlement cycle, all unused funds from your SBI Securities account gets transferred back to your bank account.
+                </p>
               </div>
             </div>
+
+            <button
+              type="button"
+              className={styles.fscDoneBtn}
+              onClick={() => setShowFundCycleModal(false)}
+            >
+              Done
+            </button>
           </div>
-          <div className="modal-backdrop fade show" />
-        </>
+        </div>
       )}
 
       {/* Confirm Preference Change Modal */}

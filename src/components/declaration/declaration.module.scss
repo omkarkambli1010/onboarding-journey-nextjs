@@ -678,3 +678,179 @@ $shadow-card-desk: 0px 2px 10px 0px rgba(0, 0, 0, 0.05);
     flex: 1;
   }
 }
+
+// ─── Fund Settlement Cycle Modal ─────────────────────────────────
+// Figma: 0:105487 (desktop) / 0:105189 (mobile)
+
+@keyframes decl-fsc-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes decl-fsc-scale-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes decl-fsc-slide-up {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+.fscOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 9100;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  animation: decl-fsc-fade-in 0.2s ease;
+
+  @media (min-width: 768px) {
+    align-items: center;
+  }
+}
+
+.fscSheet {
+  background: $bg-white;
+  border-radius: 20px 20px 0 0;
+  padding: 24px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  align-items: flex-start;
+  box-shadow: 3px 4px 5px rgba(0, 0, 0, 0.15);
+  animation: decl-fsc-slide-up 0.3s ease;
+
+  @media (min-width: 768px) {
+    border-radius: 20px;
+    border: 1px solid $border-card;
+    max-width: 480px;
+    align-items: center;
+    box-shadow: none;
+    animation: decl-fsc-scale-in 0.2s ease;
+  }
+}
+
+// Dash handle — mobile only
+.fscDash {
+  width: 100px;
+  height: 4px;
+  background: $border-card;
+  border-radius: 100px;
+  align-self: center;
+  flex-shrink: 0;
+
+  @media (min-width: 768px) {
+    display: none;
+  }
+}
+
+// Full-width body: title + options + note
+.fscContent {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+}
+
+.fscTitle {
+  font-size: 20px;
+  font-weight: 600;
+  color: $text-dark;
+  margin: 0;
+  line-height: normal;
+}
+
+.fscOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+}
+
+.fscOption {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  cursor: pointer;
+  width: 100%;
+}
+
+.fscRadio {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  accent-color: $primary;
+  cursor: pointer;
+  margin-top: 1px;
+}
+
+.fscOptionContent {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.fscOptionTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: $text-dark;
+  line-height: 22px;
+  margin: 0;
+}
+
+.fscOptionDesc {
+  font-size: 14px;
+  font-weight: 400;
+  color: $text-body;
+  line-height: 22px;
+  margin: 0;
+}
+
+// Note box — Figma: bg #f8f8ff, border #d9d9d9, rounded-8, py-10 px-16
+.fscNote {
+  background: #f8f8ff;
+  border: 1px solid $border-card;
+  border-radius: 8px;
+  padding: 10px 16px;
+  width: 100%;
+  box-sizing: border-box;
+
+  p {
+    font-size: 12px;
+    font-weight: 400;
+    color: $text-body;
+    line-height: 18px;
+    margin: 0;
+  }
+
+  strong {
+    font-weight: 700;
+    color: $text-body;
+  }
+}
+
+// Done button — mobile: 100% w × 48px; desktop: 350px × 56px
+.fscDoneBtn {
+  width: 100%;
+  height: 48px;
+  background: $primary;
+  color: $bg-white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  line-height: 20px;
+  flex-shrink: 0;
+
+  @media (min-width: 768px) {
+    width: 350px;
+    height: 56px;
+  }
+}
