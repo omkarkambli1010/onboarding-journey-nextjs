@@ -150,7 +150,7 @@ export default function ReversePennyDrop() {
         setShowLimitmsg(false);
         setHideCTAbtn(false);
         toast.success(response.message, { position: 'bottom-center', autoClose: 2500 });
-        setTimeout(() => { router.push('/reversePennyDrop/2'); hideSpinner(); }, 200);
+        setTimeout(() => { router.push('/'); hideSpinner(); }, 200);
       } else {
         setShowLimitmsg(false);
         setHideCTAbtn(false);
@@ -227,7 +227,7 @@ export default function ReversePennyDrop() {
           setAccountNumber(d?.acc_number || '');
           setRpdData(d?.bankname_address || '');
           if (typeof window !== 'undefined') sessionStorage.setItem('TriggerEvent', 'N');
-          setTimeout(() => { router.push('/reversePennyDrop/2'); hideSpinner(); }, 200);
+          setTimeout(() => { router.push('/'); hideSpinner(); }, 200);
         } else {
           if (rpdWebHookIntervalRef.current) clearInterval(rpdWebHookIntervalRef.current);
           if (typeof window !== 'undefined') sessionStorage.setItem('mode', 'RevPennyDrop');
@@ -283,7 +283,7 @@ export default function ReversePennyDrop() {
   const redirecttoPennyDrop = () => {
     showSpinner();
     document.querySelectorAll('.modal-backdrop').forEach((el) => el.remove());
-    setTimeout(() => { router.push('/PennyDrop/1'); hideSpinner(); }, 200);
+    setTimeout(() => { router.push('/'); hideSpinner(); }, 200);
   };
 
   const redirectPlanSelection = () => {
@@ -308,7 +308,7 @@ export default function ReversePennyDrop() {
       const response = await apiService.postRequest('api/v1/BankDetails/Chosebankaccount', reqData, hideSpinner);
       if (response?.status === true) {
         if (typeof window !== 'undefined') sessionStorage.removeItem('mode');
-        setTimeout(() => { router.push('/reversePennyDrop/1'); }, 200);
+        setTimeout(() => { router.push('/'); }, 200);
       } else {
         toast.error(response?.message || 'Error', { position: 'bottom-center', autoClose: 4000 });
         hideSpinner();

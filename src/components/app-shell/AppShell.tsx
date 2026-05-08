@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { usePathname } from 'next/navigation';
 import Header from '@/components/header/Header';
 import Spinner from '@/components/spinner/Spinner';
 import Lenis from 'lenis';
@@ -10,15 +9,8 @@ import Lenis from 'lenis';
 // Handles: header visibility, back-button prevention, devtools blocking,
 // right-click prevention, zoom disable, smooth scrolling (Lenis), cache clearing
 
-const EXCLUDED_HEADER_ROUTES = ['yono-mobile', 'yono-sso', 'yono-email'];
-
 export default function AppShell({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
   const lenisRef = useRef<Lenis | null>(null);
-
-  const isExcludedRoute = EXCLUDED_HEADER_ROUTES.some((route) =>
-    pathname?.includes(route)
-  );
 
   const getDeviceType = (): 'Mobile' | 'Tablet' | 'Desktop' => {
     if (typeof navigator === 'undefined') return 'Desktop';
@@ -27,8 +19,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     if (/tablet/i.test(ua)) return 'Tablet';
     return 'Desktop';
   };
-
-  const isHeaderVisible = (): boolean => !isExcludedRoute;
 
   useEffect(() => {
     // Clear service worker caches on load
@@ -103,7 +93,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      {isHeaderVisible() && <Header />}
+      <Header />
       <Spinner />
       <main>{children}</main>
     </>

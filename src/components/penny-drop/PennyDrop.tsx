@@ -79,7 +79,7 @@ export default function PennyDrop() {
       sessionStorage.setItem('selectedBankLogo', bank.BankLogo);
       sessionStorage.setItem('selectedBankPrefix', bank.BankPrefix || '');
     }
-    router.push('/PennyDrop/2');
+    router.push('/');
   };
 
   const validateAccountForm = () => {
@@ -93,7 +93,7 @@ export default function PennyDrop() {
   };
 
   const BackToPennyDropOne = () => {
-    router.push('/PennyDrop/1');
+    router.push('/');
   };
 
   const verifyBank = async () => {

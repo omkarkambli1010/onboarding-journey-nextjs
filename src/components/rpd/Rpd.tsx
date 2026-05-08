@@ -73,7 +73,7 @@ export default function Rpd() {
         hideSpinner();
       } else if (response?.message === 'Bank Account Already Verified') {
         toast.success(response.message, { position: 'bottom-center', autoClose: 2500 });
-        setTimeout(() => { router.push('/reversePennyDrop/2'); hideSpinner(); }, 200);
+        setTimeout(() => { router.push('/'); hideSpinner(); }, 200);
       } else {
         toast.success(response?.message || '', { position: 'bottom-center', autoClose: 4000 });
         hideSpinner();
@@ -113,7 +113,7 @@ export default function Rpd() {
           setEnteredIFSCNumber(d?.acc_holder_ifsc || '');
           setAccountNumber(d?.acc_number || '');
           setRpdData(d?.bankname_address || '');
-          setTimeout(() => { router.push('/reversePennyDrop/2'); hideSpinner(); }, 200);
+          setTimeout(() => { router.push('/'); hideSpinner(); }, 200);
         } else {
           if (rpdWebHookIntervalRef.current) clearInterval(rpdWebHookIntervalRef.current);
           if (typeof window !== 'undefined') sessionStorage.setItem('mode', 'RevPennyDrop');

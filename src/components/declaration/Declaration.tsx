@@ -383,10 +383,6 @@ export default function Declaration() {
     document.querySelectorAll('.modal-backdrop').forEach((el) => el.remove());
     if (yonobankstatus === 'UNIQUE' && (isYonoClient === 'YONO' || isYonoClient === 'Branch Portal')) {
       setTimeout(() => { router.push('/personalDetailsForm/5'); hideSpinner(); }, 200);
-    } else if (mode === 'Penny Drop' || mode === 'OCR') {
-      setTimeout(() => { router.push('/PennyDrop/2'); hideSpinner(); }, 200);
-    } else if (mode === 'RevPennyDrop') {
-      setTimeout(() => { router.push('/reversePennyDrop/2'); hideSpinner(); }, 200);
     } else {
       setTimeout(() => { router.push('/personalDetailsForm/6'); hideSpinner(); }, 200);
     }

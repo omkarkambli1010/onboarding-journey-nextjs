@@ -94,9 +94,15 @@ export default function ManualBankInfo() {
     setTimeout(() => { router.back(); hideSpinner(); }, 200);
   };
 
-  const handleProceed = () => {
+  // TODO: replace with real API call once endpoint is available
+  const submitBankDetails = async (): Promise<void> => {
+    // await apiService.postRequest('api/v1/BankDetails/submit', { ... });
+  };
+
+  const handleProceed = async () => {
     showSpinner();
-    setTimeout(() => { router.push('/PennyDrop/1'); hideSpinner(); }, 200);
+    await submitBankDetails();
+    setTimeout(() => { router.push('/planprocess/1'); hideSpinner(); }, 200);
   };
 
   return (
