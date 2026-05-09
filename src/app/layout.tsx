@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.scss';
 // PrimeReact, Bootstrap & Toast CSS — loaded globally
 import 'primereact/resources/themes/lara-light-purple/theme.css';
@@ -11,28 +11,13 @@ import '@splidejs/react-splide/css/core';
 import Providers from '@/lib/providers';
 import AppShell from '@/components/app-shell/AppShell';
 
-// Suppress hydration warnings from browser extensions (e.g., FormData, password managers)
-// that inject attributes like fdprocessedid into form elements
-if (typeof window !== 'undefined') {
-  const originalError = console.error;
-  console.error = (...args: any[]) => {
-    if (
-      args[0]?.includes?.('Hydration mismatch') &&
-      args[0]?.includes?.('fdprocessedid')
-    ) {
-      return;
-    }
-    originalError(...args);
-  };
-}
-
-// Root layout — equivalent to Angular AppModule + AppComponent
 export const metadata: Metadata = {
   title: 'Open Demat Account - Free Demat & Trading Account Opening Online | SBI Securities',
   description:
     'Open Demat Account - Zero Cost Demat & Trading Account opening online at SBI Securities; ₹0* Brokerage till ₹75 lakh Trades, Flat Brokerage ₹20/order* and Zero AMC for 1st Year & more',
   keywords: 'demat account, trading account, SBI Securities, open demat account online',
   robots: 'index, follow',
+  icons: { icon: '/favicon.ico' },
   openGraph: {
     title: 'Open Demat Account | SBI Securities',
     description: 'Open a free Demat & Trading Account in minutes with SBI Securities.',
@@ -40,14 +25,14 @@ export const metadata: Metadata = {
   },
 };
 
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+};
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <head>
-        <meta charSet="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <link rel="icon" href="/favicon.ico" />
-      </head>
+    <html lang="en" data-scroll-behavior="smooth">
       <body>
         <Providers>
           <AppShell>{children}</AppShell>
