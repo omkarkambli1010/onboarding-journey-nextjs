@@ -2,12 +2,19 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Splide, SplideSlide } from '@splidejs/react-splide';
 import styles from './plan-preference.module.scss';
 
 // ─── Static Plan Data ──────────────────────────────────────────
 
 const PLAN_NAMES = ['Basic', 'Special', 'Premium'];
+
+const PLAN_ICONS = [
+  '/assets/plan-icons/plan-icon-basic.svg',
+  '/assets/plan-icons/plan-icon-special.svg',
+  '/assets/plan-icons/plan-icon-premium.svg',
+];
+
+type BenefitKind = 'solid' | 'carry' | 'open';
 
 const PLAN_STATIC = [
   {
@@ -18,10 +25,12 @@ const PLAN_STATIC = [
     brokerageNote: '*On Equity Intraday Trades',
     highlighted: false,
     mobilePriceGst: '',
+    innerGap: 45,
+    actionsGap: 12,
     benefits: [
-      { text: '0.50% on Delivery Trade' },
-      { text: '₹50/Lot on Options' },
-      { text: '0.50% on E-Margin', sub: '*0% interest for 23 trading days' },
+      { type: 'solid' as BenefitKind, text: '0.50% on Delivery Trade' },
+      { type: 'solid' as BenefitKind, text: '₹50/Lot on Options' },
+      { type: 'open' as BenefitKind, text: '0.50% on E-Margin', sub: '*0% interest for 23 trading days' },
     ],
     equity: [
       { val: '₹20/order', lbl: 'on Intraday' },
@@ -43,10 +52,12 @@ const PLAN_STATIC = [
     brokerageNote: '*On all Intraday Trades',
     highlighted: true,
     mobilePriceGst: '+ GST',
+    innerGap: 42,
+    actionsGap: 16,
     benefits: [
-      { text: '0.20% on Equity Delivery' },
-      { text: '₹20/Order on Carry Forward Options' },
-      { text: '0.50% on E-Margin', sub: '*0% interest for 23 trading days' },
+      { type: 'solid' as BenefitKind, text: '0.20% on Equity Delivery' },
+      { type: 'carry' as BenefitKind, text: '₹20/Order on Carry Forward Options' },
+      { type: 'open' as BenefitKind, text: '0.50% on E-Margin', sub: '*0% interest for 23 trading days' },
     ],
     equity: [
       { val: '₹0', lbl: 'on Intraday' },
@@ -68,11 +79,13 @@ const PLAN_STATIC = [
     brokerageNote: '*Till 75 Lacs Delivery Trade Value',
     highlighted: false,
     mobilePriceGst: '+ GST',
+    innerGap: 24,
+    actionsGap: 12,
     benefits: [
-      { text: '₹20 on Equity Intraday' },
-      { text: '0.20% on Equity Delivery' },
-      { text: '₹20/Order on Carry Forward Options' },
-      { text: '0.40% on E-Margin', sub: '*0% interest for 23 trading days' },
+      { type: 'solid' as BenefitKind, text: '₹20 on Equity Intraday' },
+      { type: 'solid' as BenefitKind, text: '0.20% on Equity Delivery' },
+      { type: 'carry' as BenefitKind, text: '₹20/Order on Carry Forward Options' },
+      { type: 'open' as BenefitKind, text: '0.40% on E-Margin', sub: '*0% interest for 23 trading days' },
     ],
     equity: [
       { val: '₹20/order', lbl: 'on Intraday' },
@@ -98,11 +111,6 @@ const BackArrow = () => (
   </svg>
 );
 
-const CloseIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-    <path d="M18 6L6 18M6 6l12 12" stroke="#222" strokeWidth="1.5" strokeLinecap="round" />
-  </svg>
-);
 
 const PdfIcon = () => (
   <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -113,53 +121,61 @@ const PdfIcon = () => (
   </svg>
 );
 
-const DoneIcon = ({ size = 12 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 12 12" fill="none" style={{ flexShrink: 0 }}>
-    <circle cx="6" cy="6" r="6" fill="#280071" fillOpacity="0.12" />
-    <path d="M3.5 6.2l1.8 1.8 3.2-3.8" stroke="#280071" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
 
-const CheckCircleIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
-    <circle cx="8" cy="8" r="7.5" stroke="#9d76ff" />
-    <path d="M4.5 8.5l2.5 2.5 4.5-5" stroke="#280071" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
-
-const ModalDoneIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" style={{ flexShrink: 0 }}>
+const ModalDoneIcon = ({ size = 20 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 20 20" fill="none" style={{ flexShrink: 0 }}>
     <circle cx="10" cy="10" r="9.5" stroke="#280071" strokeOpacity="0.3" />
     <path d="M6 10.5l3 3 5-6" stroke="#280071" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
 
-const ICON_FILLS = ['#E5E5E5', '#FFE5EE', '#EBE5FF'];
-const ICON_TEXTS = ['#666666', '#C0448A', '#280071'];
 
-const PlanIcon = ({ index, size = 28 }: { index: number; size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 28 28" fill="none" style={{ flexShrink: 0 }}>
-    <circle cx="14" cy="14" r="14" fill={ICON_FILLS[index]} />
-    <text
-      x="14" y="19"
-      textAnchor="middle"
-      fontSize="12"
-      fontWeight="700"
-      fill={ICON_TEXTS[index]}
-      fontFamily="sans-serif"
-    >
-      {PLAN_NAMES[index][0]}
-    </text>
-  </svg>
-);
+// ─── Desktop benefit item (Figma 0-49002) ─────────────────────
+
+function DesktopBenefitItem({ type, text, sub }: { type: BenefitKind; text: string; sub?: string }) {
+  if (type === 'carry') {
+    return (
+      <div className={styles.dBenefitCarry}>
+        <img src="/assets/plan-icons/done-carry.svg" alt="" className={styles.dBenefitCarryIcon} width={12} height={12} />
+        <div className={styles.dBenefitCarryText}>
+          <p>{'₹20/Order on Carry Forward '}</p>
+          <p>Options</p>
+        </div>
+      </div>
+    );
+  }
+  if (type === 'open') {
+    return (
+      <div className={`${styles.dBenefitItem} ${styles.dBenefitItemTop}`}>
+        <div className={styles.dBenefitOpenWrap}>
+          <img src="/assets/plan-icons/done-open.svg" alt="" width={10} height={10} />
+        </div>
+        <div className={styles.dBenefitTextMulti}>
+          <span>{text}</span>
+          {sub && <span className={styles.dBenefitSub}>{sub}</span>}
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className={styles.dBenefitItem}>
+      <div className={styles.dBenefitIconWrap}>
+        <img src="/assets/plan-icons/done-solid.svg" alt="" width={12} height={12} />
+      </div>
+      <span className={styles.dBenefitText}>{text}</span>
+    </div>
+  );
+}
 
 // ─── Component ────────────────────────────────────────────────
 
 export default function PlanPreference() {
   const router = useRouter();
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(1);
   const [showKnowMore, setShowKnowMore] = useState(false);
   const [knowMoreIndex, setKnowMoreIndex] = useState(0);
+
+  const middleIndex = Math.floor(PLAN_STATIC.length / 2);
 
   const rejectStatus = typeof window !== 'undefined' ? sessionStorage.getItem('RejectStatus') : null;
 
@@ -184,121 +200,66 @@ export default function PlanPreference() {
       {/* ─── Mobile ────────────────────────────────────────── */}
       <main className={styles.mobilePage}>
         <div className={styles.mobileHeader}>
-          <div className={styles.mobileHeaderTop}>
-            {rejectStatus !== 'R' && (
-              <button className={styles.mobileBackBtn} onClick={backToDeclaration} aria-label="Back">
-                <BackArrow />
-              </button>
-            )}
-            <button className={styles.dpTariffBtn} type="button">
-              <PdfIcon />
-              DP Tariff
+          {rejectStatus !== 'R' && (
+            <button className={styles.mobileBackBtn} onClick={backToDeclaration} aria-label="Back">
+              <BackArrow />
             </button>
-          </div>
-          <div>
-            <p className={styles.mobileTitle}>Plan Selection</p>
+          )}
+          <div className={styles.mobileHeaderInfo}>
+            <div className={styles.mobileHeaderTop}>
+              <p className={styles.mobileTitle}>Plan Selection</p>
+              <button className={styles.dpTariffBtn} type="button">
+                <PdfIcon />
+                DP Tariff
+              </button>
+            </div>
             <p className={styles.mobileSubtitle}>Select a plan that works best for your investment and trading needs</p>
           </div>
         </div>
 
         <div className={styles.mobilePlanCard}>
-          {/* Splide carousel — one plan card per slide */}
-          <div className={styles.splideWrapper}>
-            <Splide
-              options={{
-                type: 'loop',
-                perPage: 1,
-                perMove: 1,
-                pagination: true,
-                arrows: false,
-                gap: '16px',
-                padding: { left: '16px', right: '40px' },
-                autoWidth: false,
-              }}
-            >
-              {PLAN_STATIC.map((s, i) => {
-                const isSelected = selectedIndex === i;
-                const cardClass = [
-                  styles.slideCard,
-                  s.highlighted ? styles.slideCardHighlighted : '',
-                ].filter(Boolean).join(' ');
-                return (
-                  <SplideSlide key={i}>
-                    <div className={cardClass}>
-                      {/* Icon + name + badge */}
-                      <div className={styles.slideIconRow}>
-                        <PlanIcon index={i} size={28} />
-                        <p className={styles.slidePlanName}>{PLAN_NAMES[i]}</p>
-                        {isSelected && (
-                          <span className={styles.slideBadge}>
-                            <CheckCircleIcon />
-                            Selected
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Price */}
-                      <div className={styles.slidePriceRow}>
-                        <div className={styles.slidePriceAmount}>
-                          {s.desktopPrice === '0' ? (
-                            <span style={{ fontSize: 32, fontWeight: 600, color: '#222', lineHeight: 'normal' }}>ZERO</span>
-                          ) : (
-                            <span className={styles.slidePriceValue}>{s.desktopPrice}</span>
-                          )}
-                          {s.mobilePriceGst && <span className={styles.slidePriceGst}>{s.mobilePriceGst}</span>}
-                        </div>
-                        <p className={styles.slideFeeLabel}>{s.feeLabel}</p>
-                      </div>
-
-                      <div className={styles.slideDivider} />
-
-                      {/* Brokerage */}
-                      <div className={styles.slideBrokerageBlock}>
-                        <p>
-                          <span className={styles.brokerageMain}>{s.brokerageMain}</span>
-                          {' '}
-                          <span className={styles.brokerageLabel}>Brokerage</span>
-                        </p>
-                        <span className={styles.brokerageNote}>{s.brokerageNote}</span>
-                      </div>
-
-                      <div className={styles.slideDivider} />
-
-                      {/* Benefits */}
-                      <div className={styles.slideBenefits}>
-                        <p className={styles.slideBenefitsTitle}>Lifetime Benefits Include:</p>
-                        {s.benefits.map((b, bi) => (
-                          <div key={bi} className={styles.slideBenefitItem}>
-                            <DoneIcon size={12} />
-                            <div>
-                              <p>{b.text}</p>
-                              {b.sub && <span className={styles.subLine}>{b.sub}</span>}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-
-                      {/* Actions */}
-                      <div className={styles.slideActions}>
-                        <button
-                          type="button"
-                          className={styles.slideProceedBtn}
-                          onClick={() => { setSelectedIndex(i); proceedWithPlan(); }}
-                        >
-                          Proceed
-                        </button>
-                        <button type="button" className={styles.slideKnowMore} onClick={() => openKnowMore(i)}>
-                          Know More
-                        </button>
-                      </div>
+          {/* 3-column plan selector tabs */}
+          <div className={styles.mobilePlanTabs}>
+            {PLAN_STATIC.map((s, i) => {
+              const isMiddle = i === middleIndex;
+              const isSelected = selectedIndex === i;
+              return (
+                <div
+                  key={i}
+                  className={[
+                    styles.mobilePlanTab,
+                    isMiddle && !isSelected ? styles.mobilePlanTabMiddle : '',
+                    isSelected ? styles.mobilePlanTabSelected : '',
+                  ].filter(Boolean).join(' ')}
+                >
+                  <img src={PLAN_ICONS[i]} alt={PLAN_NAMES[i]} className={styles.tabIcon} />
+                  <div className={styles.tabNamePrice}>
+                    <p className={styles.tabName}>{PLAN_NAMES[i]}</p>
+                    <div>
+                      <p className={styles.tabPrice}>
+                        {s.desktopPrice === '0'
+                          ? 'ZERO'
+                          : <>₹{s.desktopPrice}{s.mobilePriceGst && <span className={styles.tabPriceGst}> {s.mobilePriceGst}</span>}</>
+                        }
+                      </p>
+                      <p className={styles.tabPriceSub}>
+                        {s.desktopPrice === '0' ? 'Zero fees' : 'One-time fees'}
+                      </p>
                     </div>
-                  </SplideSlide>
-                );
-              })}
-            </Splide>
+                  </div>
+                  <button
+                    type="button"
+                    className={[styles.tabSelectBtn, isSelected ? styles.tabSelectBtnSelected : ''].filter(Boolean).join(' ')}
+                    onClick={() => isSelected ? proceedWithPlan() : setSelectedIndex(i)}
+                  >
+                    {isSelected ? 'Selected' : 'Select'}
+                  </button>
+                </div>
+              );
+            })}
           </div>
 
-          {/* Comparison table */}
+          {/* Comparison banner */}
           <div className={styles.comparisonBanner}>
             <p><strong>ZERO</strong> Interest for 23 trading days for Margin Trading</p>
             <p>and <strong>FREE</strong> AMC for 1 year</p>
@@ -308,7 +269,7 @@ export default function PlanPreference() {
             <div className={styles.comparisonSectionHeader}><p>Equity</p></div>
             <div className={styles.comparisonDataRow}>
               {PLAN_STATIC.map((s, i) => (
-                <div key={i} className={`${styles.comparisonCol} ${i === 1 ? styles.comparisonColMiddle : ''}`}>
+                <div key={i} className={[styles.comparisonCol, selectedIndex === i ? styles.comparisonColSelected : i === middleIndex ? styles.comparisonColMiddle : ''].filter(Boolean).join(' ')}>
                   {s.equity.map((cell, ci) => (
                     <div key={ci} className={styles.comparisonCell}>
                       <p className={styles.cellVal}>{cell.val}</p>
@@ -322,7 +283,7 @@ export default function PlanPreference() {
             <div className={styles.comparisonSectionHeader}><p>Derivatives (F&amp;O)</p></div>
             <div className={styles.comparisonDataRow}>
               {PLAN_STATIC.map((s, i) => (
-                <div key={i} className={`${styles.comparisonCol} ${i === 1 ? styles.comparisonColMiddle : ''}`}>
+                <div key={i} className={[styles.comparisonCol, selectedIndex === i ? styles.comparisonColSelected : i === middleIndex ? styles.comparisonColMiddle : ''].filter(Boolean).join(' ')}>
                   {s.derivatives.map((cell, ci) => (
                     <div key={ci} className={styles.comparisonCell}>
                       <p className={styles.cellVal}>{cell.val}</p>
@@ -337,12 +298,6 @@ export default function PlanPreference() {
               *Zero Brokerage on Delivery till 75 lakh Delivery Trade Volume for Premium Plan
             </p>
           </div>
-        </div>
-
-        <div className={styles.mobileProceedArea}>
-          <button type="button" className={styles.mobileProceedBtn} onClick={proceedWithPlan}>
-            Proceed
-          </button>
         </div>
       </main>
 
@@ -371,79 +326,107 @@ export default function PlanPreference() {
           </div>
 
           <div className={styles.desktopCardBody}>
-            {PLAN_STATIC.map((s, i) => {
-              const isSelected = selectedIndex === i;
-              const cardClass = [
-                styles.planCard,
-                s.highlighted ? styles.planCardHighlighted : '',
-              ].filter(Boolean).join(' ');
-              return (
-                <div key={i} className={cardClass}>
-                  <div className={styles.planCardInner}>
-                    <div className={styles.planTopSection}>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, width: '100%' }}>
-                        <div className={styles.planIconRow}>
-                          <PlanIcon index={i} size={31} />
-                          <p className={styles.planName}>{PLAN_NAMES[i]}</p>
-                          {isSelected && (
-                            <span className={styles.planBadge}>
-                              <CheckCircleIcon />
-                              Selected
-                            </span>
-                          )}
-                        </div>
-                        <div className={styles.planPriceRow}>
-                          <div className={styles.planPriceAmount}>
-                            <span className={styles.planPriceValue}>{s.desktopPrice}</span>
-                            <span className={styles.planPriceGst}>{s.priceGst}</span>
+            <div className={styles.dCardsRow}>
+              {PLAN_STATIC.map((s, i) => {
+                const isSpecial = i === 1;
+                const isPremium = i === 2;
+                const isSelected = selectedIndex === i;
+                return (
+                  <div
+                    key={i}
+                    className={[
+                      styles.dCard,
+                      isSelected ? styles.dCardSelected : '',
+                      isPremium ? styles.dCardPremium : '',
+                    ].join(' ')}
+                    onClick={() => setSelectedIndex(i)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <div
+                      className={`${styles.dCardInner} ${isPremium ? styles.dCardInnerPremium : ''}`}
+                      style={{ gap: s.innerGap }}
+                    >
+                      <div className={styles.dCardTop}>
+                        {/* Plan icon + name + selected badge */}
+                        <div className={styles.dPlanHeader}>
+                          <div className={styles.dTitleRow}>
+                            <img src={PLAN_ICONS[i]} alt="" width={isSpecial ? 30 : 31} height={isSpecial ? 30 : 31} className={styles.dPlanIcon} />
+                            <span className={styles.dPlanName}>{PLAN_NAMES[i]}</span>
+                            {isSelected && (
+                              <span className={styles.dSelectedBadge}>
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
+                                  <circle cx="8" cy="8" r="7.5" fill="#280071" stroke="#280071" />
+                                  <path d="M4.5 8.5L6.5 10.5L11.5 5.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                                Selected
+                              </span>
+                            )}
                           </div>
-                          <p className={styles.planFeeLabel}>{s.feeLabel}</p>
-                        </div>
-                      </div>
 
-                      <div className={styles.planMiddleSection}>
-                        <div className={styles.planDivider} />
-                        <div className={styles.planBrokerageBlock}>
-                          <p>
-                            <span className={styles.brokerageMain}>{s.brokerageMain}</span>
-                            {' '}
-                            <span className={styles.brokerageLabel}>Brokerage</span>
-                          </p>
-                          <span className={styles.brokerageNote}>{s.brokerageNote}</span>
-                        </div>
-                        <div className={styles.planDivider} />
-                      </div>
-
-                      <div className={styles.planBenefitsSection}>
-                        <p className={styles.planBenefitsTitle}>Lifetime Benefits Include:</p>
-                        {s.benefits.map((b, bi) => (
-                          <div key={bi} className={styles.planBenefitItem}>
-                            <DoneIcon />
-                            <div>
-                              <p>{b.text}</p>
-                              {b.sub && <span className={styles.subLine}>{b.sub}</span>}
+                          {/* Price */}
+                          <div className={styles.dPriceSection}>
+                            <div className={styles.dPriceRow}>
+                              <div className={styles.dPriceAmount}>
+                                <span className={styles.dPriceRupee}>₹</span>
+                                <span className={styles.dPriceNumber}>{s.desktopPrice}</span>
+                              </div>
+                              <span className={styles.dPriceGst}>Excl. GST</span>
                             </div>
+                            <span className={styles.dPriceLabel}>{s.feeLabel}</span>
                           </div>
-                        ))}
-                      </div>
-                    </div>
+                        </div>
 
-                    <div className={styles.planActionsSection}>
-                      <button
-                        type="button"
-                        className={styles.planProceedBtn}
-                        onClick={() => { setSelectedIndex(i); proceedWithPlan(); }}
-                      >
-                        Proceed
-                      </button>
-                      <button type="button" className={styles.planKnowMore} onClick={() => openKnowMore(i)}>
-                        Know More
-                      </button>
+                        {/* Brokerage */}
+                        <div className={styles.dBrokerageSection}>
+                          <div className={styles.dDivider} />
+                          <div className={styles.dBrokerageText}>
+                            <p>
+                              <strong className={styles.dBrokerageHL}>{s.brokerageMain}</strong>
+                              <span className={styles.dBrokerageBody}>{' Brokerage'}</span>
+                            </p>
+                            <p><span className={styles.dBrokerageNote}>{s.brokerageNote}</span></p>
+                          </div>
+                          <div className={styles.dDivider} />
+                        </div>
+
+                        {/* Benefits */}
+                        <div className={styles.dBenefitsSection}>
+                          <span className={styles.dBenefitsTitle}>Lifetime Benefits Include:</span>
+                          {s.benefits.map((b, bi) => (
+                            <DesktopBenefitItem key={bi} type={b.type} text={b.text} sub={'sub' in b ? b.sub : undefined} />
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Actions */}
+                      <div className={styles.dCardActions} style={{ gap: s.actionsGap }}>
+                        <button
+                          type="button"
+                          className={styles.dProceedBtn}
+                          onClick={(e) => { e.stopPropagation(); setSelectedIndex(i); proceedWithPlan(); }}
+                        >
+                          Proceed
+                        </button>
+                        <button
+                          type="button"
+                          className={styles.dKnowMoreBtn}
+                          onClick={(e) => { e.stopPropagation(); openKnowMore(i); }}
+                        >
+                          Know More
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
+            {PLAN_STATIC.length > 3 && (
+              <div className={styles.dPaginationDots} aria-hidden="true">
+                {PLAN_STATIC.map((_, i) => (
+                  <span key={i} className={`${styles.dDot} ${selectedIndex === i ? styles.dDotActive : ''}`} />
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -458,17 +441,24 @@ export default function PlanPreference() {
           aria-label={`${kmName} plan details`}
         >
           <div className={styles.modalSheet} onClick={(e) => e.stopPropagation()}>
+            {/* Mobile: drag handle */}
             <div className={styles.modalDash} aria-hidden="true" />
 
+            {/* Desktop: back arrow row */}
             <div className={styles.modalCloseRow}>
               <button className={styles.modalCloseBtn} onClick={() => setShowKnowMore(false)} aria-label="Close">
-                <CloseIcon />
+                <BackArrow />
               </button>
+            </div>
+
+            {/* Desktop: title row */}
+            <div className={styles.modalTitleRow}>
               <p className={styles.modalTitle}>{kmName} Plan Details</p>
             </div>
 
+            {/* Mobile: plan icon + name */}
             <div className={styles.modalPlanHeader}>
-              <PlanIcon index={knowMoreIndex} size={30} />
+              <img src={PLAN_ICONS[knowMoreIndex]} alt="" width={30} height={30} />
               <p>{kmName}</p>
             </div>
 
@@ -484,7 +474,7 @@ export default function PlanPreference() {
                           <ModalDoneIcon />
                           <p><strong>{item.val}</strong> {item.lbl}</p>
                         </div>
-                        <div className={styles.modalItemDivider} />
+                        {fi < kmStat.equity.length - 1 && <div className={styles.modalItemDivider} />}
                       </div>
                     ))}
                   </div>
@@ -498,33 +488,22 @@ export default function PlanPreference() {
                           <ModalDoneIcon />
                           <p><strong>{item.val}</strong> {item.lbl}</p>
                         </div>
-                        <div className={styles.modalItemDivider} />
+                        {fi < kmStat.derivatives.length - 1 && <div className={styles.modalItemDivider} />}
                       </div>
                     ))}
                   </div>
                 </div>
               </div>
 
-              {/* Mobile: single-column list */}
+              {/* Mobile: combined flat list — equity + derivatives, no section headers */}
               <div className={styles.modalListMobile}>
-                <p className={styles.modalColumnHeader}>Equity</p>
-                {kmStat.equity.map((item, fi) => (
+                {[...kmStat.equity, ...kmStat.derivatives].map((item, fi, arr) => (
                   <div key={fi}>
                     <div className={styles.modalListItem}>
-                      <ModalDoneIcon />
+                      <ModalDoneIcon size={16} />
                       <p><strong>{item.val}</strong> {item.lbl}</p>
                     </div>
-                    <div className={styles.modalItemDivider} />
-                  </div>
-                ))}
-                <p className={styles.modalColumnHeader} style={{ marginTop: 16 }}>Derivatives (F&amp;O)</p>
-                {kmStat.derivatives.map((item, fi) => (
-                  <div key={fi}>
-                    <div className={styles.modalListItem}>
-                      <ModalDoneIcon />
-                      <p><strong>{item.val}</strong> {item.lbl}</p>
-                    </div>
-                    <div className={styles.modalItemDivider} />
+                    {fi < arr.length - 1 && <div className={styles.modalItemDivider} />}
                   </div>
                 ))}
               </div>

@@ -16,7 +16,8 @@ $border-plan-hl: #bda7ff;
   display: flex;
   flex-direction: column;
   background: $bg-page;
-  min-height: calc(100vh - 90px);
+  height: calc(100vh - 90px);
+  overflow: hidden;
 
   @media (min-width: 992px) { display: none; }
 }
@@ -62,8 +63,15 @@ $border-plan-hl: #bda7ff;
   font-size: 12px;
   font-weight: 400;
   color: #2b2b2b;
-  margin: 4px 0 0;
+  margin: 0;
   line-height: normal;
+}
+
+.mobileHeaderInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
 }
 
 // ─── DP Tariff Button ────────────────────────────────────────
@@ -91,10 +99,10 @@ $border-plan-hl: #bda7ff;
   border-top-left-radius: 24px;
   border-top-right-radius: 24px;
   flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  padding-bottom: 72px;
 }
 
 // ─── Mobile Splide Carousel ───────────────────────────────────
@@ -224,8 +232,8 @@ $border-plan-hl: #bda7ff;
 }
 
 .slideDivider {
-  height: 1px;
-  background: $border-card;
+  height: 0;
+  border-top: 1px dashed $border-card;
   width: 100%;
 }
 
@@ -323,7 +331,7 @@ $border-plan-hl: #bda7ff;
 .mobilePlanTabMiddle { background: rgba(241, 241, 246, 0.37); }
 
 .mobilePlanTabSelected {
-  background: radial-gradient(ellipse at center bottom, rgba(191, 166, 255, 0.85) 0%, rgba(235, 229, 255, 0.55) 55%, #fff 100%);
+  background: radial-gradient(ellipse at center bottom, #fff 0%, rgba(235, 229, 255, 1) 55%, rgba(191, 166, 255, 1) 85%);
 }
 
 .tabIcon {
@@ -337,7 +345,7 @@ $border-plan-hl: #bda7ff;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0;
+  gap: 8px;
 }
 
 .tabName {
@@ -380,9 +388,25 @@ $border-plan-hl: #bda7ff;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
+  background: $primary;
+  color: $bg-white;
+  border: 1px solid $primary;
 
-  &.filled { background: $primary; color: $bg-white; border: 1px solid $primary; }
-  &.outline { background: $bg-white; color: $primary; border: 1px solid $primary; }
+  &:hover { opacity: 0.9; }
+}
+
+.tabSelectBtnSelected {
+  background: $bg-white;
+  color: $primary;
+  border-color: $primary;
+
+  &:hover { opacity: 0.8; }
+}
+
+.comparisonColSelected {
+  background: #f8f7ff;
+  border-left: 0.5px solid $border-card;
+  border-right: 0.5px solid $border-card;
 }
 
 // ─── Mobile Comparison Table ──────────────────────────────────
@@ -562,216 +586,366 @@ $border-plan-hl: #bda7ff;
 }
 
 .desktopCardBody {
-  padding: 40px 16px 32px;
+  padding: 60px 0 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  min-height: 582px;
+}
+
+// ─── Desktop Plan Cards (Figma NRE-RI 0:49002) ───────────────
+
+$d-border-plan:    #e7ebff;
+$d-border-hl:      #bda7ff;
+$d-shadow:         inset 0px 26px 40px 11px rgba(216, 206, 255, 0.2);
+$d-shadow-hl:      inset 0px 26px 40px 11px rgba(216, 206, 255, 0.5);
+$d-text-emargin:   #290172;
+
+.dCardsRow {
   display: flex;
   gap: 24px;
+  padding: 0 16px;
+  align-items: center;
   justify-content: center;
-  align-items: stretch;
-}
-
-// ─── Desktop Plan Cards ───────────────────────────────────────
-
-.planCard {
-  flex: 1;
-  max-width: 240px;
-  border: 1px solid $border-plan;
-  border-radius: 12px;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  background: $bg-white;
-  position: relative;
-  box-shadow: inset 0px 26px 40px 11px rgba(216, 206, 255, 0.2);
-}
-
-.planCardHighlighted {
-  border-color: $border-plan-hl;
-  background: radial-gradient(ellipse at top left, rgba(235, 229, 255, 1) 56%, rgba(196, 174, 255, 1) 78%, rgba(157, 118, 255, 1) 100%);
-  box-shadow: inset 0px 26px 40px 11px rgba(216, 206, 255, 0.5);
-}
-
-.planCardInner {
-  display: flex;
-  flex-direction: column;
-  gap: 45px;
   width: 100%;
-  align-items: center;
 }
 
-.planCardHighlighted .planCardInner { gap: 42px; }
+.dCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden;
+  padding: 16px;
+  border: 1px solid $d-border-plan;
+  border-radius: 12px;
+  background: $bg-white;
+  width: 240px;
+  flex-shrink: 0;
+  box-shadow: $d-shadow;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
 
-.planTopSection {
+.dCardSpecial {
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg viewBox='0 0 240 472' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'%3E%3Crect x='0' y='0' height='100%25' width='100%25' fill='url(%23grad)' opacity='1'/%3E%3Cdefs%3E%3CradialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(18.35 45.739 -52.572 26.637 56.5 89.343)'%3E%3Cstop stop-color='rgba(235%2C229%2C255%2C1)' offset='0.56426'/%3E%3Cstop stop-color='rgba(196%2C174%2C255%2C1)' offset='0.78213'/%3E%3Cstop stop-color='rgba(157%2C118%2C255%2C1)' offset='1'/%3E%3C/radialGradient%3E%3C/defs%3E%3C/svg%3E");
+  background-size: 100% 100%;
+}
+
+.dCardSelected {
+  border-color: $d-border-hl;
+  box-shadow: $d-shadow-hl;
+}
+
+.dCardPremium {
+  flex: 1 0 0;
+  min-width: 1px;
+  width: auto;
+}
+
+.dCardInner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.dCardInnerPremium {
+  width: 208px;
+}
+
+.dCardTop {
   display: flex;
   flex-direction: column;
   gap: 16px;
   width: 100%;
-}
-
-.planIconRow {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  height: 31px;
-  width: 100%;
-}
-
-.planIcon {
-  width: 31px;
-  height: 31px;
-  object-fit: contain;
   flex-shrink: 0;
 }
 
-.planName {
-  font-size: 14px;
-  font-weight: 400;
-  color: #141414;
-  letter-spacing: -1px;
-  margin: 0;
-  flex: 1;
-}
-
-.planBadge {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  background: $bg-white;
-  border: 1px solid #9d76ff;
-  border-radius: 4px;
-  padding: 4px 6px;
-  font-size: 12px;
-  font-weight: 600;
-  color: $primary;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.planPriceRow {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.planPriceAmount {
-  display: flex;
-  align-items: flex-end;
-  gap: 4px;
-}
-
-.planPriceValue {
-  font-size: 40px;
-  font-weight: 600;
-  color: #222;
-  line-height: normal;
-  padding-left: 12px;
-  position: relative;
-
-  &::before {
-    content: '₹';
-    font-size: 20px;
-    font-weight: 500;
-    position: absolute;
-    left: 0;
-    top: 50%;
-    transform: translateY(-50%);
-  }
-}
-
-.planPriceGst {
-  font-size: 12px;
-  font-weight: 400;
-  color: $text-body;
-  line-height: 20px;
-  padding-bottom: 6px;
-}
-
-.planFeeLabel {
-  font-size: 12px;
-  font-weight: 600;
-  color: $primary;
-  margin: 0;
-  line-height: normal;
-}
-
-.planMiddleSection {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  width: 100%;
-}
-
-.planDivider {
-  height: 1px;
-  background: $border-card;
-  width: 100%;
-  flex-shrink: 0;
-}
-
-.planBrokerageBlock {
-  text-align: center;
-  width: 100%;
-  height: 35px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-
-  .brokerageMain { font-size: 16px; font-weight: 700; color: $primary; }
-  .brokerageLabel { font-size: 14px; font-weight: 400; color: #222; }
-  .brokerageNote { font-size: 10px; font-weight: 400; color: #000; display: block; line-height: 18px; }
-}
-
-.planBenefitsSection {
+.dPlanHeader {
   display: flex;
   flex-direction: column;
   gap: 8px;
   width: 100%;
-  min-height: 130px;
 }
 
-.planBenefitsTitle {
-  font-size: 10px;
-  font-weight: 600;
-  color: $primary;
-  margin: 0;
-}
-
-.planBenefitItem {
+.dTitleRow {
   display: flex;
-  align-items: flex-start;
-  gap: 4px;
-  width: 100%;
-
-  p { font-size: 12px; font-weight: 400; color: #222; line-height: 20px; margin: 0; }
-  .subLine { font-size: 12px; color: #290172; line-height: 18px; display: block; }
-}
-
-.planActionsSection {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  gap: 10px;
+  height: 31px;
   align-items: center;
   width: 100%;
 }
 
-.planProceedBtn {
+.dPlanIcon {
+  flex-shrink: 0;
+  display: block;
+}
+
+.dPlanName {
+  flex: 1 0 0;
+  min-width: 1px;
+  font-size: 14px;
+  font-weight: 400;
+  color: #141414;
+  letter-spacing: -1px;
+  white-space: nowrap;
+  line-height: normal;
+}
+
+.dSelectedBadge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 4px 6px;
+  border: 1px solid #9d76ff;
+  border-radius: 4px;
+  background: $bg-white;
+  flex-shrink: 0;
+  overflow: hidden;
+  font-size: 12px;
+  font-weight: 600;
+  color: $primary;
+  white-space: nowrap;
+}
+
+.dPriceSection {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+}
+
+.dPriceRow {
+  display: flex;
+  gap: 4px;
+  align-items: flex-end;
+}
+
+.dPriceAmount {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding-left: 12px;
+  color: $text-dark;
+  white-space: nowrap;
+  line-height: 0;
+}
+
+.dPriceRupee {
+  position: absolute;
+  left: 0;
+  top: 21.5px;
+  transform: translateY(-50%);
+  font-size: 20px;
+  font-weight: 500;
+  line-height: normal;
+}
+
+.dPriceNumber {
+  font-size: 40px;
+  font-weight: 600;
+  line-height: normal;
+}
+
+.dPriceGst {
+  font-size: 12px;
+  font-weight: 400;
+  color: $text-body;
+  white-space: nowrap;
+  line-height: 20px;
+  padding-bottom: 6px;
+}
+
+.dPriceLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: $primary;
+  white-space: nowrap;
+  line-height: normal;
+}
+
+.dBrokerageSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.dDivider {
+  height: 0;
+  border-top: 1px dashed $border-card;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.dBrokerageText {
+  height: 35px;
+  text-align: center;
+  width: 100%;
+  font-size: 0;
+  line-height: 0;
+
+  p { margin-bottom: 0; line-height: 18px; }
+}
+
+.dBrokerageHL {
+  font-size: 16px;
+  font-weight: 700;
+  color: $primary;
+  line-height: 18px;
+}
+
+.dBrokerageBody {
+  font-size: 14px;
+  font-weight: 400;
+  color: $text-dark;
+  line-height: 18px;
+}
+
+.dBrokerageNote {
+  font-size: 10px;
+  font-weight: 400;
+  color: #000;
+  line-height: 18px;
+}
+
+.dBenefitsSection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.dBenefitsTitle {
+  font-size: 10px;
+  font-weight: 600;
+  color: $primary;
+  white-space: nowrap;
+  line-height: normal;
+  display: block;
+}
+
+.dBenefitItem {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.dBenefitItemTop { align-items: flex-start; }
+
+.dBenefitIconWrap {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+  position: relative;
+
+  img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+}
+
+.dBenefitOpenWrap {
+  width: 12px;
+  height: 15px;
+  overflow: hidden;
+  padding-top: 5px;
+  padding-left: 1px;
+  padding-right: 1px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+
+  img { width: 10px; height: 10px; display: block; flex-shrink: 0; }
+}
+
+.dBenefitText {
+  font-size: 12px;
+  font-weight: 400;
+  color: $text-dark;
+  line-height: 20px;
+  white-space: nowrap;
+}
+
+.dBenefitTextMulti {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12px;
+  font-weight: 400;
+  color: $text-dark;
+  line-height: 18px;
+  white-space: nowrap;
+}
+
+.dBenefitSub { color: $d-text-emargin; }
+
+.dBenefitCarry {
+  position: relative;
+  display: flex;
+  gap: 4px;
+  align-items: flex-start;
+  width: 100%;
+  height: 40px;
+  flex-shrink: 0;
+}
+
+.dBenefitCarryIcon {
+  position: absolute;
+  left: 0;
+  top: 5px;
+  width: 12px;
+  height: 12px;
+  display: block;
+}
+
+.dBenefitCarryText {
+  position: absolute;
+  left: 16px;
+  top: 0;
+  font-size: 12px;
+  font-weight: 400;
+  color: $text-dark;
+  line-height: 0;
+  white-space: nowrap;
+
+  p { line-height: 20px; margin-bottom: 0; white-space: pre; }
+}
+
+.dCardActions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.dProceedBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
   height: 36px;
   background: $primary;
-  color: $bg-white;
   border: 1px solid $primary;
   border-radius: 8px;
+  padding: 14px 24px;
+  color: $bg-white;
   font-size: 12px;
   font-weight: 500;
+  white-space: nowrap;
   cursor: pointer;
+  line-height: normal;
 
   &:hover { opacity: 0.9; }
 }
 
-.planKnowMore {
+.dKnowMoreBtn {
   font-size: 12px;
   font-weight: 600;
   color: $primary;
+  white-space: nowrap;
   line-height: 18px;
   cursor: pointer;
   background: none;
@@ -779,6 +953,26 @@ $border-plan-hl: #bda7ff;
   padding: 0;
 
   &:hover { text-decoration: underline; }
+}
+
+.dPaginationDots {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  justify-content: center;
+}
+
+.dDot {
+  width: 8px;
+  height: 6px;
+  border-radius: 3px;
+  background: $border-card;
+  transition: width 0.2s ease, background-color 0.2s ease;
+}
+
+.dDotActive {
+  width: 16px;
+  background: $primary;
 }
 
 // ─── Know More Modal ──────────────────────────────────────────
@@ -846,9 +1040,14 @@ $border-plan-hl: #bda7ff;
 .modalCloseRow {
   display: none;
   align-items: center;
-  gap: 8px;
 
   @media (min-width: 768px) { display: flex; }
+}
+
+.modalTitleRow {
+  display: none;
+
+  @media (min-width: 768px) { display: block; flex-shrink: 0; }
 }
 
 .modalCloseBtn {
@@ -877,11 +1076,12 @@ $border-plan-hl: #bda7ff;
   align-items: center;
   gap: 10px;
   flex-shrink: 0;
+  margin-bottom: 14px;
 
   img { width: 30px; height: 31px; object-fit: contain; flex-shrink: 0; }
   p { font-size: 14px; font-weight: 400; color: #141414; letter-spacing: -1px; margin: 0; }
 
-  @media (min-width: 768px) { display: none; }
+  @media (min-width: 768px) { display: none; margin-bottom: 0; }
 }
 
 .modalScrollContent {
@@ -936,14 +1136,16 @@ $border-plan-hl: #bda7ff;
 }
 
 .modalItemDivider {
-  height: 1px;
-  background: $border-card;
+  height: 0;
+  border-top: 1px dashed $border-card;
   width: 100%;
   margin-top: 12px;
 }
 
 .modalCloseActionBtn {
   width: 100%;
+  max-width: 328px;
+  align-self: center;
   height: 48px;
   background: $primary;
   color: $bg-white;
@@ -953,7 +1155,6 @@ $border-plan-hl: #bda7ff;
   font-weight: 600;
   cursor: pointer;
   flex-shrink: 0;
-  margin-top: 4px;
 
   @media (min-width: 768px) { display: none; }
 }
