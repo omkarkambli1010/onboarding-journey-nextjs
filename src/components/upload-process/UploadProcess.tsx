@@ -1,12 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter, useParams, usePathname } from 'next/navigation';
 import { toast } from '@/services/toast.service';
 import { Splide, SplideSlide } from '@splidejs/react-splide';
 import { Calendar } from 'primereact/calendar';
 import { useSpinner } from '@/components/spinner/Spinner';
 import apiService from '@/services/api.service';
+import { buildFaqUrl } from '@/lib/faq-link';
 import styles from './upload-process.module.scss';
 
 // Convert 'YYYY-MM-DD' string → Date | null  (for Calendar value prop)
@@ -126,7 +127,10 @@ function VerifyingContent() {
 export default function UploadProcess() {
   const router = useRouter();
   const params = useParams();
+  const pathname = usePathname();
   const { show: showSpinner, hide: hideSpinner } = useSpinner();
+
+  const openFaq = () => router.push(buildFaqUrl(pathname || '/'));
 
   const [pan, setPan]               = useState('');
   const [name, setName]             = useState('');
@@ -316,7 +320,7 @@ export default function UploadProcess() {
                 {/* Figma: 18px SemiBold #222 */}
                 <h1 className={styles.desktopCardTitle}>Enter PAN Card Details</h1>
                 {/* Figma: pill badge bg rgba(207,169,255,0.09), border 0.5px #d9d9d9, rounded-25px */}
-                <button type="button" className={styles.needHelpBadge} suppressHydrationWarning>Need Help?</button>
+                <button type="button" className={styles.needHelpBadge} suppressHydrationWarning onClick={openFaq}>Need Help?</button>
               </div>
               {/* Figma: 14px Regular #666 */}
               <p className={styles.desktopCardSubtitle}>Enter details exactly as per your PAN</p>

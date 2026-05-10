@@ -1106,14 +1106,20 @@ section {
   }
 
   // Mobile header: back btn + title on gray background
-  // Figma: flex-col, gap-12px, px-16px, py-12px, rounded-bottom-20px
+  // Figma 0:39345: flex-col, gap-12px, px-16px, py-12px, rounded-bottom-20px
   .pan_details_form .back_cls {
     display: flex !important;
     flex-direction: column;
+    align-items: flex-start;
     gap: 12px;
     padding: 12px 16px 20px;
     background: #f8f8f8;
     border-radius: 0 0 20px 20px;
+
+    // Figma 0:39413: title→subtitle gap is 4px (not the shared 8px)
+    .sp-header-text {
+      gap: 4px;
+    }
 
     h5 {
       font-size: 16px;
@@ -1127,6 +1133,18 @@ section {
       color: #666;
       margin: 0;
     }
+  }
+
+  // Figma: 16px gap between gray header (0:39343) and white body card (0:39416)
+  .pan_details_form .back_cls + .sp-mob-card {
+    margin-top: 16px;
+  }
+
+  // Optical alignment: the inline back-arrow SVG has 5px inner padding inside
+  // its 24×24 box (paths span x=5 → x=19). Without this offset, the arrow tip
+  // sits 5px right of the title-text glyphs that stack beneath it.
+  .pan_details_form .back_cls .sp-back-btn {
+    margin-left: -5px;
   }
 
   // figma-card: transparent wrapper on mobile (header is hidden via desktop_css)
@@ -1627,7 +1645,8 @@ section {
   width: 24px;
   height: 24px;
 
-  img { display: block; width: 100%; height: 100%; }
+  img,
+  svg { display: block; width: 100%; height: 100%; }
 }
 
 // ── Shared: header text block ──────────────────────────────
@@ -1692,7 +1711,9 @@ section {
   &:hover { opacity: 0.8; }
 }
 
-// ── Shared: custom checkbox (gray bg + white check image) ──
+// ── Shared: custom checkbox (gray bg + white check when ticked) ──
+// Figma 0:44526/0:39432: 24×24 #d9d9d9 rounded-4. When checked, fill turns
+// primary purple and a white check icon appears centered.
 .sp-checkbox {
   width: 24px;
   height: 24px;
@@ -1702,8 +1723,93 @@ section {
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
 
-  img { display: block; }
+  img,
+  svg { display: block; }
+}
+
+.sp-checkbox.sp-checkbox--checked {
+  background: #280071;
+}
+
+// ── Shared: Risk disclosure card (Figma 0:44531 / 0:44809) ─
+// Light blue card with bullet list + SEBI source. Appears when Derivatives is checked.
+.sp-risk-card {
+  width: 100%;
+  background: #f1f6ff;
+  border: 0.5px solid #d9d9d9;
+  border-radius: 16px;
+  padding: 16px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.sp-risk-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #222;
+  margin: 0;
+  line-height: normal;
+}
+
+.sp-risk-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sp-risk-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.sp-risk-bullet {
+  width: 8px;
+  height: 8px;
+  margin-top: 8px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #666;
+}
+
+.sp-risk-text {
+  font-size: 12px;
+  font-weight: 400;
+  color: #666;
+  margin: 0;
+  line-height: normal;
+  flex: 1;
+}
+
+.sp-risk-source {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  list-style: none;
+}
+
+.sp-risk-source-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #666;
+  text-decoration: underline;
+  margin: 0;
+  line-height: 22px;
+}
+
+// Desktop: two segment rows stacked with 24px gap (Figma 0:44794: gap-24)
+.sp-seg-list-desk {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
 }
 
 // ==========================================================
@@ -1711,6 +1817,7 @@ section {
 // ==========================================================
 
 // Mobile white content card (replaces pan_details_form form on mobile)
+// Figma 0:39416: flex-1 0 0 — card fills space between gray header and Proceed button
 .sp-mob-card {
   display: flex;
   flex-direction: column;
@@ -1720,6 +1827,7 @@ section {
   box-shadow: 0px 3px 10px 0px rgba(0, 0, 0, 0.05);
   padding: 24px 24px 80px; // 80px bottom = clearance above sticky btn
   width: 100%;
+  flex: 1 0 auto;
 }
 
 // Mobile plan row: logo | name (flex-1) | Change (far right)
@@ -1796,6 +1904,7 @@ section {
 
   .sub_title {
     font-size: 14px;
+    font-weight: 400;
     color: #666;
     margin: 0;
     white-space: nowrap;

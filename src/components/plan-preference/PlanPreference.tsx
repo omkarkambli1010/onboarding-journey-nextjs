@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from './plan-preference.module.scss';
 
@@ -173,13 +173,20 @@ export default function PlanPreference() {
   const router = useRouter();
   const [selectedIndex, setSelectedIndex] = useState<number | null>(1);
   const [showKnowMore, setShowKnowMore] = useState(false);
+
+  useEffect(() => {
+    const stored = sessionStorage.getItem('selectedPlan');
+    if (stored !== null) setSelectedIndex(parseInt(stored, 10));
+  }, []);
   const [knowMoreIndex, setKnowMoreIndex] = useState(0);
 
   const middleIndex = Math.floor(PLAN_STATIC.length / 2);
 
   const rejectStatus = typeof window !== 'undefined' ? sessionStorage.getItem('RejectStatus') : null;
 
-  const proceedWithPlan = () => {
+  const proceedWithPlan = (idx?: number) => {
+    const finalIdx = idx ?? selectedIndex ?? 1;
+    sessionStorage.setItem('selectedPlan', String(finalIdx));
     router.push('/planprocess/3');
   };
 
@@ -403,7 +410,7 @@ export default function PlanPreference() {
                         <button
                           type="button"
                           className={styles.dProceedBtn}
-                          onClick={(e) => { e.stopPropagation(); setSelectedIndex(i); proceedWithPlan(); }}
+                          onClick={(e) => { e.stopPropagation(); setSelectedIndex(i); proceedWithPlan(i); }}
                         >
                           Proceed
                         </button>

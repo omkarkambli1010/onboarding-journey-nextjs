@@ -1,17 +1,88 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
-// Figma static assets
-const PROZERO_LOGO_MOB  = 'https://www.figma.com/api/mcp/asset/fb40d2da-b8a1-4ff5-a2ee-deef6cd49594';
-const PROZERO_LOGO_DESK = 'https://www.figma.com/api/mcp/asset/7d7dc358-bba5-4382-8e2f-efc8e9f30508';
-const CHECK_ICON        = 'https://www.figma.com/api/mcp/asset/aadd5994-f92c-4031-a13c-9a2daed4fab2';
-const BACK_ARROW_DESK   = 'https://www.figma.com/api/mcp/asset/bb54649e-254e-4f15-88fc-17f331affbb5';
+const PLAN_NAMES = ['Basic', 'Special', 'Premium'];
+const PLAN_ICONS = [
+  '/assets/plan-icons/plan-icon-basic.svg',
+  '/assets/plan-icons/plan-icon-special.svg',
+  '/assets/plan-icons/plan-icon-premium.svg',
+];
+
+const RISK_BULLETS = [
+  '9 out of 10 individual traders in equity futures and options segment, incurred net losses',
+  'On an average, loss makers registered net trading loss close to Rs. 50,000',
+  'Over an above the net trading losses incurred, loss makers expended an additional 28% of net trading losses as transaction cost',
+  'Those making net trading profits, incurred between 15% to 50% of such profits as transaction cost',
+];
+
+const RISK_SOURCE_TEXT =
+  'SEBI Study dated January 25, 2023 on "Analysis of Profit and Loss of Individual Trader dealing in equity Futures and Options (F&O) Segment", where in aggregator level findings are based on annual Profit/Loss incurred by individual trader in equity F&O during FY 2021-22';
+
+const BackArrow = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <path d="M5 12H19" stroke="#222" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M5 12L11 18" stroke="#222" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M5 12L11 6" stroke="#222" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+const CheckMark = () => (
+  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+    <path d="M2.5 7.5L5.5 10.5L11.5 3.5" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+const SegmentCheckbox = ({ checked }: { checked: boolean }) => (
+  <div
+    className={`sp-checkbox${checked ? ' sp-checkbox--checked' : ''}`}
+    role="checkbox"
+    aria-checked={checked}
+  >
+    {checked && <CheckMark />}
+  </div>
+);
+
+const RiskDisclosure = () => (
+  <div className="sp-risk-card">
+    <p className="sp-risk-title">Risk disclosure</p>
+    <ul className="sp-risk-list">
+      {RISK_BULLETS.map((text, i) => (
+        <li key={i} className="sp-risk-item">
+          <span className="sp-risk-bullet" aria-hidden="true" />
+          <p className="sp-risk-text">{text}</p>
+        </li>
+      ))}
+      <li className="sp-risk-source">
+        <p className="sp-risk-source-label">Source:</p>
+        <p className="sp-risk-text">{RISK_SOURCE_TEXT}</p>
+      </li>
+    </ul>
+  </div>
+);
 
 export default function SegmentPreference() {
   const router = useRouter();
+
+  const [selectedIndex, setSelectedIndex] = useState<number>(1);
+
+  useEffect(() => {
+    const stored = sessionStorage.getItem('selectedPlan');
+    if (stored !== null) setSelectedIndex(parseInt(stored, 10));
+  }, []);
+
+  const [equitySelected, setEquitySelected] = useState(false);
+  const [derivativesSelected, setDerivativesSelected] = useState(false);
+
+  const canProceed = equitySelected && derivativesSelected;
+  const proceedLabel = derivativesSelected ? 'I understand' : 'Proceed';
+
   const handleProceed = () => router.push('/CaptureSelfie/1');
   const handleBack    = () => router.push('/planprocess/2');
+
+  const planName = PLAN_NAMES[selectedIndex] ?? PLAN_NAMES[1];
+  const planIcon = PLAN_ICONS[selectedIndex] ?? PLAN_ICONS[1];
 
   return (
     <>
@@ -22,7 +93,7 @@ export default function SegmentPreference() {
           {/* Gray header: back icon + title + subtitle */}
           <div className="back_cls">
             <button type="button" className="sp-back-btn" onClick={handleBack} aria-label="Go back">
-              <img src="/assets/images/diy/ChevronLeft.png" alt="" />
+              <BackArrow />
             </button>
             <div className="sp-header-text">
               <h5 id="seg-mob-title">Segment Preference</h5>
@@ -38,31 +109,50 @@ export default function SegmentPreference() {
             {/* Plan Selected card */}
             <div className="sp-plan-card">
               <p className="sp-plan-label">Plan Selected</p>
-              {/* Mobile: logo | name (flex-1) | Change (far right) */}
               <div className="sp-plan-row-mob">
                 <div className="sp-plan-logo">
-                  <img src={PROZERO_LOGO_MOB} alt="ProZERO" />
+                  <img src={planIcon} alt={planName} width={30} height={30} />
                 </div>
-                <span className="sp-plan-name-mob">ProZERO</span>
+                <span className="sp-plan-name-mob">{planName}</span>
                 <button type="button" className="sp-change-btn" onClick={handleBack}>
                   Change
                 </button>
               </div>
             </div>
 
-            {/* Segment row — mobile has border + padding */}
-            <div className="sp-seg-row-mob">
-              <div className="sp-checkbox">
-                <img src={CHECK_ICON} alt="" width={18} height={18} />
-              </div>
+            {/* Segment row: Equity */}
+            <div
+              className="sp-seg-row-mob"
+              onClick={() => setEquitySelected(v => !v)}
+              style={{ cursor: 'pointer' }}
+            >
+              <SegmentCheckbox checked={equitySelected} />
               <span className="sp-seg-label-mob">Equity &amp; MutualFund</span>
             </div>
+
+            {/* Segment row: Derivatives */}
+            <div
+              className="sp-seg-row-mob"
+              onClick={() => setDerivativesSelected(v => !v)}
+              style={{ cursor: 'pointer' }}
+            >
+              <SegmentCheckbox checked={derivativesSelected} />
+              <span className="sp-seg-label-mob">Derivatives</span>
+            </div>
+
+            {/* Risk disclosure (when Derivatives is selected) */}
+            {derivativesSelected && <RiskDisclosure />}
           </div>
 
           {/* Sticky Proceed button */}
           <div className="stickybtn">
-            <button type="button" onClick={handleProceed} className="btn btn_cls">
-              Proceed
+            <button
+              type="button"
+              onClick={handleProceed}
+              className="btn btn_cls"
+              disabled={!canProceed}
+            >
+              {proceedLabel}
             </button>
           </div>
         </section>
@@ -72,13 +162,12 @@ export default function SegmentPreference() {
       <div className="desktop_css">
         <section className="pan_details_form" aria-labelledby="seg-desk-title">
 
-          {/* 800px centered card */}
           <div className="sp-desk-card">
 
-            {/* Card header with border-bottom */}
+            {/* Card header */}
             <div className="sp-desk-header">
               <button type="button" className="sp-back-btn" onClick={handleBack} aria-label="Go back">
-                <img src={BACK_ARROW_DESK} alt="back" width={24} height={24} />
+                <BackArrow />
               </button>
               <div className="sp-header-text">
                 <h5 id="seg-desk-title">Segment Preference</h5>
@@ -88,22 +177,20 @@ export default function SegmentPreference() {
               </div>
             </div>
 
-            {/* Card body — content grows, button stays at bottom */}
+            {/* Card body */}
             <div className="sp-desk-body">
 
-              {/* Inner content (grows to fill space) */}
               <div className="sp-desk-content">
 
                 {/* Plan Selected card */}
                 <div className="sp-plan-card">
                   <p className="sp-plan-label">Plan Selected</p>
-                  {/* Desktop: logo | ProZERO + Change (inline, gap 12px) */}
                   <div className="sp-plan-row-desk">
                     <div className="sp-plan-logo">
-                      <img src={PROZERO_LOGO_DESK} alt="ProZERO" />
+                      <img src={planIcon} alt={planName} width={30} height={30} />
                     </div>
                     <div className="sp-plan-name-desk-wrap">
-                      <span className="sp-plan-name-desk">ProZERO</span>
+                      <span className="sp-plan-name-desk">{planName}</span>
                       <button type="button" className="sp-change-btn" onClick={handleBack}>
                         Change
                       </button>
@@ -111,19 +198,39 @@ export default function SegmentPreference() {
                   </div>
                 </div>
 
-                {/* Segment row — desktop: NO border, just flex row */}
-                <div className="sp-seg-row-desk">
-                  <div className="sp-checkbox">
-                    <img src={CHECK_ICON} alt="" width={18} height={18} />
+                {/* Segment rows — borderless on desktop */}
+                <div className="sp-seg-list-desk">
+                  <div
+                    className="sp-seg-row-desk"
+                    onClick={() => setEquitySelected(v => !v)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <SegmentCheckbox checked={equitySelected} />
+                    <span className="sp-seg-label-desk">Equity and Mutual Fund</span>
                   </div>
-                  <span className="sp-seg-label-desk">Equity and Mutual Fund</span>
+                  <div
+                    className="sp-seg-row-desk"
+                    onClick={() => setDerivativesSelected(v => !v)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <SegmentCheckbox checked={derivativesSelected} />
+                    <span className="sp-seg-label-desk">Derivatives</span>
+                  </div>
                 </div>
+
+                {/* Risk disclosure (when Derivatives is selected) */}
+                {derivativesSelected && <RiskDisclosure />}
               </div>
 
-              {/* Proceed button — pinned to bottom via flex */}
+              {/* Proceed button pinned to bottom */}
               <div className="sp-proceed-row">
-                <button type="button" onClick={handleProceed} className="btn btn_cls sp-proceed-btn">
-                  Proceed
+                <button
+                  type="button"
+                  onClick={handleProceed}
+                  className="btn btn_cls sp-proceed-btn"
+                  disabled={!canProceed}
+                >
+                  {proceedLabel}
                 </button>
               </div>
             </div>

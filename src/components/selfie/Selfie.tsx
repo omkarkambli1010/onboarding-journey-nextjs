@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter, useParams, usePathname } from 'next/navigation';
 import Webcam from 'react-webcam';
 import { useSpinner } from '@/components/spinner/Spinner';
 import { toast } from '@/services/toast.service';
 import navigationService from '@/services/navigation.service';
+import { buildFaqUrl } from '@/lib/faq-link';
 import styles from './selfie.module.scss';
 
 const DOS = [
@@ -106,8 +107,11 @@ function BadgeDont() {
 export default function Selfie() {
   const router = useRouter();
   const params = useParams();
+  const pathname = usePathname();
   const formNumber = params?.formNumber as string;
   const { show: showSpinner, hide: hideSpinner } = useSpinner();
+
+  const openFaq = () => router.push(buildFaqUrl(pathname || '/'));
 
   const [step, setStep] = useState<1 | 2>(1);
   const [imageDataUrl, setImageDataUrl] = useState('');
@@ -208,7 +212,7 @@ export default function Selfie() {
             <div className={styles.mobTitleBlock}>
               <div className={styles.mobTitleRow}>
                 <p className={styles.mobTitle}>Get set for a quick selfie</p>
-                <button type="button" className={styles.needHelpChip}>Need Help?</button>
+                <button type="button" className={styles.needHelpChip} onClick={openFaq}>Need Help?</button>
               </div>
               <p className={styles.mobSubtitle}>
                 Take a clear picture and upload it. Please ensure your selfie matches the photo on your Aadhar or Pan card
@@ -282,7 +286,7 @@ export default function Selfie() {
               <div className={styles.deskHeaderText}>
                 <div className={styles.deskTitleRow}>
                   <h5>Get set for a quick selfie</h5>
-                  <button type="button" className={styles.needHelpChip}>Need Help?</button>
+                  <button type="button" className={styles.needHelpChip} onClick={openFaq}>Need Help?</button>
                 </div>
                 <p>
                   Take a clear picture and upload it. Please ensure your selfie matches the photo on your Aadhar or Pan card
