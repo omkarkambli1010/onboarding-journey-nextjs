@@ -178,7 +178,7 @@ export default function Selfie() {
     }
     showSpinner();
     if (rejectStatus !== 'R') {
-      router.push('/uploadSignature');
+      router.push('/uploadSignatureinfo');
     } else {
       navigationService.navigateToNextStep();
     }

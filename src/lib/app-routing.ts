@@ -25,6 +25,7 @@
 // 'planprocess/3'                    → src/app/planprocess/3/page.tsx
 // 'CaptureSelfie/:formNumber'        → src/app/CaptureSelfie/[formNumber]/page.tsx
 // 'uploadSignature'                  → src/app/uploadSignature/page.tsx
+// 'uploadSignatureinfo'              → src/app/uploadSignatureinfo/page.tsx
 // 'uploadPan'                        → src/app/uploadPan/page.tsx
 // 'nameChange'                       → src/app/nameChange/page.tsx
 // 'support-document'                 → src/app/support-document/page.tsx
