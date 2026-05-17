@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSpinner } from '@/components/spinner/Spinner';
 import { toast } from '@/services/toast.service';
-import apiService from '@/services/api.service';
 import navigationService from '@/services/navigation.service';
 import { UploadDocumentModal, type UploadedDocument } from './UploadDocumentModal';
 import { UploadSupportingIllustration } from './UploadSupportingIllustration';
@@ -146,7 +145,7 @@ export default function UploadSupporting() {
     }
     showSpinner();
     setTimeout(() => {
-      router.back();
+      router.push('/uploadSignature');
       hideSpinner();
     }, 200);
   };
@@ -176,31 +175,22 @@ export default function UploadSupporting() {
       return;
     }
 
-    const reqData = {
-      formNumber: typeof window !== 'undefined' ? sessionStorage.getItem('FormNumber') || '' : '',
-      flag: 'docBase64String',
-      docType: selectedDocId,
-      base64String: base64,
-    };
-    try {
-      const response = await apiService.postRequest(
-        'api/v1/uploadDocument/upload',
-        reqData,
-        hideSpinner,
-      );
-      if (response?.status === true) {
-        toast.success('Document uploaded successfully!');
-        setTimeout(() => {
-          navigationService.navigateToNextStep();
-          hideSpinner();
-        }, 200);
-      } else {
-        toast.error(response?.message || 'Upload failed');
-        hideSpinner();
-      }
-    } catch {
+    sessionStorage.setItem(
+      'supportingDocument',
+      JSON.stringify({
+        docType: selectedDocId,
+        docLabel: selectedDoc?.label || '',
+        fileName: verifyFile.name,
+        fileType: verifyFile.type,
+        fileSize: verifyFile.size,
+        base64String: base64,
+      }),
+    );
+
+    setTimeout(() => {
+      router.push('/addNominee-landing');
       hideSpinner();
-    }
+    }, 200);
   };
 
   const canUpload = !!selectedDocId;
@@ -344,7 +334,7 @@ export default function UploadSupporting() {
                   disabled={!canUpload}
                   onClick={onUploadClick}
                 >
-                  Upload
+                  {selectedDoc ? `Upload ${selectedDoc.label}` : 'Upload'}
                 </button>
               </div>
             </>
@@ -439,7 +429,7 @@ export default function UploadSupporting() {
             disabled={!canUpload}
             onClick={onUploadClick}
           >
-            Upload
+            {selectedDoc ? `Upload ${selectedDoc.label}` : 'Upload'}
           </button>
         )}
       </div>
