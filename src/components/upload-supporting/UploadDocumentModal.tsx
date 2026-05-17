@@ -2,20 +2,18 @@
 
 import { ChangeEvent, useEffect, useRef, useState } from 'react';
 import { toast } from '@/services/toast.service';
-import { SignatureCropperModal } from './SignatureCropperModal';
-import styles from './signature-upload-modal.module.scss';
+import { SignatureCropperModal } from '@/components/upload-signature/SignatureCropperModal';
+import styles from './upload-document-modal.module.scss';
 
-// SignatureUploadModal — desktop modal / mobile bottom-sheet for picking a
-// signature file. Empty state shows the upload tile(s); during upload it
-// shows a filename row with progress bar + Reupload / Proceed buttons.
+// UploadDocumentModal — desktop modal / mobile bottom-sheet for picking a
+// supporting document (Aadhaar, PAN, Driving license, Passport).
 //
-// For images, once the progress completes the SignatureCropperModal opens on
-// top so the user can trim the signature out. PDFs skip the cropper.
-//
-// Throughout the flow the image is held as a Blob with an objectURL — no
-// base64. The parent receives the Blob via onUploaded.
+// Mirrors the SignatureUploadModal flow: pick file → fake progress → for
+// images the modal frame hides and the cropper opens; for PDFs the
+// filename row + Proceed appears. Image cropping is delegated to the
+// shared SignatureCropperModal.
 
-export interface UploadedSignature {
+export interface UploadedDocument {
   name: string;
   blob: Blob;
   objectUrl: string;
@@ -23,11 +21,12 @@ export interface UploadedSignature {
   size: number;
 }
 
-export interface SignatureUploadModalProps {
+export interface UploadDocumentModalProps {
   open: boolean;
   isDesktop: boolean;
+  docLabel: string;          // e.g. "PAN Card" — used in the modal title
   onClose: () => void;
-  onUploaded: (file: UploadedSignature) => void;
+  onUploaded: (file: UploadedDocument) => void;
 }
 
 const ACCEPTED_INPUT_HINT = 'image/*,application/pdf,.jpg,.jpeg,.png,.heic,.heif,.webp,.pdf';
@@ -118,21 +117,20 @@ interface PickedFile {
   size: number;
 }
 
-export function SignatureUploadModal({
+export function UploadDocumentModal({
   open,
   isDesktop,
+  docLabel,
   onClose,
   onUploaded,
-}: SignatureUploadModalProps) {
+}: UploadDocumentModalProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const cameraInputRef = useRef<HTMLInputElement | null>(null);
 
-  // Final (post-crop or PDF) blob the user is about to send to the parent.
   const [picked, setPicked] = useState<PickedFile | null>(null);
   const [resultBlob, setResultBlob] = useState<Blob | null>(null);
   const [resultObjectUrl, setResultObjectUrl] = useState<string>('');
 
-  // Cropper state — when set, the cropper modal opens on top of this one.
   const [croppingObjectUrl, setCroppingObjectUrl] = useState<string>('');
   const [croppingName, setCroppingName] = useState<string>('');
 
@@ -151,7 +149,6 @@ export function SignatureUploadModal({
     setCroppingName('');
   };
 
-  // Reset internal state every time the modal closes.
   useEffect(() => {
     if (!open) {
       setPicked(null);
@@ -163,7 +160,6 @@ export function SignatureUploadModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
-  // Revoke any outstanding objectURLs on unmount.
   useEffect(() => {
     return () => {
       if (resultObjectUrl) URL.revokeObjectURL(resultObjectUrl);
@@ -172,7 +168,6 @@ export function SignatureUploadModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Lock background scroll while modal is open.
   useEffect(() => {
     if (!open) return;
     const prev = document.body.style.overflow;
@@ -206,7 +201,6 @@ export function SignatureUploadModal({
 
   const startUpload = (f: File) => {
     if (!validate(f)) return;
-    // Clear any prior state from a previous pick.
     revokeAndClearResult();
     revokeAndClearCropping();
 
@@ -215,12 +209,8 @@ export function SignatureUploadModal({
     setProgress(0);
 
     const pdf = isPdf(f);
-    // For PDFs we send the original file Blob straight through. For images
-    // we open the cropper and the final blob is produced post-crop.
     const sourceObjectUrl = URL.createObjectURL(f);
 
-    // Randomized progress curve — kept for visual continuity with the rest
-    // of the app's upload flows.
     let pct = 0;
     const step = () => {
       pct = Math.min(pct + (Math.random() * 18 + 8), 94);
@@ -236,12 +226,9 @@ export function SignatureUploadModal({
       setProgress(100);
       setUploading(false);
       if (pdf) {
-        // PDFs skip the cropper — the source Blob is the final blob.
         setResultBlob(f);
         setResultObjectUrl(sourceObjectUrl);
       } else {
-        // Hand the source objectURL to the cropper. Once the user confirms
-        // (or cancels), we revoke it.
         setCroppingObjectUrl(sourceObjectUrl);
         setCroppingName(f.name);
       }
@@ -269,9 +256,7 @@ export function SignatureUploadModal({
 
   const proceed = () => {
     if (!picked || !resultBlob || !resultObjectUrl) return;
-    // Ownership of the objectURL transfers to the parent — DON'T revoke it
-    // here. Clear local refs so unmount cleanup doesn't double-free.
-    const out: UploadedSignature = {
+    const out: UploadedDocument = {
       name: picked.name,
       blob: resultBlob,
       objectUrl: resultObjectUrl,
@@ -284,9 +269,6 @@ export function SignatureUploadModal({
   };
 
   const onCropConfirm = (blob: Blob, size: number, name: string) => {
-    // Image is cropped — emit it straight to the parent. The user does NOT
-    // see the intermediate filename / Proceed row in this modal; the next
-    // thing they see is the verify state on the parent screen.
     revokeAndClearResult();
     revokeAndClearCropping();
     const url = URL.createObjectURL(blob);
@@ -303,18 +285,14 @@ export function SignatureUploadModal({
   };
 
   const onCropCancel = () => {
-    // User backed out of cropping — return to the empty tiles state so they
-    // can pick again.
     resetForReupload();
   };
 
   const cardClass = isDesktop ? styles.deskCard : styles.mobSheet;
-  // The filename row is shown once we have a picked file (during the fake
-  // progress animation). For an image, once progress completes the cropper
-  // opens and the upload modal frame is hidden — only the cropper is
-  // visible until the user confirms or cancels.
   const showFileRow = !!picked;
   const showUploadFrame = !croppingObjectUrl;
+
+  const emptyTitle = isDesktop ? `Upload ${docLabel}` : `Upload your ${docLabel}`;
 
   return (
     <>
@@ -323,7 +301,7 @@ export function SignatureUploadModal({
         className={isDesktop ? styles.overlay : styles.overlayMob}
         role="dialog"
         aria-modal="true"
-        aria-label="Upload signature"
+        aria-label="Upload document"
         onClick={onOverlayClick}
       >
         <div className={cardClass} onClick={(e) => e.stopPropagation()}>
@@ -361,9 +339,7 @@ export function SignatureUploadModal({
             </div>
           ) : (
             <div className={styles.headerEmpty}>
-              <h2 className={styles.modalTitle}>
-                {isDesktop ? 'Upload Signature' : 'Upload your signature'}
-              </h2>
+              <h2 className={styles.modalTitle}>{emptyTitle}</h2>
               <button type="button" className={styles.closeBtn} onClick={onClose} aria-label="Close">
                 <XIcon />
               </button>
@@ -372,11 +348,11 @@ export function SignatureUploadModal({
 
           {showFileRow ? (
             <div className={styles.uploadingTitleBlock}>
-              <p className={styles.modalTitleAlt}>Upload your signature</p>
-              <p className={styles.modalSubtitle}>Sign on a plane white paper and upload it</p>
+              <p className={styles.modalTitleAlt}>{emptyTitle}</p>
+              <p className={styles.modalSubtitle}>Upload a clear photo or scan of your document</p>
             </div>
           ) : (
-            <p className={styles.modalSubtitle}>Sign on a plane white paper and upload it</p>
+            <p className={styles.modalSubtitle}>Upload a clear photo or scan of your document</p>
           )}
 
           {showFileRow ? (

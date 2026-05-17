@@ -10,7 +10,7 @@ import { toast } from '@/services/toast.service';
 import apiService from '@/services/api.service';
 import navigationService from '@/services/navigation.service';
 import { buildFaqUrl } from '@/lib/faq-link';
-import { SignatureUploadModal } from './SignatureUploadModal';
+import { SignatureUploadModal, type UploadedSignature } from './SignatureUploadModal';
 import { signatureStore, type PendingSignature } from './signatureStore';
 import styles from './upload-signature.module.scss';
 
@@ -20,6 +20,9 @@ type VerifyFile = PendingSignature;
 // Figma draw: 0:39305 (desk) / 0:39223 (mob).
 // Figma verify: 0:39533 (desk) / 0:44339 (mob).
 // Uses signature_pad v5 for the canvas.
+//
+// The uploaded image lives entirely as a Blob + objectURL — no base64,
+// no sessionStorage persistence.
 
 function BackArrow() {
   return (
@@ -98,12 +101,11 @@ export default function UploadSignature() {
   const padRef = useRef<SignaturePad | null>(null);
 
   const [isDesktop, setIsDesktop] = useState<boolean | null>(null);
-  const [uploadedImage, setUploadedImage] = useState<string>('');
   const [hasInk, setHasInk] = useState(false);
   const [isRejectStatus, setIsRejectStatus] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
-  // Verify state — when set, the page swaps to the "Verify your Signature" view
-  // with the uploaded image preview + Reupload / Proceed buttons.
+  // Verify state — when set, the page swaps to the "Verify your Signature"
+  // view with the uploaded image preview + Reupload / Proceed buttons.
   const [verifyFile, setVerifyFile] = useState<VerifyFile | null>(null);
 
   useEffect(() => {
@@ -135,12 +137,12 @@ export default function UploadSignature() {
     if (data.length) pad.fromData(data);
   }, []);
 
-  // Initialize SignaturePad whenever the canvas mounts. Skipped while we're in
-  // the verify state since the canvas isn't rendered.
+  // Initialize SignaturePad whenever the canvas mounts. Skipped while we're
+  // in the verify state since the canvas isn't rendered.
   useEffect(() => {
     if (isDesktop === null || verifyFile) return;
     const canvas = canvasRef.current;
-    if (!canvas || uploadedImage) return;
+    if (!canvas) return;
 
     const pad = new SignaturePad(canvas, {
       penColor: '#222222',
@@ -159,17 +161,17 @@ export default function UploadSignature() {
       pad.off();
       padRef.current = null;
     };
-  }, [isDesktop, uploadedImage, verifyFile, resizeCanvas]);
+  }, [isDesktop, verifyFile, resizeCanvas]);
 
   // ── Signature API calls disabled for now (kept for future reference) ──────
   // useEffect(() => {
   //   loadExistingSignature();
   // }, []);
 
-  // Restore prior signature on mount.
-  //   1. Module store — set when the info page's modal handed us a file.
-  //   2. sessionStorage — set the last time the user clicked Proceed, so
-  //      coming back from /support-document brings the signature back.
+  // Restore prior signature on mount from the module-level transfer slot —
+  // populated when the info page's modal handed us a file. No
+  // sessionStorage path: refreshing the page is expected to clear the
+  // signature.
   const consumedRef = useRef(false);
   useEffect(() => {
     if (consumedRef.current) return;
@@ -181,22 +183,51 @@ export default function UploadSignature() {
       return;
     }
 
+    // Restore from sessionStorage on back-nav from /support-document.
+    // Temporary persistence — once the upload API is wired up the page
+    // will bind the image directly from the API response and this branch
+    // can go away.
     const savedBase64 = sessionStorage.getItem('signatureBase64');
     if (!savedBase64) return;
-    const savedSource = sessionStorage.getItem('signatureSource');
-    if (savedSource === 'upload') {
-      setVerifyFile({
-        name: sessionStorage.getItem('signatureName') || 'signature.png',
-        dataUrl: savedBase64,
-        type: sessionStorage.getItem('signatureType') || 'image/png',
-        size: 0,
+    const savedName = sessionStorage.getItem('signatureName') || 'signature.png';
+    const savedType = sessionStorage.getItem('signatureType') || 'image/png';
+    fetch(savedBase64)
+      .then((r) => r.blob())
+      .then((blob) => {
+        const objectUrl = URL.createObjectURL(blob);
+        setVerifyFile({
+          name: savedName,
+          blob,
+          objectUrl,
+          type: savedType,
+          size: blob.size,
+        });
+      })
+      .catch(() => {
+        // Bad / corrupted cached value — drop it silently.
+        sessionStorage.removeItem('signatureBase64');
       });
-    } else {
-      // Draw — show the prior strokes as a preview in the pad area. Erase
-      // clears it so the user can draw afresh.
-      setUploadedImage(savedBase64);
-      setHasInk(true);
+  }, []);
+
+  // Revoke the verify file's objectURL when it's replaced or the component
+  // unmounts. The ref tracks the URL that owns lifecycle right now so we
+  // don't free a fresh one after a replacement.
+  const ownedUrlRef = useRef<string>('');
+  useEffect(() => {
+    if (verifyFile && verifyFile.objectUrl !== ownedUrlRef.current) {
+      const prev = ownedUrlRef.current;
+      ownedUrlRef.current = verifyFile.objectUrl;
+      if (prev) URL.revokeObjectURL(prev);
+    } else if (!verifyFile && ownedUrlRef.current) {
+      URL.revokeObjectURL(ownedUrlRef.current);
+      ownedUrlRef.current = '';
     }
+  }, [verifyFile]);
+
+  useEffect(() => {
+    return () => {
+      if (ownedUrlRef.current) URL.revokeObjectURL(ownedUrlRef.current);
+    };
   }, []);
 
   // Legacy entry path — if someone navigates here with ?mode=upload but
@@ -226,12 +257,9 @@ export default function UploadSignature() {
   //       reqData,
   //       hideSpinner,
   //     );
-  //     const base64 = response?.data?.[0]?.Image || response?.data?.[0]?.SignatureImage;
-  //     if (response?.status === true && base64) {
-  //       const dataUrl = base64.startsWith('data:') ? base64 : `data:image/png;base64,${base64}`;
-  //       setUploadedImage(dataUrl);
-  //       setHasInk(true);
-  //     }
+  //     // TODO: when re-enabling, convert response base64 → Blob via
+  //     // fetch(`data:image/png;base64,${base64}`).then(r => r.blob()) and
+  //     // call setVerifyFile with a fresh objectURL.
   //   } catch {
   //     /* ignore */
   //   } finally {
@@ -256,16 +284,16 @@ export default function UploadSignature() {
 
   const erase = () => {
     padRef.current?.clear();
-    setUploadedImage('');
     setHasInk(false);
   };
 
   const onUploadClick = () => setShowUploadModal(true);
 
-  const onModalUploaded = (file: { name: string; dataUrl: string; type: string; size: number }) => {
+  const onModalUploaded = (file: UploadedSignature) => {
     setVerifyFile({
       name: file.name,
-      dataUrl: file.dataUrl,
+      blob: file.blob,
+      objectUrl: file.objectUrl,
       type: file.type,
       size: file.size,
     });
@@ -281,35 +309,58 @@ export default function UploadSignature() {
     setVerifyFile(null);
   };
 
-  const getSignatureBase64 = (): string | null => {
-    if (verifyFile) return verifyFile.dataUrl;
-    if (uploadedImage) return uploadedImage;
+  // Returns the signature as a Blob — either the uploaded/cropped image, or
+  // a PNG-encoded export of the canvas strokes.
+  const getSignatureBlob = (): Promise<Blob | null> => {
+    if (verifyFile) return Promise.resolve(verifyFile.blob);
+    const canvas = canvasRef.current;
     const pad = padRef.current;
-    if (!pad || pad.isEmpty()) return null;
-    return pad.toDataURL('image/png');
+    if (!canvas || !pad || pad.isEmpty()) return Promise.resolve(null);
+    return new Promise<Blob | null>((resolve) => {
+      canvas.toBlob((b) => resolve(b), 'image/png');
+    });
   };
 
   const proceed = async () => {
-    const base64 = getSignatureBase64();
-    if (!base64) {
+    const blob = await getSignatureBlob();
+    if (!blob) {
       toast.warning('Please draw or upload your signature.');
       return;
     }
 
-    // Persist the signature to sessionStorage so /support-document (and any
-    // subsequent step) can read it. Source = 'draw' for canvas strokes,
-    // 'upload' for an uploaded image / PDF.
+    // Hand off via the module-level slot so /support-document (or wherever
+    // the next step pulls the signature from) can consume the same Blob.
     const source: 'draw' | 'upload' = verifyFile ? 'upload' : 'draw';
     const name = verifyFile?.name ?? 'signature.png';
     const type = verifyFile?.type ?? 'image/png';
+    const objectUrl = verifyFile?.objectUrl ?? URL.createObjectURL(blob);
+
+    signatureStore.set({ name, blob, objectUrl, type, size: blob.size });
+
+    // The verify view's objectURL ownership transfers to the store; clear
+    // our local owner so unmount cleanup doesn't double-free.
+    if (verifyFile) {
+      ownedUrlRef.current = '';
+    }
+
+    // Temporary persistence — until the upload API is wired up, cache the
+    // signature as base64 in sessionStorage so coming back from
+    // /support-document still shows the preview. The component state stays
+    // Blob-based; this is purely a persistence boundary.
     try {
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result));
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(blob);
+      });
       sessionStorage.setItem('signatureBase64', base64);
       sessionStorage.setItem('signatureName', name);
       sessionStorage.setItem('signatureType', type);
       sessionStorage.setItem('signatureSource', source);
     } catch {
-      // Most likely QuotaExceededError on a large uploaded file. Surface it
-      // so the user can pick a smaller file rather than failing silently.
+      // QuotaExceededError or read failure — surface so the user can pick
+      // a smaller file rather than failing silently downstream.
       toast.error('Signature is too large to save. Please try a smaller file.');
       return;
     }
@@ -321,27 +372,9 @@ export default function UploadSignature() {
     //   formNumber: sessionStorage.getItem('FormNumber') || '',
     //   flag: 'docBase64String',
     //   docType: 'SIGNATURE',
-    //   base64String: base64,
+    //   base64String: await blobToBase64(blob),
     // };
-    // try {
-    //   const response = await apiService.postRequest(
-    //     'api/v1/uploadDocument/upload',
-    //     reqData,
-    //     hideSpinner,
-    //   );
-    //   if (response?.status === true) {
-    //     toast.success('Signature uploaded successfully!');
-    //     setTimeout(() => {
-    //       router.push('/support-document');
-    //       hideSpinner();
-    //     }, 200);
-    //   } else {
-    //     toast.error(response?.message || 'Upload failed');
-    //     hideSpinner();
-    //   }
-    // } catch {
-    //   hideSpinner();
-    // }
+    // try { ... } catch { ... }
 
     // Stub flow — advance to /support-document without hitting the API.
     toast.success('Signature uploaded successfully!');
@@ -351,18 +384,14 @@ export default function UploadSignature() {
     }, 200);
   };
 
-  const canProceed = hasInk || !!uploadedImage;
+  const canProceed = hasInk;
 
   // ── Reusable building blocks ───────────────────────────────────────────────
 
   const padBlock = (wrapClass: string, boxClass: string) => (
     <div className={wrapClass}>
       <div className={boxClass}>
-        {uploadedImage ? (
-          <img src={uploadedImage} alt="Uploaded signature" className={styles.padPreview} />
-        ) : (
-          <canvas ref={canvasRef} className={styles.padCanvas} />
-        )}
+        <canvas ref={canvasRef} className={styles.padCanvas} />
       </div>
       <button
         type="button"
@@ -401,7 +430,7 @@ export default function UploadSignature() {
       {verifyFile.type === 'application/pdf' ? (
         <p className={styles.pdfText}>PDF preview not available — {verifyFile.name}</p>
       ) : (
-        <img src={verifyFile.dataUrl} alt="Uploaded signature" className={styles.previewImg} />
+        <img src={verifyFile.objectUrl} alt="Uploaded signature" className={styles.previewImg} />
       )}
     </div>
   );

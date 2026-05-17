@@ -127,7 +127,13 @@ export default function UploadSignatureInfo() {
     }, 200);
   };
 
-  const onModalUploaded = (file: { name: string; dataUrl: string; type: string; size: number }) => {
+  const onModalUploaded = (file: {
+    name: string;
+    blob: Blob;
+    objectUrl: string;
+    type: string;
+    size: number;
+  }) => {
     signatureStore.set(file);
     setShowUploadModal(false);
     showSpinner();

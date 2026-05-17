@@ -89,13 +89,24 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
 
-  img {
-    width: 267px;
-    height: 200px;
-    object-fit: contain;
-    display: block;
-  }
+// Layered SVG illustration (Figma node 0:89258, 13098899_Upload_file_concept).
+// Five SVG fragments stacked with absolute positioning. The container box is
+// 266.667 x 200 (Figma's native size); each layer's `inset` matches the
+// percentages in the Figma export so the composition aligns perfectly.
+.illo {
+  position: relative;
+  width: 266.667px;
+  height: 200px;
+  display: block;
+  overflow: hidden;
+}
+
+.illoLayer {
+  position: absolute;
+  display: block;
+  object-fit: contain;
 }
 
 .optionsCol {
@@ -269,13 +280,6 @@
   display: flex;
   justify-content: center;
   align-items: center;
-
-  img {
-    width: 267px;
-    height: 200px;
-    object-fit: contain;
-    display: block;
-  }
 }
 
 .mobOptionsBlock {
@@ -323,4 +327,169 @@
     background: rgba(40, 0, 113, 0.2);
     cursor: not-allowed;
   }
+}
+
+.btnOutline {
+  width: 350px;
+  height: 56px;
+  background: #fff;
+  border: 1px solid #280071;
+  border-radius: 8px;
+  color: #280071;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover {
+    background: rgba(40, 0, 113, 0.05);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.mobBtnOutline {
+  width: 328px;
+  max-width: 100%;
+  height: 48px;
+  background: #fff;
+  border: 1px solid #280071;
+  border-radius: 8px;
+  color: #280071;
+  font-size: 16px;
+  font-weight: 400;
+  cursor: pointer;
+
+  &:hover {
+    background: rgba(40, 0, 113, 0.05);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Verify state — shown after the upload modal completes.
+// Figma desktop 0:90536. Mobile follows the same pattern as the empty state
+// header, with the white content card swapped for a preview.
+// ══════════════════════════════════════════════════════════════════════════════
+
+.verifyBody {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+  padding: 0 24px 24px;
+}
+
+.verifyBodyMob {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.filePill {
+  background: #f3f1ff;
+  border-radius: 8px;
+  padding: 13px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.filePillMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+}
+
+.filePillName {
+  font-size: 12px;
+  font-weight: 600;
+  color: #2b2b2b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.filePillRemove {
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.previewBox {
+  border: 1px dashed #d9d9d9;
+  border-radius: 16px;
+  background: #fff;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  width: 100%;
+}
+
+.previewImg {
+  max-width: 100%;
+  max-height: 240px;
+  object-fit: contain;
+  display: block;
+}
+
+.pdfText {
+  font-size: 14px;
+  color: #666;
+  margin: 0;
+  text-align: center;
+}
+
+.mobInfoBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.mobInfoLine {
+  font-size: 12px;
+  font-weight: 400;
+  color: #666;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.deskBtnRowDual {
+  background: #fff;
+  padding: 24px;
+  display: flex;
+  gap: 32px;
+  justify-content: center;
+}
+
+.mobBtnBarStack {
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #fff;
+  padding: 8px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
 }
