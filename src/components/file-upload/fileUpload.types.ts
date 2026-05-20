@@ -19,6 +19,12 @@ export interface FileUploadConfig {
   maxSizeMB: number;
   multiple?: boolean;
   disabled?: boolean;
+  /**
+   * When true, picked image files are routed through the image cropper
+   * before entering the upload flow — the same UX as the Upload Signature
+   * screen. PDFs and other non-image files skip the cropper.
+   */
+  cropImages?: boolean;
   uploadFn?: (file: File, onProgress: (p: number) => void) => Promise<void>;
   onFilesChange?: (files: UploadedFile[]) => void;
   errorMessages?: {

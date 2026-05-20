@@ -1,12 +1,15 @@
 'use client';
 
-import { ChangeEvent, DragEvent, KeyboardEvent, useRef, useState } from 'react';
+import { ChangeEvent, DragEvent, KeyboardEvent, useEffect, useRef, useState } from 'react';
 import type { FileUploadConfig } from './fileUpload.types';
 import { useFileUpload } from './useFileUpload';
 import { FileUploadDropzone } from './FileUploadDropzone';
 import { FileUploadItem } from './FileUploadItem';
-import { deriveAcceptLabel, getAcceptString } from './fileUpload.utils';
+import { deriveAcceptLabel, getAcceptString, isImageFile } from './fileUpload.utils';
+import { SignatureCropperModal } from '../upload-signature/SignatureCropperModal';
 import styles from './file-upload.module.scss';
+
+const DESKTOP_MQ = '(min-width: 992px)';
 
 interface FileUploadProps {
   title?: string;
@@ -21,19 +24,80 @@ export function FileUpload({ title, config, className }: FileUploadProps) {
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const dragCounterRef = useRef(0);
 
+  // ── Image cropper (opt-in via config.cropImages) ──────────────────────────
+  // Picked images are routed through the same cropper used by the Upload
+  // Signature screen before they enter the upload flow. PDFs / non-images
+  // bypass it. Multiple images are cropped one after another via a queue.
+  const [isDesktop, setIsDesktop] = useState(false);
+  const [cropState, setCropState] = useState<{ src: string; name: string } | null>(null);
+  const cropQueueRef = useRef<File[]>([]);
+
+  useEffect(() => {
+    if (!config.cropImages || typeof window === 'undefined') return;
+    const mq = window.matchMedia(DESKTOP_MQ);
+    const update = () => setIsDesktop(mq.matches);
+    update();
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
+  }, [config.cropImages]);
+
+  // Revoke the cropper's object URL when it is replaced or on unmount.
+  useEffect(() => {
+    if (!cropState) return;
+    return () => URL.revokeObjectURL(cropState.src);
+  }, [cropState]);
+
   // In single-file mode the dropzone transforms into the file preview
   const activeFile = !config.multiple ? files[0] : undefined;
 
+  // Pull the next queued image into the cropper, or close it when the queue
+  // is empty.
+  const startNextCrop = () => {
+    const next = cropQueueRef.current.shift();
+    if (!next) {
+      setCropState(null);
+      return;
+    }
+    setCropState({ src: URL.createObjectURL(next), name: next.name });
+  };
+
+  // Single entry point for every picked / dropped file. With cropping enabled
+  // images open the cropper first; everything else goes straight to upload.
+  const intake = (incoming: File[]) => {
+    if (!incoming.length) return;
+    if (!config.cropImages) {
+      addFiles(incoming);
+      return;
+    }
+    const toProcess = config.multiple ? incoming : incoming.slice(0, 1);
+    const images = toProcess.filter(isImageFile);
+    const others = toProcess.filter((f) => !isImageFile(f));
+    if (others.length) addFiles(others);
+    if (images.length) {
+      cropQueueRef.current.push(...images);
+      if (!cropState) startNextCrop();
+    }
+  };
+
+  const handleCropConfirm = (blob: Blob, _size: number, name: string) => {
+    addFiles([new File([blob], name, { type: 'image/png' })]);
+    startNextCrop();
+  };
+
+  const handleCropCancel = () => {
+    startNextCrop();
+  };
+
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files?.length) {
-      addFiles(Array.from(e.target.files));
+      intake(Array.from(e.target.files));
       e.target.value = '';
     }
   };
 
   const handleCameraChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files?.length) {
-      addFiles(Array.from(e.target.files));
+      intake(Array.from(e.target.files));
       e.target.value = '';
     }
   };
@@ -61,7 +125,7 @@ export function FileUpload({ title, config, className }: FileUploadProps) {
     dragCounterRef.current = 0;
     setIsDragOver(false);
     if (!config.disabled && e.dataTransfer?.files?.length) {
-      addFiles(Array.from(e.dataTransfer.files));
+      intake(Array.from(e.dataTransfer.files));
     }
   };
 
@@ -133,6 +197,20 @@ export function FileUpload({ title, config, className }: FileUploadProps) {
             <FileUploadItem key={f.id} file={f} onRemove={removeFile} onRetry={retryFile} onUnlock={unlockFile} />
           ))}
         </div>
+      )}
+
+      {/* Image cropper — opens on top when an image is picked */}
+      {config.cropImages && (
+        <SignatureCropperModal
+          open={!!cropState}
+          isDesktop={isDesktop}
+          src={cropState?.src ?? ''}
+          fileName={cropState?.name ?? ''}
+          title="Crop your image"
+          subtitle="Adjust the box around the area you want to upload."
+          onCancel={handleCropCancel}
+          onConfirm={handleCropConfirm}
+        />
       )}
     </div>
   );

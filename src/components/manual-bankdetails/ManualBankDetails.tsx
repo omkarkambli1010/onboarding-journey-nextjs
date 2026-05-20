@@ -519,6 +519,7 @@ export default function ManualBankDetails() {
         acceptedLabel={STATEMENT_ACCEPTED_LABEL}
         sizeErrorMessage={STATEMENT_SIZE_ERR}
         typeErrorMessage={STATEMENT_TYPE_ERR}
+        cropImages
         onFilesChange={setNroStatementFiles}
       />
       <FileUploadCard
@@ -528,6 +529,7 @@ export default function ManualBankDetails() {
         acceptedLabel={STATEMENT_ACCEPTED_LABEL}
         sizeErrorMessage={STATEMENT_SIZE_ERR}
         typeErrorMessage={STATEMENT_TYPE_ERR}
+        cropImages
         onFilesChange={setNreStatementFiles}
       />
     </div>

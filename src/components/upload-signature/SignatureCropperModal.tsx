@@ -14,6 +14,10 @@ export interface SignatureCropperModalProps {
   isDesktop: boolean;
   src: string;
   fileName: string;
+  /** Modal heading — defaults to the signature wording. */
+  title?: string;
+  /** Modal sub-heading — defaults to the signature wording. */
+  subtitle?: string;
   onCancel: () => void;
   onConfirm: (croppedBlob: Blob, croppedSize: number, croppedName: string) => void;
 }
@@ -38,6 +42,8 @@ export function SignatureCropperModal({
   isDesktop,
   src,
   fileName,
+  title = 'Crop your signature',
+  subtitle = 'Adjust the box around your signature.',
   onCancel,
   onConfirm,
 }: SignatureCropperModalProps) {
@@ -132,8 +138,8 @@ export function SignatureCropperModal({
 
         <div className={styles.header}>
           <div>
-            <p className={styles.title}>Crop your signature</p>
-            <p className={styles.subtitle}>Adjust the box around your signature.</p>
+            <p className={styles.title}>{title}</p>
+            <p className={styles.subtitle}>{subtitle}</p>
           </div>
           <button
             type="button"

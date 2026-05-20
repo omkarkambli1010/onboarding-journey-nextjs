@@ -17,6 +17,8 @@ export interface FileUploadCardProps {
   typeErrorMessage?: string;
   multiple?: boolean;
   disabled?: boolean;
+  /** Route picked image files through the image cropper before upload. */
+  cropImages?: boolean;
   /** Plug in your real upload API here. Receives the file and a progress callback. */
   uploadFn?: FileUploadConfig['uploadFn'];
   onFilesChange?: FileUploadConfig['onFilesChange'];
@@ -32,6 +34,7 @@ export function FileUploadCard({
   typeErrorMessage,
   multiple = false,
   disabled,
+  cropImages,
   uploadFn,
   onFilesChange,
   className,
@@ -42,6 +45,7 @@ export function FileUploadCard({
     maxSizeMB: maxSize / (1024 * 1024),
     multiple,
     disabled,
+    cropImages,
     uploadFn,
     onFilesChange,
     errorMessages: {
