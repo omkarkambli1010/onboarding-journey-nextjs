@@ -488,19 +488,63 @@ $pageBg: #f8f8f8;
   background: $primary;
 }
 
-// Authorise paragraph
+// ══════════════════════════════════════════════════════════════════════════════
+// Optional Details — "I hereby authorise…" encashment declaration
+// ══════════════════════════════════════════════════════════════════════════════
+
 .authoriseRow {
   display: flex;
-  align-items: flex-start;
-  gap: 8px;
+  flex-direction: column;
+  gap: 4px;
   width: 100%;
+}
 
-  p {
-    font-size: 14px;
-    color: $labelMuted;
-    line-height: 24px;
-    margin: 0;
+.authorisePara {
+  font-size: 14px;
+  color: $labelMuted;
+  line-height: 24px;
+  margin: 0;
+}
+
+// Inline non-editable values (nominee name / number / "%") in the declaration
+.authoriseValue {
+  color: $textDark;
+}
+
+// Muted "(Optional)" tag at the end of the declaration
+.optionalTag {
+  color: $placeholder;
+}
+
+// Inline editable encashment-percentage field — styled as an underline blank
+// to mirror the "______" placeholder in the design
+.encashInput {
+  display: inline-block;
+  width: 52px;
+  margin: 0 2px;
+  padding: 0 6px 1px;
+  border: none;
+  border-bottom: 1.5px solid $labelMuted;
+  background: transparent;
+  font-family: inherit;
+  font-size: 14px;
+  color: $textDark;
+  text-align: center;
+  outline: none;
+  vertical-align: baseline;
+
+  &::placeholder {
+    color: $placeholder;
+    letter-spacing: 1px;
   }
+
+  &:focus {
+    border-bottom-color: $primary;
+  }
+}
+
+.encashInputErr {
+  border-bottom-color: #dc3545;
 }
 
 // "+ Add Another Nominee" link

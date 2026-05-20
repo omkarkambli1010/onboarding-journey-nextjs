@@ -50,6 +50,7 @@ interface Nominee {
   documentType: string;
   documentNumber: string;
   printPreference: PrintPref;
+  encashPercentage: string;
   guardianFirstName: string;
   guardianMiddleName: string;
   guardianLastName: string;
@@ -83,6 +84,7 @@ const blankNominee: Nominee = {
   documentType: '',
   documentNumber: '',
   printPreference: '',
+  encashPercentage: '',
   guardianFirstName: '',
   guardianMiddleName: '',
   guardianLastName: '',
@@ -267,6 +269,26 @@ export default function AddNominee() {
   const errMsg = (key: keyof Nominee) =>
     errors[key] ? <p className={styles.errorText}>{errors[key]}</p> : null;
 
+  // Document number entry rules depend on the selected type:
+  //   Aadhaar → last 4 digits only (digits, capped at 4)
+  //   everything else → free text, uppercased (e.g. PAN)
+  const sanitizeDocumentNumber = (value: string): string =>
+    current.documentType === 'Aadhaar'
+      ? value.replace(/[^0-9]/g, '').slice(0, 4)
+      : value.toUpperCase();
+
+  // Switching document type invalidates any number already typed (a PAN value
+  // is not a valid Aadhaar value, etc.) — clear it so stale input can't linger.
+  const changeDocumentType = (value: string) => {
+    updateCurrent('documentType', value);
+    updateCurrent('documentNumber', '');
+  };
+
+  // The first digit of an Indian mobile number must be 6-9 — strip any leading
+  // 0-5 digits as the user types so a number starting with 0-5 can't be entered.
+  const sanitizeMobile = (value: string): string =>
+    value.replace(/[^0-9]/g, '').replace(/^[0-5]+/, '').slice(0, 10);
+
   const isMinor = useMemo(() => {
     const age = computeAge(current.dob);
     return age !== null && age < 18;
@@ -292,7 +314,7 @@ export default function AddNominee() {
     const mobileRe = /^[6-9]\d{9}$/;
     const pincodeRe = /^\d{6}$/;
     const panRe = /^[A-Z]{5}\d{4}[A-Z]$/;
-    const aadhaarRe = /^\d{12}$/;
+    const aadhaarLast4Re = /^\d{4}$/;
 
     // ── Name fields ────────────────────────────────────────────────────────
     if (!current.firstName.trim()) e.firstName = 'First name is required';
@@ -344,15 +366,27 @@ export default function AddNominee() {
     if (!current.documentNumber.trim()) e.documentNumber = 'Document number is required';
     else {
       const docNum = current.documentNumber.trim().toUpperCase();
-      if (current.documentType === 'PAN Card' && !panRe.test(docNum))
-        e.documentNumber = 'Invalid PAN (format: ABCDE1234F)';
-      else if (current.documentType === 'Aadhaar' && !aadhaarRe.test(docNum))
-        e.documentNumber = 'Aadhaar must be 12 digits';
-      else if (docNum.length < 5) e.documentNumber = 'Minimum 5 characters';
+      // Each document type has its own format rule; the generic minimum-length
+      // check applies only to the remaining types (Passport, Voter ID, etc.).
+      if (current.documentType === 'PAN Card') {
+        if (!panRe.test(docNum)) e.documentNumber = 'Invalid PAN (format: ABCDE1234F)';
+      } else if (current.documentType === 'Aadhaar') {
+        if (!aadhaarLast4Re.test(docNum))
+          e.documentNumber = 'Enter the last 4 digits of the Aadhaar number';
+      } else if (docNum.length < 5) {
+        e.documentNumber = 'Minimum 5 characters';
+      }
     }
 
     // ── Print preference ───────────────────────────────────────────────────
     if (!current.printPreference) e.printPreference = 'Select a print preference';
+
+    // ── Encashment authorisation (Optional Details — only if filled) ───────
+    if (current.encashPercentage) {
+      const encashNum = Number(current.encashPercentage);
+      if (Number.isNaN(encashNum) || encashNum < 1 || encashNum > 100)
+        e.encashPercentage = 'Encashment % must be between 1 and 100';
+    }
 
     // ── Guardian (only when nominee is a minor) ────────────────────────────
     if (isMinor) {
@@ -424,7 +458,7 @@ export default function AddNominee() {
     if (nominees.length > 0) setView('summary');
   };
 
-  const proceed = async () => {
+  const proceed = () => {
     if (nominees.length === 0) {
       toast.warning('Please add at least one nominee.');
       return;
@@ -434,58 +468,61 @@ export default function AddNominee() {
       toast.warning('Total nominee allocation must equal 100%.');
       return;
     }
+
+    // ── savenominee API intentionally disabled — route straight to e-sign. ──
+    // Re-enable the block below (and make this function `async`) when the
+    // backend save is required again:
+    //
+    // const reqData = {
+    //   FormNumber: typeof window !== 'undefined' ? sessionStorage.getItem('FormNumber') : '',
+    //   flag: 'addnominee',
+    //   nominees: nominees.map((n) => ({
+    //     NomineeName: nomineeFullName(n),
+    //     Relation: n.relationship,
+    //     DOB: n.dob,
+    //     Percentage: n.allocation,
+    //     Address: n.sameAsApplicant
+    //       ? applicantAddress
+    //       : [n.addressLine1, n.addressLine2, n.addressLine3, n.city, n.state, n.country, n.pincode]
+    //           .filter(Boolean)
+    //           .join(', '),
+    //     Mobile: n.mobile,
+    //     Email: n.email,
+    //     DocumentType: n.documentType,
+    //     DocumentNumber: n.documentNumber,
+    //     PrintPreference: n.printPreference,
+    //     EncashPercentage: n.encashPercentage,
+    //     GuardianName: [n.guardianFirstName, n.guardianMiddleName, n.guardianLastName]
+    //       .filter(Boolean)
+    //       .join(' '),
+    //     GuardianRelationship: n.guardianRelationship,
+    //   })),
+    // };
+    // const response = await apiService.postRequestNominee(
+    //   'api/v1/nomineeservice/savenominee',
+    //   reqData,
+    //   hideSpinner,
+    // );
+    // if (response?.status !== true) {
+    //   toast.error(response?.message || 'Failed to save nominees.');
+    //   return;
+    // }
+
     showSpinner();
-    const reqData = {
-      FormNumber: typeof window !== 'undefined' ? sessionStorage.getItem('FormNumber') : '',
-      flag: 'addnominee',
-      nominees: nominees.map((n) => ({
-        NomineeName: nomineeFullName(n),
-        Relation: n.relationship,
-        DOB: n.dob,
-        Percentage: n.allocation,
-        Address: n.sameAsApplicant
-          ? applicantAddress
-          : [n.addressLine1, n.addressLine2, n.addressLine3, n.city, n.state, n.country, n.pincode]
-              .filter(Boolean)
-              .join(', '),
-        Mobile: n.mobile,
-        Email: n.email,
-        DocumentType: n.documentType,
-        DocumentNumber: n.documentNumber,
-        PrintPreference: n.printPreference,
-        GuardianName: [n.guardianFirstName, n.guardianMiddleName, n.guardianLastName]
-          .filter(Boolean)
-          .join(' '),
-        GuardianRelationship: n.guardianRelationship,
-      })),
-    };
-    try {
-      const response = await apiService.postRequestNominee(
-        'api/v1/nomineeservice/savenominee',
-        reqData,
-        hideSpinner,
-      );
-      if (response?.status === true) {
-        toast.success('Nominee details saved!');
-        setTimeout(() => {
-          navigationService.navigateToNextStep();
-          hideSpinner();
-        }, 200);
-      } else {
-        toast.error(response?.message || 'Failed to save nominees.');
-        hideSpinner();
-      }
-    } catch {
+    setTimeout(() => {
+      router.push('/esign');
       hideSpinner();
-    }
+    }, 200);
   };
 
   const openFaq = () => router.push(buildFaqUrl(pathname || '/addNominee'));
 
   const goBack = () => {
+    // Always return to the Add Nominee landing screen, regardless of how the
+    // user arrived here (router.back() could land on an unrelated page).
     showSpinner();
     setTimeout(() => {
-      router.back();
+      router.push('/addNominee-landing');
       hideSpinner();
     }, 200);
   };
@@ -546,6 +583,43 @@ export default function AddNominee() {
       </span>
       <span className={styles.checkboxLabel}>Nominee address is same as applicant address</span>
     </label>
+  );
+
+  // Optional Details — the "I hereby authorise…" declaration. The nominee name
+  // and number are derived from the in-flight form; the encashment percentage
+  // is the only editable value and is itself optional.
+  const authoriseNomineeNumber =
+    editingIndex !== null ? editingIndex + 1 : nominees.length + 1;
+
+  const optionalDetails = (
+    <div className={styles.authoriseRow}>
+      <p className={styles.authorisePara}>
+        I hereby authorise that{' '}
+        <span className={styles.authoriseValue}>
+          {nomineeFullName(current) || 'this nominee'}
+        </span>{' '}
+        <span className={styles.authoriseValue}>Nominee number {authoriseNomineeNumber}</span>{' '}
+        to operate my account on my behalf, in case of my incapacitation. He/she is authorised
+        to encash my assets up to{' '}
+        <input
+          type="text"
+          inputMode="numeric"
+          className={`${styles.encashInput}${
+            errors.encashPercentage ? ' ' + styles.encashInputErr : ''
+          }`}
+          placeholder="___"
+          maxLength={3}
+          value={current.encashPercentage}
+          onChange={(e) =>
+            updateCurrent('encashPercentage', e.target.value.replace(/[^0-9]/g, ''))
+          }
+          aria-label="Encashment percentage"
+        />
+        <span className={styles.authoriseValue}> %</span> of assets in the account.{' '}
+        <span className={styles.optionalTag}>(Optional)</span>
+      </p>
+      {errMsg('encashPercentage')}
+    </div>
   );
 
   // ── Desktop layout ────────────────────────────────────────────────────────
@@ -747,9 +821,7 @@ export default function AddNominee() {
                         placeholder="Enter Mobile Number"
                         maxLength={10}
                         value={current.mobile}
-                        onChange={(e) =>
-                          updateCurrent('mobile', e.target.value.replace(/[^0-9]/g, ''))
-                        }
+                        onChange={(e) => updateCurrent('mobile', sanitizeMobile(e.target.value))}
                       />
                       {errMsg('mobile')}
                     </div>
@@ -951,7 +1023,7 @@ export default function AddNominee() {
                       <select
                         className={`${styles.select} ${errCls('documentType')}`}
                         value={current.documentType}
-                        onChange={(e) => updateCurrent('documentType', e.target.value)}
+                        onChange={(e) => changeDocumentType(e.target.value)}
                       >
                         <option value="">Select</option>
                         {DOCUMENT_TYPE_OPTIONS.map((d) => (
@@ -970,10 +1042,16 @@ export default function AddNominee() {
                     <div className={styles.fieldStack}>
                       <input
                         className={`${styles.input} ${errCls('documentNumber')}`}
-                        placeholder="Enter number"
+                        placeholder={
+                          current.documentType === 'Aadhaar'
+                            ? 'Last 4 digits of Aadhaar'
+                            : 'Enter number'
+                        }
+                        inputMode={current.documentType === 'Aadhaar' ? 'numeric' : 'text'}
+                        maxLength={current.documentType === 'Aadhaar' ? 4 : undefined}
                         value={current.documentNumber}
                         onChange={(e) =>
-                          updateCurrent('documentNumber', e.target.value.toUpperCase())
+                          updateCurrent('documentNumber', sanitizeDocumentNumber(e.target.value))
                         }
                       />
                       {errMsg('documentNumber')}
@@ -983,6 +1061,9 @@ export default function AddNominee() {
                   {/* Print preference radio */}
                   {radioGroup}
                   {errMsg('printPreference')}
+
+                  {/* Optional Details — encashment authorisation declaration */}
+                  {optionalDetails}
 
                   {/* Add Another (in-form, only when not at max) */}
                   {!showCountHeader && nominees.length === 0 && (
@@ -1189,7 +1270,7 @@ export default function AddNominee() {
                 placeholder="Enter Mobile Number"
                 maxLength={10}
                 value={current.mobile}
-                onChange={(e) => updateCurrent('mobile', e.target.value.replace(/[^0-9]/g, ''))}
+                onChange={(e) => updateCurrent('mobile', sanitizeMobile(e.target.value))}
               />
               {errMsg('mobile')}
             </div>
@@ -1358,7 +1439,7 @@ export default function AddNominee() {
               <select
                 className={`${styles.mobSelect} ${errCls('documentType', true)}`}
                 value={current.documentType}
-                onChange={(e) => updateCurrent('documentType', e.target.value)}
+                onChange={(e) => changeDocumentType(e.target.value)}
               >
                 <option value="">Select</option>
                 {DOCUMENT_TYPE_OPTIONS.map((d) => (
@@ -1373,15 +1454,26 @@ export default function AddNominee() {
               <label className={styles.mobLabel}>Document Number</label>
               <input
                 className={`${styles.mobInput} ${errCls('documentNumber', true)}`}
-                placeholder="Enter number"
+                placeholder={
+                  current.documentType === 'Aadhaar'
+                    ? 'Last 4 digits of Aadhaar'
+                    : 'Enter number'
+                }
+                inputMode={current.documentType === 'Aadhaar' ? 'numeric' : 'text'}
+                maxLength={current.documentType === 'Aadhaar' ? 4 : undefined}
                 value={current.documentNumber}
-                onChange={(e) => updateCurrent('documentNumber', e.target.value.toUpperCase())}
+                onChange={(e) =>
+                  updateCurrent('documentNumber', sanitizeDocumentNumber(e.target.value))
+                }
               />
               {errMsg('documentNumber')}
             </div>
 
             {radioGroup}
             {errMsg('printPreference')}
+
+            {/* Optional Details — encashment authorisation declaration */}
+            {optionalDetails}
           </>
         )}
       </div>
