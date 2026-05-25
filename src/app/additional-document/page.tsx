@@ -15,7 +15,7 @@ function AdditionalDocumentFallback() {
   return (
     <AdditionalDocument
       onClose={() => router.back()}
-      onProceed={() => router.push('/esign')}
+      onProceed={() => router.push('/additional-document/preview')}
       onSkip={() => router.push('/esign')}
     />
   );

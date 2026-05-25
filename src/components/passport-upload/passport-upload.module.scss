@@ -325,76 +325,15 @@ $shadow-desk:    0px 2px 10px 0px rgba(0, 0, 0, 0.05);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// SHARED — Illustration layers
+// SHARED — Illustration
 // ═══════════════════════════════════════════════════════════════════════════════
-// Each layer uses percentage-based inset so it scales correctly in both
-// the 210×160 (mobile) and 267×200 (desktop) containers.
-
-// Base layer fills the entire container
-.illBase {
-  position: absolute;
+// Single flattened illustration asset, scaled to fit the 210×160 (mobile) and
+// 267×200 (desktop) containers while preserving aspect ratio.
+.illImg {
   display: block;
-  inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: fill;
-  max-width: none;
-}
-
-// Layer_3 group — Figma inset: 19.08% 19.81% 8.87% 15.64%
-.illL3 {
-  position: absolute;
-  inset: 19.08% 19.81% 8.87% 15.64%;
-
-  img {
-    display: block;
-    width: 100%;
-    height: 100%;
-    object-fit: fill;
-    max-width: none;
-  }
-}
-
-// Layer_2 — Figma inset: 24.02% 26.75% 29.57% 21.4%
-.illL2 {
-  position: absolute;
-  inset: 24.02% 26.75% 29.57% 21.4%;
-
-  img {
-    display: block;
-    width: 100%;
-    height: 100%;
-    object-fit: fill;
-    max-width: none;
-  }
-}
-
-// Layer_4 group A (left cluster) — Figma inset: 24.22% 5.7% 5.7% 52.64%
-.illL4A {
-  position: absolute;
-  inset: 24.22% 5.7% 5.7% 52.64%;
-
-  img {
-    display: block;
-    width: 100%;
-    height: 100%;
-    object-fit: fill;
-    max-width: none;
-  }
-}
-
-// Layer_4 group B (bottom-right) — Figma inset: 55.02% 76.07% 6.8% 6.14%
-.illL4B {
-  position: absolute;
-  inset: 55.02% 76.07% 6.8% 6.14%;
-
-  img {
-    display: block;
-    width: 100%;
-    height: 100%;
-    object-fit: fill;
-    max-width: none;
-  }
+  object-fit: contain;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -626,12 +565,25 @@ $shadow-desk:    0px 2px 10px 0px rgba(0, 0, 0, 0.05);
   flex-shrink: 0;
 }
 
-// Passport image inside preview zone — 100×137px (front) or 99×137px (back)
+// Passport image inside the preview zone — keep the cropped aspect ratio.
+// `max-width` + `max-height` lets the browser shrink the image until both
+// fit while preserving its intrinsic width:height ratio (no letterboxing).
 .previewImg {
   display: block;
-  max-width: 100%;
+  width: auto;
   height: auto;
-  object-fit: contain;
+  max-width: 100%;
+  max-height: 320px;
+}
+
+// Shown inside .previewZone when the uploaded file is a PDF
+// (no inline image preview).
+.pdfPreviewNote {
+  margin: 0;
+  padding: 8px 16px;
+  font-size: 13px;
+  color: $text-body;
+  text-align: center;
 }
 
 // ── Extracted data card ───────────────────────────────────────────────────────
@@ -662,39 +614,52 @@ $shadow-desk:    0px 2px 10px 0px rgba(0, 0, 0, 0.05);
   align-items: center;
   justify-content: center;
   line-height: 0;
+  z-index: 1;
 }
 
-// Rows container
-.extractedRows {
+// Inline rows — single-column list on mobile (Figma 0:124992)
+// "Label: VALUE" with value as semibold inline span; 14px regular #2b2b2b
+.extractedInlineList {
   display: flex;
   flex-direction: column;
-  gap: 0;
+  gap: 16px;
+  width: 100%;
 }
 
-// Individual label + value row — flex, justify-between
-// Figma: 14px, line-height 21px
-.extractedRow {
+// Desktop layout — Full Name row spans, remaining fields in 2-col pairs
+// (Figma 0:125238)
+.extractedInlineGrid {
   display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 8px;
-  line-height: 21px;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
 }
 
-// Figma: 14px Regular #666
-.extractedLabel {
+.extractedInlinePair {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+  align-items: flex-start;
+
+  > * {
+    flex: 1 0 0;
+    min-width: 0;
+  }
+}
+
+// Individual "Label: VALUE" row — 14px regular for label, 14px semibold value
+.extractedInlineRow {
   font-size: 14px;
   font-weight: 400;
-  color: $text-body;
-  white-space: nowrap;
+  color: $text-dark-2;
+  line-height: 21px;
+  word-break: break-word;
+  margin: 0;
 }
 
-// Figma: 14px SemiBold #2b2b2b
-.extractedValue {
-  font-size: 14px;
+.extractedInlineValue {
   font-weight: 600;
   color: $text-dark-2;
-  text-align: right;
 }
 
 // ── Mobile two-button area (fixed bottom) ────────────────────────────────────
@@ -729,28 +694,27 @@ $shadow-desk:    0px 2px 10px 0px rgba(0, 0, 0, 0.05);
   cursor: pointer;
   transition: background-color 0.2s ease, color 0.2s ease;
 
-  &:hover {
+  &:hover:not(:disabled) {
     background-color: rgba(40, 0, 113, 0.05);
+  }
+
+  &:disabled {
+    border-color: rgba(40, 0, 113, 0.3);
+    color: rgba(40, 0, 113, 0.5);
+    cursor: not-allowed;
   }
 }
 
-// ── Desktop upload row (preview left + extracted data right) ─────────────────
-// Figma: flex, gap-[24px], w-full, items-flex-start
-.desktopUploadRow {
+// ── Desktop two-button row ────────────────────────────────────────────────────
+// Figma 0:125256 / 0:124889 — Re-Upload (outline) left, primary right.
+// gap-32, both 350×56, centered.
+.desktopDoubleButtonRow {
   display: flex;
-  gap: 24px;
-  width: 100%;
-  align-items: flex-start;
-}
-
-// ── Desktop two-button wrapper ────────────────────────────────────────────────
-// Figma: flex-col, gap-[8px], items-center
-.desktopDoubleButtonWrapper {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  gap: 32px;
   align-items: center;
+  justify-content: center;
   flex-shrink: 0;
+  width: 100%;
 }
 
 // Desktop outline button — 350×56px
@@ -767,8 +731,14 @@ $shadow-desk:    0px 2px 10px 0px rgba(0, 0, 0, 0.05);
   cursor: pointer;
   transition: background-color 0.2s ease, color 0.2s ease;
 
-  &:hover {
+  &:hover:not(:disabled) {
     background-color: rgba(40, 0, 113, 0.05);
+  }
+
+  &:disabled {
+    border-color: rgba(40, 0, 113, 0.3);
+    color: rgba(40, 0, 113, 0.5);
+    cursor: not-allowed;
   }
 }
 
@@ -820,12 +790,12 @@ $shadow-desk:    0px 2px 10px 0px rgba(0, 0, 0, 0.05);
   padding-bottom: 4px;
 }
 
-// Figma "Dash" asset image used as the drag handle
-.sheetHandleImg {
-  display: block;
+// Drag handle — gray pill (was a Figma "Dash" asset image)
+.sheetHandle {
   width: 100px;
-  height: 24px;
-  object-fit: contain;
+  height: 4px;
+  border-radius: 4px;
+  background: #d9d9d9;
 }
 
 // Title row — title (left) + close button (right)
@@ -1001,86 +971,307 @@ $shadow-desk:    0px 2px 10px 0px rgba(0, 0, 0, 0.05);
   overflow-y: auto;
 }
 
-// Passport thumbnail — centered
-.editImgWrapper {
-  display: flex;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
+// Mobile edit thumbnail — sits inside .previewZone. Keep the cropped image's
+// natural aspect ratio (no fixed box, no letterboxing).
 .editPreviewImg {
   display: block;
-  width: 100px;
-  height: 137px;
-  object-fit: contain;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 240px;
   border-radius: 4px;
 }
 
-// Field list — flex-col, gap-12px
+// Field list — flex-col, gap-16px (Figma 0:125804)
 .fieldList {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
   width: 100%;
 }
 
-// Individual field item — label above + input below
+// Individual field item — label above + input below (Figma 0:125805)
+// gap-8 between label and input
 .fieldItem {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
 }
 
-// Figma: 14px Regular #666
+// Figma: 14px Regular #666, line-height 20px
 .fieldLabel {
   font-size: 14px;
   font-weight: 400;
   color: $text-body;
-  line-height: 1.4;
+  line-height: 20px;
 }
 
-// Figma: 14px SemiBold #2b2b2b, border #d9d9d9, rounded-8px, h-48px, px-12px
+// Figma: 14px SemiBold #2b2b2b, border #d9d9d9, rounded-8px, h-40px, px-16, py-10
 .fieldInput {
   width: 100%;
-  height: 48px;
+  height: 40px;
   border: 1px solid $border-card;
   border-radius: 8px;
-  padding: 0 12px;
+  padding: 10px 16px;
   font-size: 14px;
   font-weight: 600;
   color: $text-dark-2;
   background: $bg-white;
   outline: none;
   transition: border-color 0.15s ease;
+  line-height: 20px;
 
   &:focus {
     border-color: $primary;
   }
 }
 
-// Desktop: image (left) + fields (right)
-.desktopEditRow {
-  display: flex;
-  gap: 32px;
-  width: 100%;
-  align-items: flex-start;
+// Error state — red border, matches PrimeReact `.p-prime-cal-error` colour
+.fieldInputError {
+  border-color: #dc3545 !important;
+
+  &:focus {
+    border-color: #dc3545 !important;
+  }
 }
 
-.desktopEditImgWrapper {
+// Inline error text shown beneath an invalid field
+.fieldError {
+  font-size: 12px;
+  font-weight: 400;
+  color: #dc3545;
+  line-height: 16px;
+  margin: 0;
+}
+
+// Native <select> styled like .fieldInput, plus a chevron drawn via background-image
+.fieldSelect {
+  width: 100%;
+  height: 40px;
+  border: 1px solid $border-card;
+  border-radius: 8px;
+  padding: 0 36px 0 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: $text-dark-2;
+  background-color: $bg-white;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'><path d='M1 1.5L6 6.5L11 1.5' stroke='%23666' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  appearance: none;
+  -webkit-appearance: none;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+  line-height: 20px;
+
+  &:focus {
+    border-color: $primary;
+  }
+}
+
+// Disabled "advance" button — used on the fixed bottom area when the form has
+// unsaved edits. Greyed primary, same dimensions.
+.advanceBtnDisabled {
+  background-color: rgba(40, 0, 113, 0.3) !important;
+  cursor: not-allowed !important;
+
+  &:hover {
+    background-color: rgba(40, 0, 113, 0.3) !important;
+  }
+}
+
+// Calendar wrapper that matches the field "column" — used so we can apply
+// width: 100% to the PrimeReact span wrapper.
+.calendarWrap {
+  width: 100%;
+
+  :global(.p-calendar) {
+    width: 100%;
+  }
+}
+
+// ── Desktop edit layout — image (full-width, top) + horizontal field rows ──
+// Figma 0:124818 — body padding 24, content gap 36, then each field is a
+// horizontal row of label (230) + input (250) centered within 752px.
+
+// Stack of image + field rows
+.desktopEditStack {
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+  align-items: center;
+  width: 100%;
+}
+
+// Full-width passport image preview zone — dashed border, padding 16
+.desktopEditImgZone {
+  width: 100%;
+  border: 1px dashed $border-card;
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
 }
 
+// Desktop edit thumbnail — sits inside .desktopEditImgZone. Preserves the
+// cropped image's natural aspect ratio; the Figma 146×200 was a stand-in for
+// a passport-shaped sample, but real crops can be any ratio.
 .desktopEditPreviewImg {
   display: block;
-  width: 100px;
-  height: 137px;
-  object-fit: contain;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 320px;
   border-radius: 4px;
 }
 
+// Field list — vertical stack of horizontal rows
 .desktopFieldList {
-  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  align-items: center;
+}
+
+// Individual horizontal row — label left (230), input right (250), gap-24
+.desktopFieldRow {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  padding: 0 24px;
+  width: 100%;
+  max-width: 752px;
+  justify-content: center;
+}
+
+// Label — 230 wide, 14px regular #666, line-height 20
+.desktopFieldLabel {
+  width: 230px;
+  font-size: 14px;
+  font-weight: 400;
+  color: $text-body;
+  line-height: 20px;
+  flex-shrink: 0;
+  margin: 0;
+}
+
+// Input wrapper — 250 wide
+.desktopFieldInputWrapper {
+  width: 250px;
+  flex-shrink: 0;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ALL-IN-ONE LAYOUT — used by /passportUpload/upload (PassportUploadAll)
+// Mirrors the manual-bankdetails section pattern: a titled block with the
+// upload card on top, then either read-only "Label: value" rows or editable
+// inputs depending on the section's edit-mode toggle.
+// ═══════════════════════════════════════════════════════════════════════════
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.sectionTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: $text-dark-2;
+  margin: 0;
+  line-height: normal;
+}
+
+// Title left, edit-toggle (pencil / Save) right
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+}
+
+// Renders both the pencil icon (read-only) and the "Save" text label (edit
+// mode) — same hit area, consistent padding for either child.
+.editToggleBtn {
+  background: none;
+  border: none;
+  padding: 6px 12px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: $primary;
+  line-height: 20px;
+  transition: background 0.15s ease;
+
+  &:hover { background: rgba(40, 0, 113, 0.08); }
+
+  &[aria-pressed="true"] { background: rgba(40, 0, 113, 0.12); }
+}
+
+// Stack of inline read-only rows shown when a section is not in edit mode
+.readOnlyList {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  width: 100%;
+}
+
+// Mobile: label above input. Desktop: label left, input right.
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  @media (min-width: 768px) {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 24px;
+  }
+}
+
+.fieldRowLabel {
+  font-size: 14px;
+  font-weight: 400;
+  color: $text-body;
+  line-height: 20px;
+
+  @media (min-width: 768px) {
+    font-size: 16px;
+    width: 231px;
+    flex-shrink: 0;
+    padding-top: 10px; // align with 40px input centre
+  }
+}
+
+.inputCol {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+
+  @media (min-width: 768px) {
+    width: 250px;
+    flex-shrink: 0;
+  }
+}
+
+// Scrollable content region inside the desktop card body (Front + Back
+// sections), stays above the fixed Proceed button row.
+.desktopScrollArea {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
 }

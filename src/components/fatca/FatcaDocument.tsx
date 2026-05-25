@@ -179,7 +179,7 @@ export default function FatcaDocument() {
       {showAdditional && (
         <AdditionalDocument
           onClose={() => setShowAdditional(false)}
-          onProceed={() => router.push('/esign')}
+          onProceed={() => router.push('/additional-document/preview')}
           onSkip={() => router.push('/esign')}
         />
       )}

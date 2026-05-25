@@ -1,35 +1,103 @@
 'use client';
 
-import { useState } from 'react';
+import { ChangeEvent, useEffect, useRef, useState } from 'react';
+import { SignatureCropperModal } from '@/components/upload-signature/SignatureCropperModal';
+import { additionalDocumentStore } from './additionalDocumentStore';
 import styles from './additional-document.module.scss';
 
 // AdditionalDocument — TRUE MODAL OVERLAY (not a page)
 // Figma: desktop dialog 0:48996 (inside 0:48751)
 //        mobile sheet   0:49036
 //
+// Upload-only flow (no preview in-modal):
+//   choose    → real file/camera pickers + Skip
+//   uploading → progress
+//   error     → invalid file type or oversized — Try Again
+//
+// On successful upload + crop (or PDF complete) the file is persisted to
+// `additionalDocumentStore` and `onProceed` is fired so the host can route to
+// the dedicated preview page (/additional-document/preview).
+//
 // Props:
 //   onClose   — close the modal (backdrop click, X button)
-//   onProceed — upload complete → proceed to next step
-//   onSkip    — skip this optional document → proceed
+//   onProceed — upload completed → host routes to the preview page
+//   onSkip    — user chose to skip this optional document
 
-// ── Figma assets ──────────────────────────────────────────────────────────
+type DocState = 'choose' | 'uploading' | 'error';
 
-// Mobile sheet (0:49036)
-const ASSET_DASH       = 'https://www.figma.com/api/mcp/asset/b385b6e3-0476-4b9b-adf6-7d5e3edb08ea';
-const ASSET_CLOSE_MOB  = 'https://www.figma.com/api/mcp/asset/d4a0771b-47c8-4b4a-9ef0-4ad02cdf0a1d';
-const ASSET_CAMERA     = 'https://www.figma.com/api/mcp/asset/3aa91b5c-0668-4c02-a2e1-ae4443981aa2';
-const ASSET_UPLOAD_MOB = 'https://www.figma.com/api/mcp/asset/82ad56e8-e409-41e3-a181-2d1a11f641a3';
+const ACCEPTED_INPUT_HINT = 'image/*,application/pdf,.jpg,.jpeg,.png,.heic,.heif,.webp,.pdf';
+const ACCEPTED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'heic', 'heif', 'webp', 'pdf'];
+const MAX_BYTES = 5 * 1024 * 1024;
+const MAX_LABEL = '5 MB';
+const DESKTOP_MQ = '(min-width: 768px)';
 
-// Desktop dialog (0:48996)
-const ASSET_CLOSE_DESK  = 'https://www.figma.com/api/mcp/asset/00ab8bfc-91f6-4e85-835e-68ae5f93a847';
-const ASSET_UPLOAD_DESK = 'https://www.figma.com/api/mcp/asset/9211ad52-aec1-4e47-af44-90b3d1fd7391';
+function isAcceptedFile(f: File): boolean {
+  if (f.type) {
+    if (f.type === 'application/pdf') return true;
+    if (f.type.startsWith('image/')) return true;
+  }
+  const ext = f.name.split('.').pop()?.toLowerCase() ?? '';
+  return ACCEPTED_EXTENSIONS.includes(ext);
+}
 
-// Uploading state — file chip icons
-const ASSET_FILE_ICON  = 'https://www.figma.com/api/mcp/asset/363d4a31-140d-4ff8-9c92-842bc2843056';
-const ASSET_CHIP_CLOSE = 'https://www.figma.com/api/mcp/asset/91d5a5f3-8c72-486b-8f49-30955ba43663';
+function isPdf(f: File): boolean {
+  return f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf');
+}
 
-// ── Types ─────────────────────────────────────────────────────────────────
-type DocState = 'choose' | 'uploading' | 'uploaded' | 'error';
+// ── Icons ─────────────────────────────────────────────────────────────────
+
+function IconClose() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="M6 6L18 18" stroke="#2b2b2b" strokeWidth="1.5" strokeLinecap="round" />
+      <path d="M18 6L6 18" stroke="#2b2b2b" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function IconCamera() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path
+        d="M4 8.5h3l1.5-2h7L17 8.5h3a1 1 0 0 1 1 1V18a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5a1 1 0 0 1 1-1Z"
+        stroke="#280071" strokeWidth="1.5" strokeLinejoin="round"
+      />
+      <circle cx="12" cy="13.5" r="3" stroke="#280071" strokeWidth="1.5" />
+    </svg>
+  );
+}
+
+function IconUploadCloud() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path
+        d="M16.5 10.5h.5a4 4 0 0 1 0 8H6a4.5 4.5 0 0 1-1.1-8.86A6 6 0 0 1 16.4 9.5"
+        stroke="#280071" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
+      />
+      <path d="M12 13v6" stroke="#280071" strokeWidth="1.5" strokeLinecap="round" />
+      <path d="M9.5 15.5L12 13l2.5 2.5" stroke="#280071" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function IconFile() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path
+        d="M13.333 7.333 7.667 13a3 3 0 0 1-4.241-4.243l5.83-5.83a2 2 0 0 1 2.83 2.83L6.4 11.643a1 1 0 0 1-1.414-1.414l5.057-5.057"
+        stroke="#280071" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function IconChipClose() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="M12 4L4 12M4 4L12 12" stroke="#2b2b2b" strokeWidth="1.2" strokeLinecap="round" />
+    </svg>
+  );
+}
 
 function IconError() {
   return (
@@ -47,216 +115,341 @@ interface AdditionalDocumentProps {
 }
 
 export default function AdditionalDocument({ onClose, onProceed, onSkip }: AdditionalDocumentProps) {
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const cameraInputRef = useRef<HTMLInputElement | null>(null);
+
   const [docState, setDocState] = useState<DocState>('choose');
-  const [uploadComplete, setUploadComplete] = useState(false);
+  const [displayName, setDisplayName] = useState('');
+  const [progress, setProgress] = useState(0);
+  const [uploading, setUploading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
+
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  // Transient cropper state. While `croppingObjectUrl` is set the upload card
+  // hides and the cropper modal is the only thing visible to the user.
+  const [croppingObjectUrl, setCroppingObjectUrl] = useState('');
+  const [croppingName, setCroppingName] = useState('');
 
   const handleSkip = onSkip ?? onProceed;
 
-  const handlePickFile = () => {
-    setDocState('uploading');
-    setUploadComplete(false);
-    setTimeout(() => {
-      setUploadComplete(true);
-      setDocState('uploaded');
-    }, 2000);
+  // Mirror the live cropping URL into a ref so the unmount cleanup revokes the
+  // latest value (an empty-deps effect would capture only the initial '').
+  const croppingUrlRef = useRef('');
+  useEffect(() => {
+    croppingUrlRef.current = croppingObjectUrl;
+  }, [croppingObjectUrl]);
+  useEffect(() => {
+    return () => {
+      if (croppingUrlRef.current) URL.revokeObjectURL(croppingUrlRef.current);
+    };
+  }, []);
+
+  // Track viewport so the crop step renders as a desktop dialog above 768px.
+  useEffect(() => {
+    const mq = window.matchMedia(DESKTOP_MQ);
+    const update = () => setIsDesktop(mq.matches);
+    update();
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
+  }, []);
+
+  const revokeCropping = () => {
+    if (croppingObjectUrl) URL.revokeObjectURL(croppingObjectUrl);
+    setCroppingObjectUrl('');
+    setCroppingName('');
   };
 
-  const handleReupload = () => {
+  const resetToChoose = () => {
+    revokeCropping();
+    setDisplayName('');
+    setProgress(0);
+    setUploading(false);
+    setErrorMsg('');
     setDocState('choose');
-    setUploadComplete(false);
+  };
+
+  const startUpload = (f: File) => {
+    if (!isAcceptedFile(f)) {
+      setDisplayName(f.name);
+      setErrorMsg('Unsupported file type. Please upload an image or PDF.');
+      setDocState('error');
+      return;
+    }
+    if (f.size > MAX_BYTES) {
+      setDisplayName(f.name);
+      setErrorMsg(`File too large. Max size ${MAX_LABEL}.`);
+      setDocState('error');
+      return;
+    }
+
+    revokeCropping();
+    setErrorMsg('');
+
+    const pdf = isPdf(f);
+    setDisplayName(f.name);
+    setDocState('uploading');
+    setUploading(true);
+    setProgress(0);
+
+    // Randomised progress curve — visual continuity with the other upload flows.
+    let pct = 0;
+    const step = () => {
+      pct = Math.min(pct + (Math.random() * 18 + 8), 94);
+      setProgress(Math.round(pct));
+      if (pct < 94) {
+        window.setTimeout(step, 150 + Math.random() * 120);
+      } else {
+        window.setTimeout(finish, 350);
+      }
+    };
+    const finish = () => {
+      setProgress(100);
+      setUploading(false);
+      if (pdf) {
+        // PDFs skip the cropper — persist and hand off to the preview route.
+        additionalDocumentStore.set({
+          name: f.name,
+          blob: f,
+          type: 'application/pdf',
+        });
+        onProceed();
+      } else {
+        // Open the cropper with a transient objectURL for the source image.
+        setCroppingObjectUrl(URL.createObjectURL(f));
+        setCroppingName(f.name);
+      }
+    };
+    window.setTimeout(step, 80);
+  };
+
+  const onFilePicked = (e: ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    e.target.value = '';
+    if (f) startUpload(f);
+  };
+
+  const onCropConfirm = (blob: Blob, _size: number, name: string) => {
+    revokeCropping();
+    additionalDocumentStore.set({ name, blob, type: 'image/png' });
+    // Skip any intermediate state — the host routes straight to the preview
+    // page, where the cropped image is shown.
+    onProceed();
+  };
+
+  const onCropCancel = () => {
+    resetToChoose();
   };
 
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) onClose();
   };
 
+  const showUploadFrame = !croppingObjectUrl;
+
   return (
-    <div
-      className={styles.overlay}
-      role="dialog"
-      aria-modal="true"
-      aria-label="Upload Additional Document"
-      onClick={handleBackdropClick}
-    >
-      <div className={styles.sheet}>
+    <>
+      {showUploadFrame && (
+        <div
+          className={styles.overlay}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Upload Additional Document"
+          onClick={handleBackdropClick}
+        >
+          <div className={styles.sheet}>
 
-        {/* ── Drag handle — mobile only ─────────────────────────────────── */}
-        <div className={styles.handleRow}>
-          <img
-            src={ASSET_DASH}
-            alt=""
-            aria-hidden="true"
-            className={styles.handleImg}
-          />
-        </div>
+            {/* Hidden inputs — the icon boxes below trigger these. */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept={ACCEPTED_INPUT_HINT}
+              onChange={onFilePicked}
+              style={{ display: 'none' }}
+              aria-hidden="true"
+              tabIndex={-1}
+            />
+            <input
+              ref={cameraInputRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              onChange={onFilePicked}
+              style={{ display: 'none' }}
+              aria-hidden="true"
+              tabIndex={-1}
+            />
 
-        {/* ── Title + close ─────────────────────────────────────────────── */}
-        <div className={styles.titleRow}>
-          <p className={styles.title}>Upload Additional Document</p>
-          {/* Mobile close (Figma: 0:49052) */}
-          <button
-            type="button"
-            className={`${styles.closeBtn} d-md-none`}
-            onClick={onClose}
-            aria-label="Close"
-          >
-            <img src={ASSET_CLOSE_MOB} alt="" aria-hidden="true" width={24} height={24} />
-          </button>
-          {/* Desktop close (Figma: 0:49009) */}
-          <button
-            type="button"
-            className={`${styles.closeBtn} d-none d-md-flex`}
-            onClick={onClose}
-            aria-label="Close"
-          >
-            <img src={ASSET_CLOSE_DESK} alt="" aria-hidden="true" width={24} height={24} />
-          </button>
-        </div>
+            {/* ── Drag handle — mobile only ─────────────────────────────────── */}
+            <div className={styles.handleRow}>
+              <div className={styles.handleImg} aria-hidden="true" />
+            </div>
 
-        {/* ── Subtitle with (Optional) ────────────────────────────────────── */}
-        <p className={styles.subtitle}>
-          Requiring English translated copy for non‑English documents
-          <span className={styles.subtitleOptional}> (Optional)</span>
-        </p>
-
-        {/* ── Choose state ─────────────────────────────────────────────────── */}
-        {docState === 'choose' && (
-          <>
-            {/* Mobile: two 80×80 boxes — camera + upload (Figma: 0:49068) */}
-            <div className={styles.iconRowMobile}>
+            {/* ── Title + close ─────────────────────────────────────────────── */}
+            <div className={styles.titleRow}>
+              <p className={styles.title}>Upload Additional Document</p>
               <button
                 type="button"
-                className={styles.iconBox}
-                onClick={handlePickFile}
-                aria-label="Take photo"
+                className={styles.closeBtn}
+                onClick={onClose}
+                aria-label="Close"
               >
-                <img src={ASSET_CAMERA} alt="" aria-hidden="true" width={26} height={24} />
-              </button>
-              <button
-                type="button"
-                className={styles.iconBox}
-                onClick={handlePickFile}
-                aria-label="Upload file"
-              >
-                <img src={ASSET_UPLOAD_MOB} alt="" aria-hidden="true" width={24} height={24} />
+                <IconClose />
               </button>
             </div>
 
-            {/* Desktop: single 80×80 upload box (Figma: 0:49012) */}
-            <div className={styles.iconBoxDesktopWrap}>
-              <button
-                type="button"
-                className={styles.iconBox}
-                onClick={handlePickFile}
-                aria-label="Upload file"
-              >
-                <img src={ASSET_UPLOAD_DESK} alt="" aria-hidden="true" width={24} height={24} />
-              </button>
-            </div>
-          </>
-        )}
-
-        {/* ── Uploading / Uploaded state ───────────────────────────────────── */}
-        {(docState === 'uploading' || docState === 'uploaded') && (
-          <>
-            {/* 48×48 upload cloud icon, left-aligned */}
-            <div className={styles.uploadingIconRow}>
-              <div className={styles.uploadingIconBox}>
-                <img src={ASSET_UPLOAD_MOB} alt="" aria-hidden="true" width={24} height={24} />
-              </div>
-            </div>
-
-            {/* File chip + progress bar */}
-            <div>
-              <div className={styles.fileChip}>
-                <img src={ASSET_FILE_ICON} alt="" aria-hidden="true" width={16} height={16} />
-                <span className={styles.fileChipName}>additionaldoc.pdf</span>
-                <button
-                  type="button"
-                  className={styles.fileChipRemove}
-                  onClick={handleReupload}
-                  aria-label="Remove file"
-                >
-                  <img src={ASSET_CHIP_CLOSE} alt="" aria-hidden="true" width={16} height={16} />
-                </button>
-              </div>
-              <div className={styles.progressTrack}>
-                <div
-                  className={styles.progressFill}
-                  style={{ width: uploadComplete ? '100%' : '45%' }}
-                />
-              </div>
-            </div>
-          </>
-        )}
-
-        {/* ── Error state ───────────────────────────────────────────────────── */}
-        {docState === 'error' && (
-          <>
-            <div className={`${styles.fileChip} ${styles.fileChipError}`}>
-              <IconError />
-              <span className={styles.fileChipName}>additionaldoc.pdf</span>
-              <button
-                type="button"
-                className={styles.fileChipRemove}
-                onClick={handleReupload}
-                aria-label="Remove file"
-              >
-                <img src={ASSET_CHIP_CLOSE} alt="" aria-hidden="true" width={16} height={16} />
-              </button>
-            </div>
-            <p className={styles.errorMsg}>
-              Upload failed. File may be too large or in an unsupported format.
+            {/* ── Subtitle with (Optional) ────────────────────────────────────── */}
+            <p className={styles.subtitle}>
+              Requiring English translated copy for non‑English documents
+              <span className={styles.subtitleOptional}> (Optional)</span>
             </p>
-          </>
-        )}
 
-        {/* ── Disclaimers — always visible ──────────────────────────────────── */}
-        {/* Mobile 12px → Desktop 14px via SCSS media query */}
-        <div className={styles.disclaimerBlock}>
-          <p className={styles.disclaimerLine}>Files supported: JPG, PNG &amp; PDF</p>
-          <p className={styles.disclaimerLine}>Maximum size less than 5 MB</p>
-          <p className={styles.disclaimerLine}>
-            Please ensure that you don&apos;t upload password protected documents
-          </p>
-        </div>
+            {/* ── Choose state ─────────────────────────────────────────────────── */}
+            {docState === 'choose' && (
+              <>
+                {/* Mobile: two 80×80 boxes — camera + upload (Figma: 0:49068) */}
+                <div className={styles.iconRowMobile}>
+                  <button
+                    type="button"
+                    className={styles.iconBox}
+                    onClick={() => cameraInputRef.current?.click()}
+                    aria-label="Take photo with camera"
+                  >
+                    <IconCamera />
+                  </button>
+                  <button
+                    type="button"
+                    className={styles.iconBox}
+                    onClick={() => fileInputRef.current?.click()}
+                    aria-label="Upload from files"
+                  >
+                    <IconUploadCloud />
+                  </button>
+                </div>
 
-        {/* ── Buttons ───────────────────────────────────────────────────────── */}
-        <div className={styles.buttonBlock}>
-          {/* Choose state: full-width Skip button */}
-          {docState === 'choose' && (
-            <button type="button" className={styles.primaryBtn} onClick={handleSkip}>
-              Skip
-            </button>
-          )}
+                {/* Desktop: single 80×80 upload box (Figma: 0:49012) */}
+                <div className={styles.iconBoxDesktopWrap}>
+                  <button
+                    type="button"
+                    className={styles.iconBox}
+                    onClick={() => fileInputRef.current?.click()}
+                    aria-label="Upload from files"
+                  >
+                    <IconUploadCloud />
+                  </button>
+                </div>
+              </>
+            )}
 
-          {/* Uploading / Uploaded: Reupload + Proceed side by side */}
-          {(docState === 'uploading' || docState === 'uploaded') && (
-            <div className={styles.buttonRow}>
-              <button type="button" className={styles.reuploadRowBtn} onClick={handleReupload}>
-                Reupload
-              </button>
-              <button
-                type="button"
-                className={`${styles.proceedRowBtn}${!uploadComplete ? ` ${styles.proceedRowBtnDisabled}` : ''}`}
-                onClick={onProceed}
-                disabled={!uploadComplete}
-                aria-disabled={!uploadComplete}
-              >
-                Proceed
-              </button>
+            {/* ── Uploading state ──────────────────────────────────────────────── */}
+            {docState === 'uploading' && (
+              <>
+                <div className={styles.uploadingIconRow}>
+                  <div className={styles.uploadingIconBox}>
+                    <IconUploadCloud />
+                  </div>
+                </div>
+
+                <div>
+                  <div className={styles.fileChip}>
+                    <IconFile />
+                    <span className={styles.fileChipName}>{displayName}</span>
+                    <button
+                      type="button"
+                      className={styles.fileChipRemove}
+                      onClick={resetToChoose}
+                      aria-label="Cancel upload"
+                    >
+                      <IconChipClose />
+                    </button>
+                  </div>
+                  <div className={styles.progressTrack}>
+                    <div
+                      className={styles.progressFill}
+                      style={{ width: `${progress}%`, transition: 'width 0.3s ease' }}
+                    />
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* ── Error state ──────────────────────────────────────────────────── */}
+            {docState === 'error' && (
+              <>
+                <div className={`${styles.fileChip} ${styles.fileChipError}`}>
+                  <IconError />
+                  <span className={styles.fileChipName}>{displayName}</span>
+                  <button
+                    type="button"
+                    className={styles.fileChipRemove}
+                    onClick={resetToChoose}
+                    aria-label="Remove file"
+                  >
+                    <IconChipClose />
+                  </button>
+                </div>
+                <p className={styles.errorMsg}>
+                  {errorMsg || 'Upload failed. File may be too large or in an unsupported format.'}
+                </p>
+              </>
+            )}
+
+            {/* ── Disclaimers — always visible ──────────────────────────────────── */}
+            <div className={styles.disclaimerBlock}>
+              <p className={styles.disclaimerLine}>Files supported: JPG, PNG &amp; PDF</p>
+              <p className={styles.disclaimerLine}>Maximum size less than {MAX_LABEL}</p>
+              <p className={styles.disclaimerLine}>
+                Please ensure that you don&apos;t upload password protected documents
+              </p>
             </div>
-          )}
 
-          {/* Error: Try Again full-width */}
-          {docState === 'error' && (
-            <button type="button" className={styles.outlineBtn} onClick={handleReupload}>
-              Try Again
-            </button>
-          )}
+            {/* ── Buttons ───────────────────────────────────────────────────────── */}
+            <div className={styles.buttonBlock}>
+              {/* Choose state: full-width Skip button */}
+              {docState === 'choose' && (
+                <button type="button" className={styles.primaryBtn} onClick={handleSkip}>
+                  Skip
+                </button>
+              )}
+
+              {/* Uploading: Reupload (cancels) — the cropper or PDF finish
+                  fires onProceed and routes the host to the preview page. */}
+              {docState === 'uploading' && (
+                <div className={styles.buttonRow}>
+                  <button
+                    type="button"
+                    className={styles.reuploadRowBtn}
+                    onClick={resetToChoose}
+                    disabled={uploading}
+                  >
+                    Reupload
+                  </button>
+                </div>
+              )}
+
+              {/* Error: Try Again full-width */}
+              {docState === 'error' && (
+                <button type="button" className={styles.outlineBtn} onClick={resetToChoose}>
+                  Try Again
+                </button>
+              )}
+            </div>
+
+          </div>
         </div>
+      )}
 
-      </div>
-    </div>
+      {/* Crop step — reuses the signature flow's cropper for images only. */}
+      <SignatureCropperModal
+        open={!!croppingObjectUrl}
+        isDesktop={isDesktop}
+        src={croppingObjectUrl}
+        fileName={croppingName}
+        title="Crop your document"
+        subtitle="Adjust the box around your document."
+        onCancel={onCropCancel}
+        onConfirm={onCropConfirm}
+      />
+    </>
   );
 }

@@ -3,16 +3,12 @@
 import { useRouter } from 'next/navigation';
 import styles from './passport-upload.module.scss';
 
-// ─── Illustration assets ────────────────────────────────────────────────────
+// ─── Illustration asset ─────────────────────────────────────────────────────
 // Figma: Onboarding / Step 10 / Passport Proof — Document Upload
-// Source node: 13098899_Upload_file_concept_illustration 1
-// TODO: Download and move to /public/assets/images/diy/ before production.
-//       URLs below expire after 7 days (Figma MCP temporary assets).
-const ILL_BASE = 'https://www.figma.com/api/mcp/asset/c61b4545-2952-44d2-ad3b-3efc16006b3c'; // Layer_1 — full-size base
-const ILL_L3   = 'https://www.figma.com/api/mcp/asset/5192f38c-6c1c-4b44-8bed-1cf7281b763c'; // Layer_3 group overlay
-const ILL_L2   = 'https://www.figma.com/api/mcp/asset/b1f1100f-ffa1-4323-8175-d81e410ea01e'; // Layer_2 overlay
-const ILL_L4A  = 'https://www.figma.com/api/mcp/asset/2f450e87-1c22-42bb-95fc-9e94e5fe4982'; // Layer_4 left cluster
-const ILL_L4B  = 'https://www.figma.com/api/mcp/asset/9731371b-b2a8-4c5f-9e6c-b32c1f7d5e6d'; // Layer_4 bottom-right
+// Source node: 13098899_Upload_file_concept_illustration 1 (0:122890)
+// Flattened to a single local PNG — the original per-layer Figma MCP asset
+// URLs were temporary (7-day expiry) and broke once they lapsed.
+const UPLOAD_ILLUSTRATION = '/assets/images/diy/upload-docs-illustration.png';
 
 // ─── Document list ──────────────────────────────────────────────────────────
 // TODO: Replace with API data when available
@@ -54,33 +50,12 @@ function IconBackArrow() {
   );
 }
 
-// ─── Illustration — composited layers (percentage insets scale both sizes) ──
+// ─── Illustration — single flattened asset ──────────────────────────────────
 // Rendered inside .mobileIllustration (210×160) or .desktopIllustration (267×200)
 function Illustration({ className }: { className: string }) {
   return (
     <div className={className} aria-hidden="true">
-      {/* Layer_1 — full-bleed base */}
-      <img className={styles.illBase} src={ILL_BASE} alt="" />
-
-      {/* Layer_3 group — inset: top 19.08% right 19.81% bottom 8.87% left 15.64% */}
-      <div className={styles.illL3}>
-        <img src={ILL_L3} alt="" />
-      </div>
-
-      {/* Layer_2 — inset: top 24.02% right 26.75% bottom 29.57% left 21.4% */}
-      <div className={styles.illL2}>
-        <img src={ILL_L2} alt="" />
-      </div>
-
-      {/* Layer_4 left cluster — inset: top 24.22% right 5.7% bottom 5.7% left 52.64% */}
-      <div className={styles.illL4A}>
-        <img src={ILL_L4A} alt="" />
-      </div>
-
-      {/* Layer_4 bottom-right — inset: top 55.02% right 76.07% bottom 6.8% left 6.14% */}
-      <div className={styles.illL4B}>
-        <img src={ILL_L4B} alt="" />
-      </div>
+      <img className={styles.illImg} src={UPLOAD_ILLUSTRATION} alt="" />
     </div>
   );
 }

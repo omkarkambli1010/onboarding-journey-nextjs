@@ -4,7 +4,8 @@ import type { FileUploadConfig } from './fileUpload.types';
 import { FileUpload } from './FileUpload';
 
 export interface FileUploadCardProps {
-  title: string;
+  /** Optional — rendered above the dropzone. Omit when the caller provides its own header. */
+  title?: string;
   /** MIME types e.g. ['application/pdf', 'image/jpeg', 'image/png', 'image/heic'] */
   acceptedTypes: string[];
   /** Maximum allowed file size in bytes e.g. 5 * 1024 * 1024 */

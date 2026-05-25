@@ -2,14 +2,18 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import styles from './oci.module.scss';
-import OciUploadSheet from './OciUploadSheet';
-import AdditionalDocument from '@/components/additional-document/AdditionalDocument';
-import { ociStore, type OciFile } from './ociStore';
+import AdditionalDocument from './AdditionalDocument';
+import { additionalDocumentStore, type AdditionalDocumentFile } from './additionalDocumentStore';
+import styles from './additional-document.module.scss';
 
-// OciBack — Screen 3: Upload OCI Back result (file chip + image preview)
-// Figma: Onboarding-Mob-OCI/PIO-Upload-Back (0:40478)
-//        Figma: Onboarding-Web-OCI/PIO-Upload-Back (0:40567)
+// AdditionalDocumentPreview — dedicated preview screen for the file picked in
+// the AdditionalDocument modal. Mirrors OCI/passport preview pages.
+//
+// - Reads the file from `additionalDocumentStore` on mount; redirects to the
+//   OCI back screen if the store is empty (e.g. after a hard reload).
+// - Re-Upload opens the AdditionalDocument modal inline. After a successful
+//   re-upload the preview refreshes in place and the modal closes.
+// - Proceed advances to /esign.
 
 function IconBackArrow() {
   return (
@@ -31,7 +35,7 @@ function IconFile() {
   );
 }
 
-function IconCloseChip() {
+function IconChipClose() {
   return (
     <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <path d="M7.5 2.5L2.5 7.5M2.5 2.5L7.5 7.5" stroke="#2B2B2B" strokeWidth="1.2" strokeLinecap="round" />
@@ -45,22 +49,21 @@ function FileChip({ filename, onRemove }: { filename: string; onRemove: () => vo
       <IconFile />
       <span className={styles.fileChipName}>{filename}</span>
       <button type="button" className={styles.fileChipRemove} onClick={onRemove} aria-label="Remove file">
-        <IconCloseChip />
+        <IconChipClose />
       </button>
     </div>
   );
 }
 
-export default function OciBack() {
+export default function AdditionalDocumentPreview() {
   const router = useRouter();
-  const [file, setFile] = useState<OciFile | null>(null);
+  const [file, setFile] = useState<AdditionalDocumentFile | null>(null);
   const [showSheet, setShowSheet] = useState(false);
-  const [showAdditional, setShowAdditional] = useState(false);
 
   useEffect(() => {
-    const f = ociStore.get('back');
+    const f = additionalDocumentStore.get();
     if (!f) {
-      router.replace('/oci');
+      router.replace('/oci/back');
       return;
     }
     setFile(f);
@@ -68,8 +71,7 @@ export default function OciBack() {
 
   const handleBack = () => router.back();
   const handleReupload = () => setShowSheet(true);
-  // Opens Additional Document modal inline over this page
-  const handleProceed = () => setShowAdditional(true);
+  const handleProceed = () => router.push('/esign');
 
   if (!file) return null;
 
@@ -77,15 +79,14 @@ export default function OciBack() {
     file.type === 'application/pdf' ? (
       <p className={styles.pdfPreviewNote}>PDF uploaded — preview not available</p>
     ) : (
-      <img src={file.objectUrl} alt="OCI card back" className={styles.previewImg} />
+      <img src={file.objectUrl} alt="Uploaded additional document" className={styles.previewImg} />
     );
 
   return (
     <>
       {/* ═══ MOBILE ═══════════════════════════════════════════════════════════ */}
-      <div className={styles.mobilePage} aria-label="Upload OCI Back">
+      <div className={styles.mobilePage} aria-label="Upload Additional Document">
 
-        {/* Gray header */}
         <div className={styles.mobileHeader}>
           <div className={styles.mobileHeaderInner}>
             <div className={styles.mobileTopRow}>
@@ -94,24 +95,22 @@ export default function OciBack() {
               </button>
             </div>
             <div className={styles.mobileTitleBlock}>
-              <h1 className={styles.mobileTitle}>Upload OCI Back</h1>
+              <h1 className={styles.mobileTitle}>Upload Additional Document</h1>
               <p className={styles.mobileSubtitle}>
-                Enter your details manually and upload your OCI/PIO (front and back) for verification.
+                Review your uploaded document before continuing.
               </p>
             </div>
           </div>
         </div>
 
-        {/* White card — file chip + preview image */}
         <div className={styles.mobileCardUpload}>
           <FileChip filename={file.name} onRemove={handleReupload} />
           <div className={styles.previewZone}>{previewContent}</div>
         </div>
 
-        {/* Fixed bottom — two buttons */}
         <div className={styles.mobileDoubleButtonArea}>
           <button type="button" className={styles.mobileProceedBtn} onClick={handleProceed}>
-            Upload Additional Document
+            Proceed
           </button>
           <button type="button" className={styles.mobileOutlineBtn} onClick={handleReupload}>
             Re-Upload
@@ -121,7 +120,7 @@ export default function OciBack() {
       </div>
 
       {/* ═══ DESKTOP ══════════════════════════════════════════════════════════ */}
-      <div className={styles.desktopPage} aria-label="Upload OCI Back">
+      <div className={styles.desktopPage} aria-label="Upload Additional Document">
         <div className={styles.desktopCard}>
 
           <div className={styles.desktopCardHeader}>
@@ -129,9 +128,9 @@ export default function OciBack() {
               <IconBackArrow />
             </button>
             <div className={styles.desktopTitleBlock}>
-              <h1 className={styles.desktopCardTitle}>Upload OCI Back</h1>
+              <h1 className={styles.desktopCardTitle}>Upload Additional Document</h1>
               <p className={styles.desktopCardSubtitle}>
-                Enter your details manually and upload your OCI/PIO (front and back) for verification.
+                Review your uploaded document before continuing.
               </p>
             </div>
           </div>
@@ -142,12 +141,12 @@ export default function OciBack() {
               <div className={styles.previewZone}>{previewContent}</div>
             </div>
 
-            <div className={styles.desktopDoubleButtonWrapper}>
-              <button type="button" className={styles.desktopProceedBtn} onClick={handleProceed}>
-                Upload Additional Document
-              </button>
+            <div className={styles.desktopDoubleButtonRow}>
               <button type="button" className={styles.desktopOutlineBtn} onClick={handleReupload}>
                 Re-Upload
+              </button>
+              <button type="button" className={styles.desktopProceedBtn} onClick={handleProceed}>
+                Proceed
               </button>
             </div>
           </div>
@@ -155,25 +154,15 @@ export default function OciBack() {
         </div>
       </div>
 
-      {/* Re-upload sheet — refreshes back preview in place */}
+      {/* Re-upload sheet — refreshes preview in place on success */}
       {showSheet && (
-        <OciUploadSheet
-          side="back"
+        <AdditionalDocument
           onClose={() => setShowSheet(false)}
           onProceed={() => {
-            setFile(ociStore.get('back'));
+            setFile(additionalDocumentStore.get());
             setShowSheet(false);
           }}
-        />
-      )}
-
-      {/* Additional Document modal overlay — on successful upload the modal
-          routes to the dedicated /additional-document/preview screen. */}
-      {showAdditional && (
-        <AdditionalDocument
-          onClose={() => setShowAdditional(false)}
-          onProceed={() => router.push('/additional-document/preview')}
-          onSkip={() => router.push('/esign')}
+          onSkip={() => setShowSheet(false)}
         />
       )}
     </>
