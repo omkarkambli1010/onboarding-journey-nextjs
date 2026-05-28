@@ -3,6 +3,7 @@
 import {
   ChangeEvent,
   KeyboardEvent,
+  ReactNode,
   useEffect,
   useId,
   useMemo,
@@ -316,6 +317,7 @@ interface BankSectionErrors {
 
 interface BankSectionProps {
   title: string;
+  uploadSlot: ReactNode;
   accountNo: string;
   reAccountNo: string;
   ifsc: string;
@@ -327,6 +329,7 @@ interface BankSectionProps {
 
 function BankSection({
   title,
+  uploadSlot,
   accountNo,
   reAccountNo,
   ifsc,
@@ -340,6 +343,9 @@ function BankSection({
   return (
     <div className={styles.bankSection}>
       <p className={styles.sectionTitle}>{title}</p>
+
+      {/* Upload statement for this account, then its details below */}
+      {uploadSlot}
 
       {/* Account No. — numeric only, with eye toggle */}
       <div className={styles.fieldGroup}>
@@ -459,7 +465,7 @@ export default function ManualBankDetails() {
 
   const goBack = () => {
     showSpinner();
-    setTimeout(() => { router.back(); hideSpinner(); }, 200);
+    setTimeout(() => { router.push('/personalDetailsForm/6'); hideSpinner(); }, 200);
   };
 
   const handleProceed = () => {
@@ -510,34 +516,21 @@ export default function ManualBankDetails() {
 
   // ── Shared JSX fragments ──────────────────────────────────────────────────
 
-  const uploadStatementsSection = (
-    <div className={styles.uploadGrid}>
-      <FileUploadCard
-        title="Upload NRO Statement"
-        acceptedTypes={STATEMENT_TYPES}
-        maxSize={STATEMENT_MAX_SIZE}
-        acceptedLabel={STATEMENT_ACCEPTED_LABEL}
-        sizeErrorMessage={STATEMENT_SIZE_ERR}
-        typeErrorMessage={STATEMENT_TYPE_ERR}
-        cropImages
-        onFilesChange={setNroStatementFiles}
-      />
-      <FileUploadCard
-        title="Upload Non PIS NRE Statement"
-        acceptedTypes={STATEMENT_TYPES}
-        maxSize={STATEMENT_MAX_SIZE}
-        acceptedLabel={STATEMENT_ACCEPTED_LABEL}
-        sizeErrorMessage={STATEMENT_SIZE_ERR}
-        typeErrorMessage={STATEMENT_TYPE_ERR}
-        cropImages
-        onFilesChange={setNreStatementFiles}
-      />
-    </div>
-  );
-
   const nroSection = (
     <BankSection
       title="Enter NRO (Savings Account) details"
+      uploadSlot={
+        <FileUploadCard
+          title="Upload NRO Statement"
+          acceptedTypes={STATEMENT_TYPES}
+          maxSize={STATEMENT_MAX_SIZE}
+          acceptedLabel={STATEMENT_ACCEPTED_LABEL}
+          sizeErrorMessage={STATEMENT_SIZE_ERR}
+          typeErrorMessage={STATEMENT_TYPE_ERR}
+          cropImages
+          onFilesChange={setNroStatementFiles}
+        />
+      }
       accountNo={nroAccountNo}
       reAccountNo={nroReAccountNo}
       ifsc={nroIfsc}
@@ -551,6 +544,18 @@ export default function ManualBankDetails() {
   const nreSection = (
     <BankSection
       title="Enter Non PIS NRE (Savings Account) details"
+      uploadSlot={
+        <FileUploadCard
+          title="Upload Non PIS NRE Statement"
+          acceptedTypes={STATEMENT_TYPES}
+          maxSize={STATEMENT_MAX_SIZE}
+          acceptedLabel={STATEMENT_ACCEPTED_LABEL}
+          sizeErrorMessage={STATEMENT_SIZE_ERR}
+          typeErrorMessage={STATEMENT_TYPE_ERR}
+          cropImages
+          onFilesChange={setNreStatementFiles}
+        />
+      }
       accountNo={nreAccountNo}
       reAccountNo={nreReAccountNo}
       ifsc={nreIfsc}
@@ -594,7 +599,6 @@ export default function ManualBankDetails() {
 
         <div className={styles.mobileCard}>
           {/* {bankBanner} */}
-          {uploadStatementsSection}
           {nroSection}
           {nreSection}
         </div>
@@ -633,7 +637,6 @@ export default function ManualBankDetails() {
           <div className={styles.desktopCardBody}>
             <div className={styles.desktopScrollArea}>
               {/* {bankBanner} */}
-              {uploadStatementsSection}
               {nroSection}
               {nreSection}
             </div>

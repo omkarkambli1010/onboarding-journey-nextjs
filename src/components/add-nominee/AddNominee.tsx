@@ -40,6 +40,8 @@ interface Nominee {
   email: string;
   dob: string;
   sameAsApplicant: boolean;
+  title2: boolean;
+  title3: boolean;
   addressLine1: string;
   addressLine2: string;
   addressLine3: string;
@@ -74,6 +76,8 @@ const blankNominee: Nominee = {
   email: '',
   dob: '',
   sameAsApplicant: true,
+  title2: false,
+  title3: false,
   addressLine1: '',
   addressLine2: '',
   addressLine3: '',
@@ -566,23 +570,32 @@ export default function AddNominee() {
     </div>
   );
 
-  const sameAsApplicantCheckbox = (
+  const renderCheckbox = (
+    field: 'sameAsApplicant' | 'title2' | 'title3',
+    label: string
+  ) => (
     <label className={styles.checkboxRow}>
       <input
         type="checkbox"
-        checked={current.sameAsApplicant}
-        onChange={(e) => updateCurrent('sameAsApplicant', e.target.checked)}
+        checked={current[field]}
+        onChange={(e) => updateCurrent(field, e.target.checked)}
         style={{ display: 'none' }}
       />
       <span
-        className={`${styles.checkbox}${
-          current.sameAsApplicant ? ' ' + styles.checkboxChecked : ''
-        }`}
+        className={`${styles.checkbox}${current[field] ? ' ' + styles.checkboxChecked : ''}`}
       >
-        {current.sameAsApplicant && <CheckIcon />}
+        {current[field] && <CheckIcon />}
       </span>
-      <span className={styles.checkboxLabel}>Nominee address is same as applicant address</span>
+      <span className={styles.checkboxLabel}>{label}</span>
     </label>
+  );
+
+  const checkboxGroup = (
+    <div className={styles.checkboxGroup}>
+      {renderCheckbox('sameAsApplicant', 'Nominee address is same as applicant address')}
+      {renderCheckbox('title2', 'title 2')}
+      {renderCheckbox('title3', 'title 3')}
+    </div>
   );
 
   // Optional Details — the "I hereby authorise…" declaration. The nominee name
@@ -866,7 +879,7 @@ export default function AddNominee() {
                   </div>
 
                   {/* Same as applicant */}
-                  {sameAsApplicantCheckbox}
+                  {checkboxGroup}
 
                   {/* Address — either preview or extra fields */}
                   {current.sameAsApplicant ? (
@@ -1303,7 +1316,7 @@ export default function AddNominee() {
               {errMsg('dob')}
             </div>
 
-            {sameAsApplicantCheckbox}
+            {checkboxGroup}
 
             {current.sameAsApplicant ? (
               <div className={styles.addressPreview}>

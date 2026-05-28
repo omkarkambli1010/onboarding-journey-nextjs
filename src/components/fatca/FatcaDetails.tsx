@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import styles from './fatca.module.scss';
 import FatcaUploadSheet from './FatcaUploadSheet';
 
-// FatcaDetails — Screen 1: FATCA form with 5 fields
+// FatcaDetails — Screen 1: three roman-numbered FATCA sections, 5 fields each
 // Figma: Onboarding-Mob-FATCAdetail (0:48387)
 //        Route: /fatca
 
@@ -22,6 +22,32 @@ const COUNTRIES = [
   'Japan',
 ];
 
+const ROMAN = ['I', 'II', 'III'];
+
+type FatcaSection = {
+  countryOfBirth: string;
+  citizenship: string;
+  taxResidence: string;
+  tinIssuingCountry: string;
+  tinNumber: string;
+};
+
+const emptySection: FatcaSection = {
+  countryOfBirth: '',
+  citizenship: '',
+  taxResidence: '',
+  tinIssuingCountry: '',
+  tinNumber: '',
+};
+
+// The four dropdown fields share an identical shape; the TIN number is a text input.
+const SELECT_FIELDS: { field: keyof FatcaSection; label: string }[] = [
+  { field: 'countryOfBirth', label: 'Country of Birth' },
+  { field: 'citizenship', label: 'Cizitenship' },
+  { field: 'taxResidence', label: 'Country of TAX Residence' },
+  { field: 'tinIssuingCountry', label: 'TIN Issuing Country' },
+];
+
 // Inline chevron-down SVG
 function CaretDown() {
   return (
@@ -34,19 +60,24 @@ function CaretDown() {
 export default function FatcaDetails() {
   const router = useRouter();
 
-  const [countryOfBirth, setCountryOfBirth]       = useState('');
-  const [citizenship, setCitizenship]             = useState('');
-  const [taxResidence, setTaxResidence]           = useState('');
-  const [tinIssuingCountry, setTinIssuingCountry] = useState('');
-  const [tinNumber, setTinNumber]                 = useState('');
-  const [showSheet, setShowSheet]                 = useState(false);
+  const [sections, setSections] = useState<FatcaSection[]>(() =>
+    ROMAN.map(() => ({ ...emptySection }))
+  );
+  const [showSheet, setShowSheet] = useState(false);
 
-  const allFilled =
-    countryOfBirth.trim() !== '' &&
-    citizenship.trim() !== '' &&
-    taxResidence.trim() !== '' &&
-    tinIssuingCountry.trim() !== '' &&
-    tinNumber.trim() !== '';
+  const updateSection = (index: number, field: keyof FatcaSection, value: string) => {
+    setSections((prev) => prev.map((s, i) => (i === index ? { ...s, [field]: value } : s)));
+  };
+
+  const sectionFilled = (s: FatcaSection) =>
+    s.countryOfBirth.trim() !== '' &&
+    s.citizenship.trim() !== '' &&
+    s.taxResidence.trim() !== '' &&
+    s.tinIssuingCountry.trim() !== '' &&
+    s.tinNumber.trim() !== '';
+
+  // Every field in all three sections is required before proceeding.
+  const allFilled = sections.every(sectionFilled);
 
   const handleProceed = () => {
     if (allFilled) setShowSheet(true);
@@ -54,6 +85,66 @@ export default function FatcaDetails() {
 
   const title    = 'Enter FATCA Details';
   const subtitle = 'Enter your overseas address details manually.';
+
+  // ── Field renderers (shared across mobile + desktop, and across sections) ────
+  const renderSelect = (
+    s: FatcaSection,
+    index: number,
+    field: keyof FatcaSection,
+    label: string,
+    idPrefix: string,
+    groupClass: string
+  ) => {
+    const id = `${idPrefix}-${field}-${index}`;
+    return (
+      <div className={groupClass} key={field}>
+        <label className={styles.fieldLabel} htmlFor={id}>{label}</label>
+        <div className={styles.fieldSelectWrap}>
+          <select
+            id={id}
+            className={styles.fieldSelect}
+            value={s[field]}
+            onChange={(e) => updateSection(index, field, e.target.value)}
+          >
+            <option value="" disabled>Select</option>
+            {COUNTRIES.map((c) => <option key={c} value={c}>{c}</option>)}
+          </select>
+          <span className={styles.fieldSelectCaret}><CaretDown /></span>
+        </div>
+      </div>
+    );
+  };
+
+  const renderTinInput = (
+    s: FatcaSection,
+    index: number,
+    idPrefix: string,
+    groupClass: string
+  ) => {
+    const id = `${idPrefix}-tinNumber-${index}`;
+    return (
+      <div className={groupClass}>
+        <label className={styles.fieldLabel} htmlFor={id}>
+          TAX Identification Number (TIN)
+        </label>
+        <input
+          id={id}
+          type="text"
+          className={styles.fieldInput}
+          placeholder="Enter number"
+          value={s.tinNumber}
+          onChange={(e) => updateSection(index, 'tinNumber', e.target.value)}
+        />
+      </div>
+    );
+  };
+
+  const sectionHeader = (index: number) => (
+    <div className={styles.sectionHeader}>
+      <span className={styles.sectionRoman}>{ROMAN[index]}</span>
+      <h2 className={styles.sectionTitle}>FATCA Details {ROMAN[index]}</h2>
+    </div>
+  );
 
   // ── Mobile layout ──────────────────────────────────────────────────────────
   const mobileForm = (
@@ -80,88 +171,15 @@ export default function FatcaDetails() {
       </div>
 
       <div className={styles.mobileCard}>
-        {/* Country of Birth */}
-        <div className={styles.fieldGroup}>
-          <label className={styles.fieldLabel} htmlFor="mob-country-birth">Country of Birth</label>
-          <div className={styles.fieldSelectWrap}>
-            <select
-              id="mob-country-birth"
-              className={styles.fieldSelect}
-              value={countryOfBirth}
-              onChange={(e) => setCountryOfBirth(e.target.value)}
-            >
-              <option value="" disabled className={styles.fieldSelectPlaceholder}>Select</option>
-              {COUNTRIES.map((c) => <option key={c} value={c}>{c}</option>)}
-            </select>
-            <span className={styles.fieldSelectCaret}><CaretDown /></span>
+        {sections.map((s, index) => (
+          <div className={styles.section} key={index}>
+            {sectionHeader(index)}
+            {SELECT_FIELDS.map(({ field, label }) =>
+              renderSelect(s, index, field, label, 'mob', styles.fieldGroup)
+            )}
+            {renderTinInput(s, index, 'mob', styles.fieldGroup)}
           </div>
-        </div>
-
-        {/* Citizenship */}
-        <div className={styles.fieldGroup}>
-          <label className={styles.fieldLabel} htmlFor="mob-citizenship">Cizitenship</label>
-          <div className={styles.fieldSelectWrap}>
-            <select
-              id="mob-citizenship"
-              className={styles.fieldSelect}
-              value={citizenship}
-              onChange={(e) => setCitizenship(e.target.value)}
-            >
-              <option value="" disabled className={styles.fieldSelectPlaceholder}>Select</option>
-              {COUNTRIES.map((c) => <option key={c} value={c}>{c}</option>)}
-            </select>
-            <span className={styles.fieldSelectCaret}><CaretDown /></span>
-          </div>
-        </div>
-
-        {/* Country of TAX Residence */}
-        <div className={styles.fieldGroup}>
-          <label className={styles.fieldLabel} htmlFor="mob-tax-residence">Country of TAX Residence</label>
-          <div className={styles.fieldSelectWrap}>
-            <select
-              id="mob-tax-residence"
-              className={styles.fieldSelect}
-              value={taxResidence}
-              onChange={(e) => setTaxResidence(e.target.value)}
-            >
-              <option value="" disabled className={styles.fieldSelectPlaceholder}>Select</option>
-              {COUNTRIES.map((c) => <option key={c} value={c}>{c}</option>)}
-            </select>
-            <span className={styles.fieldSelectCaret}><CaretDown /></span>
-          </div>
-        </div>
-
-        {/* TIN Issuing Country */}
-        <div className={styles.fieldGroup}>
-          <label className={styles.fieldLabel} htmlFor="mob-tin-country">TIN Issuing Country</label>
-          <div className={styles.fieldSelectWrap}>
-            <select
-              id="mob-tin-country"
-              className={styles.fieldSelect}
-              value={tinIssuingCountry}
-              onChange={(e) => setTinIssuingCountry(e.target.value)}
-            >
-              <option value="" disabled className={styles.fieldSelectPlaceholder}>Select</option>
-              {COUNTRIES.map((c) => <option key={c} value={c}>{c}</option>)}
-            </select>
-            <span className={styles.fieldSelectCaret}><CaretDown /></span>
-          </div>
-        </div>
-
-        {/* TAX Identification Number */}
-        <div className={styles.fieldGroup}>
-          <label className={styles.fieldLabel} htmlFor="mob-tin-number">
-            TAX Identification Number (TIN)
-          </label>
-          <input
-            id="mob-tin-number"
-            type="text"
-            className={styles.fieldInput}
-            placeholder="Enter number"
-            value={tinNumber}
-            onChange={(e) => setTinNumber(e.target.value)}
-          />
-        </div>
+        ))}
       </div>
 
       <div className={styles.mobileProceedArea}>
@@ -201,90 +219,17 @@ export default function FatcaDetails() {
 
         <div className={styles.desktopCardBody}>
           <div className={styles.desktopContentArea}>
-            <div className={styles.desktopFieldGrid}>
-              {/* Country of Birth */}
-              <div className={styles.desktopFieldGroup}>
-                <label className={styles.fieldLabel} htmlFor="desk-country-birth">Country of Birth</label>
-                <div className={styles.fieldSelectWrap}>
-                  <select
-                    id="desk-country-birth"
-                    className={styles.fieldSelect}
-                    value={countryOfBirth}
-                    onChange={(e) => setCountryOfBirth(e.target.value)}
-                  >
-                    <option value="" disabled>Select</option>
-                    {COUNTRIES.map((c) => <option key={c} value={c}>{c}</option>)}
-                  </select>
-                  <span className={styles.fieldSelectCaret}><CaretDown /></span>
+            {sections.map((s, index) => (
+              <div className={styles.section} key={index}>
+                {sectionHeader(index)}
+                <div className={styles.desktopFieldGrid}>
+                  {SELECT_FIELDS.map(({ field, label }) =>
+                    renderSelect(s, index, field, label, 'desk', styles.desktopFieldGroup)
+                  )}
+                  {renderTinInput(s, index, 'desk', styles.desktopFieldGroupFull)}
                 </div>
               </div>
-
-              {/* Citizenship */}
-              <div className={styles.desktopFieldGroup}>
-                <label className={styles.fieldLabel} htmlFor="desk-citizenship">Cizitenship</label>
-                <div className={styles.fieldSelectWrap}>
-                  <select
-                    id="desk-citizenship"
-                    className={styles.fieldSelect}
-                    value={citizenship}
-                    onChange={(e) => setCitizenship(e.target.value)}
-                  >
-                    <option value="" disabled>Select</option>
-                    {COUNTRIES.map((c) => <option key={c} value={c}>{c}</option>)}
-                  </select>
-                  <span className={styles.fieldSelectCaret}><CaretDown /></span>
-                </div>
-              </div>
-
-              {/* Country of TAX Residence */}
-              <div className={styles.desktopFieldGroup}>
-                <label className={styles.fieldLabel} htmlFor="desk-tax-residence">Country of TAX Residence</label>
-                <div className={styles.fieldSelectWrap}>
-                  <select
-                    id="desk-tax-residence"
-                    className={styles.fieldSelect}
-                    value={taxResidence}
-                    onChange={(e) => setTaxResidence(e.target.value)}
-                  >
-                    <option value="" disabled>Select</option>
-                    {COUNTRIES.map((c) => <option key={c} value={c}>{c}</option>)}
-                  </select>
-                  <span className={styles.fieldSelectCaret}><CaretDown /></span>
-                </div>
-              </div>
-
-              {/* TIN Issuing Country */}
-              <div className={styles.desktopFieldGroup}>
-                <label className={styles.fieldLabel} htmlFor="desk-tin-country">TIN Issuing Country</label>
-                <div className={styles.fieldSelectWrap}>
-                  <select
-                    id="desk-tin-country"
-                    className={styles.fieldSelect}
-                    value={tinIssuingCountry}
-                    onChange={(e) => setTinIssuingCountry(e.target.value)}
-                  >
-                    <option value="" disabled>Select</option>
-                    {COUNTRIES.map((c) => <option key={c} value={c}>{c}</option>)}
-                  </select>
-                  <span className={styles.fieldSelectCaret}><CaretDown /></span>
-                </div>
-              </div>
-
-              {/* TAX Identification Number — full width */}
-              <div className={styles.desktopFieldGroupFull}>
-                <label className={styles.fieldLabel} htmlFor="desk-tin-number">
-                  TAX Identification Number (TIN)
-                </label>
-                <input
-                  id="desk-tin-number"
-                  type="text"
-                  className={styles.fieldInput}
-                  placeholder="Enter number"
-                  value={tinNumber}
-                  onChange={(e) => setTinNumber(e.target.value)}
-                />
-              </div>
-            </div>
+            ))}
           </div>
 
           <div className={styles.desktopProceedWrapper}>

@@ -13,7 +13,7 @@ import moengagesdkService from '@/services/moengagesdk.service';
 import styles from './home.module.scss';
 
 // Home component — equivalent to Angular HomeComponent
-// Handles: registration form (name + mobile), mobile OTP, email OTP, Google OAuth
+// Handles: registration form (mobile), mobile OTP, email OTP, Google OAuth
 
 const TESTIMONIALS = [
   {
@@ -95,10 +95,7 @@ export default function HomeComponent() {
   const { show: showSpinner, hide: hideSpinner } = useSpinner();
 
   // Form state
-  const [sendOtp, setSendOtp] = useState({ mobile: '', fullname: '' });
-  const [moreThanTwoValues, setMoreThanTwoValues] = useState(false);
-  const [panFullNameReqSpecial, setPanFullNameReqSpecial] = useState(false);
-  const [panFullNameReqDigit, setPanFullNameReqDigit] = useState(false);
+  const [sendOtp, setSendOtp] = useState({ mobile: '' });
   const [mobileDigitReq, setMobileDigitReq] = useState(false);
   const [isPhoneValid, setIsPhoneValid] = useState(false);
   const [isDisabledLoginBtn, setIsDisabledLoginBtn] = useState(true);
@@ -261,34 +258,10 @@ export default function HomeComponent() {
     };
   }, []);
 
-  // Reactive button enable/disable: name + phone + account type + terms
+  // Reactive button enable/disable: phone + account type + terms
   useEffect(() => {
-    const nameValid = sendOtp.fullname.trim().length >= 3 && !/[^a-zA-Z\s]/.test(sendOtp.fullname);
-    setIsDisabledLoginBtn(!(nameValid && isPhoneValid && accountType !== '' && termsAccepted));
-  }, [sendOtp.fullname, isPhoneValid, accountType, termsAccepted]);
-
-  // ===== Name Validation =====
-  const checkInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
-    const hasSpecial = /[^a-zA-Z\s]/.test(val);
-    const hasDigit = /\d/.test(val);
-    setPanFullNameReqSpecial(hasSpecial && !hasDigit);
-    setPanFullNameReqDigit(hasDigit);
-    setMoreThanTwoValues(val.trim().length > 0 && val.trim().length < 3);
-  };
-
-  const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    // Allow navigation / editing keys and clipboard shortcuts
-    const PASSTHROUGH = ['Backspace', 'Delete', 'Tab', 'Enter', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'];
-    if (PASSTHROUGH.includes(e.key) || e.ctrlKey || e.metaKey) return;
-    // Block anything that isn't a letter or space
-    if (!/^[a-zA-Z\s]$/.test(e.key)) e.preventDefault();
-  };
-
-  const updateDisplayedName = (name: string) => {
-    setSendOtp((prev) => ({ ...prev, fullname: name }));
-  };
-
+    setIsDisabledLoginBtn(!(isPhoneValid && accountType !== '' && termsAccepted));
+  }, [isPhoneValid, accountType, termsAccepted]);
 
   // ===== Mobile OTP =====
   const startTimer = () => {
@@ -315,7 +288,6 @@ export default function HomeComponent() {
     // try {
     //   const payload = {
     //     mobile: sendOtp.mobile,
-    //     fullname: sendOtp.fullname,
     //     utm_source: searchParams?.get('utm_source') || 'NA',
     //     utm_medium: searchParams?.get('utm_medium') || 'NA',
     //     utm_campaign: searchParams?.get('utm_campaign') || 'NA',
@@ -324,7 +296,6 @@ export default function HomeComponent() {
     //   const response = await apiService.postRequest('SendMobileOTP', payload, hideSpinner);
     //   if (response) {
     //     sessionStorage.setItem('mobile', sendOtp.mobile);
-    //     sessionStorage.setItem('NameSubmitted', sendOtp.fullname);
     //     sessionStorage.setItem('clientid', response.clientid ?? '');
     //     startTimer();
     //     const modal = document.getElementById('mobileOTPModal');
@@ -439,7 +410,7 @@ export default function HomeComponent() {
                 <div className={styles.phoneContainer}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src="https://www.figma.com/api/mcp/asset/dac2bf21-4ad6-487b-ac39-ae36a3a99c3b"
+                    src="/assets/images/diy/home-phone-mockup.png"
                     alt="SBI Securities Trading App"
                     className={styles.phoneMockup}
                   />
@@ -471,35 +442,6 @@ export default function HomeComponent() {
               <div className={styles.mobileForm}>
                 <form aria-label="Open NRI Account Registration Form">
                   <h1>Open Your NRI Account Now!</h1>
-
-                  {/* Full Name */}
-                  <div>
-                    <input
-                      type="text"
-                      className="form-control otp_field"
-                      id="EnterFullNameCard"
-                      aria-label="Full Name as per PAN"
-                      aria-required="true"
-                      name="fullname_as_pancard"
-                      placeholder="Full Name as per PAN"
-                      value={sendOtp.fullname}
-                      onChange={(e) => { updateDisplayedName(e.target.value); checkInput(e); }}
-                      onKeyDown={onKeyDown}
-                      onPaste={(e) => e.preventDefault()}
-                      maxLength={100}
-                      autoComplete="name"
-                      suppressHydrationWarning
-                    />
-                    {moreThanTwoValues && (
-                      <span className="red_warning">More than 2 characters are allowed</span>
-                    )}
-                    {panFullNameReqSpecial && (
-                      <span className="red_warning">Special characters are not allowed</span>
-                    )}
-                    {panFullNameReqDigit && (
-                      <span className="red_warning">Digits are not allowed</span>
-                    )}
-                  </div>
 
                   {/* Mobile with country code */}
                   <div>

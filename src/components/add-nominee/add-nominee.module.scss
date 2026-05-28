@@ -423,6 +423,20 @@ $pageBg: #f8f8f8;
   margin: 0;
 }
 
+// Three checkboxes laid out side by side; wraps onto the next line when the
+// row is too narrow to fit all three (e.g. on small phones).
+.checkboxGroup {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px 24px;
+  width: 100%;
+
+  .checkboxRow {
+    width: auto;
+  }
+}
+
 // Print-preference radios
 .radioGroup {
   display: flex;

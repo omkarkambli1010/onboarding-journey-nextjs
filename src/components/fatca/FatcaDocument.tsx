@@ -1,27 +1,89 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from './fatca.module.scss';
 import FatcaUploadSheet from './FatcaUploadSheet';
 import AdditionalDocument from '@/components/additional-document/AdditionalDocument';
+import { fatcaStore, type FatcaFile } from './fatcaStore';
 
-// FatcaDocument — Screen 2: TIN document uploaded preview
-// Figma: Onboarding-Mob-Document-OCIfront-Uploaded (0:47385)
+// FatcaDocument — Screen 2: uploaded TIN document preview
 //        Route: /fatca/document
+// Reads the cropped/uploaded file from fatcaStore. A hard reload empties the
+// store, so we bounce back to the FATCA form.
 
-// Figma assets (node 0:47385)
-const ASSET_TIN_IMAGE  = 'https://www.figma.com/api/mcp/asset/ce1c1757-539d-4587-a0fd-2526c6897c3a';
-const ASSET_FILE_ICON  = 'https://www.figma.com/api/mcp/asset/151442dd-a11f-4307-8a1e-ab65635cc9fc';
-const ASSET_CHIP_CLOSE = 'https://www.figma.com/api/mcp/asset/fcd15307-ab7c-4e36-8cd2-cd1131fe547e';
+function IconBackArrow() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M15 18l-6-6 6-6" stroke="#2b2b2b" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function IconFile() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path d="M4 1.5h5L13 5.5V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2.5a1 1 0 0 1 1-1Z" stroke="#280071" strokeWidth="1.2" strokeLinejoin="round" />
+      <path d="M9 1.5V6h4" stroke="#280071" strokeWidth="1.2" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function IconCloseChip() {
+  return (
+    <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true">
+      <path d="M7.5 2.5L2.5 7.5M2.5 2.5L7.5 7.5" stroke="#2b2b2b" strokeWidth="1.2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function FileChip({ filename, onRemove }: { filename: string; onRemove: () => void }) {
+  return (
+    <div className={styles.fileChip}>
+      <IconFile />
+      <span className={styles.fileChipName}>{filename}</span>
+      <button type="button" className={styles.fileChipRemove} onClick={onRemove} aria-label="Re-upload TIN document">
+        <IconCloseChip />
+      </button>
+    </div>
+  );
+}
 
 export default function FatcaDocument() {
   const router = useRouter();
-  const [showSheet, setShowSheet]      = useState(false);
+  const [file, setFile] = useState<FatcaFile | null>(null);
+  const [showSheet, setShowSheet] = useState(false);
   const [showAdditional, setShowAdditional] = useState(false);
+
+  // Hard reload empties the store — bounce back to the FATCA form.
+  useEffect(() => {
+    const f = fatcaStore.get();
+    if (!f) {
+      router.replace('/fatca');
+      return;
+    }
+    setFile(f);
+  }, [router]);
 
   const title    = 'Upload TIN Document';
   const subtitle = 'We need your Aadhaar image, since Digilocker service is down.';
+
+  const handleReupload = () => setShowSheet(true);
+
+  // Re-upload refreshes the preview in place with the newly stored file.
+  const handleSheetProceed = () => {
+    setFile(fatcaStore.get());
+    setShowSheet(false);
+  };
+
+  if (!file) return null;
+
+  const previewContent =
+    file.type === 'application/pdf' ? (
+      <p className={styles.pdfPreviewNote}>PDF uploaded — preview not available</p>
+    ) : (
+      <img src={file.objectUrl} alt="TIN document preview" className={styles.previewImg} />
+    );
 
   // ── Mobile layout ──────────────────────────────────────────────────────────
   const mobileView = (
@@ -29,15 +91,8 @@ export default function FatcaDocument() {
       <div className={styles.mobileHeader}>
         <div className={styles.mobileHeaderInner}>
           <div className={styles.mobileTopRow}>
-            <button
-              type="button"
-              className={styles.mobileBackBtn}
-              onClick={() => router.back()}
-              aria-label="Go back"
-            >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M15 18l-6-6 6-6" stroke="#2b2b2b" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
+            <button type="button" className={styles.mobileBackBtn} onClick={() => router.back()} aria-label="Go back">
+              <IconBackArrow />
             </button>
           </div>
           <div className={styles.mobileTitleBlock}>
@@ -48,46 +103,15 @@ export default function FatcaDocument() {
       </div>
 
       <div className={styles.mobileCardUpload}>
-        {/* File chip — "tincopy.jpeg" + X to re-upload */}
-        <div className={styles.fileChip}>
-          <img src={ASSET_FILE_ICON} alt="" aria-hidden="true" width={16} height={16} />
-          <span className={styles.fileChipName}>tincopy.jpeg</span>
-          <button
-            type="button"
-            className={styles.fileChipRemove}
-            onClick={() => setShowSheet(true)}
-            aria-label="Re-upload TIN document"
-          >
-            <img src={ASSET_CHIP_CLOSE} alt="" aria-hidden="true" width={10} height={10} />
-          </button>
-        </div>
-
-        {/* Dashed preview zone with TIN image */}
-        <div className={styles.previewZone}>
-          <img
-            src={ASSET_TIN_IMAGE}
-            alt="TIN document preview"
-            className={styles.previewImg}
-            width={100}
-            height={137}
-          />
-        </div>
+        <FileChip filename={file.name} onRemove={handleReupload} />
+        <div className={styles.previewZone}>{previewContent}</div>
       </div>
 
-      {/* Two stacked buttons */}
       <div className={styles.mobileDoubleButtonArea}>
-        <button
-          type="button"
-          className={styles.mobileProceedBtn}
-          onClick={() => setShowAdditional(true)}
-        >
+        <button type="button" className={styles.mobileProceedBtn} onClick={() => setShowAdditional(true)}>
           Upload Additional Document
         </button>
-        <button
-          type="button"
-          className={styles.mobileOutlineBtn}
-          onClick={() => setShowSheet(true)}
-        >
+        <button type="button" className={styles.mobileOutlineBtn} onClick={handleReupload}>
           Re-upload
         </button>
       </div>
@@ -99,15 +123,8 @@ export default function FatcaDocument() {
     <div className={styles.desktopPage}>
       <div className={styles.desktopCard}>
         <div className={styles.desktopCardHeader}>
-          <button
-            type="button"
-            className={styles.desktopBackBtn}
-            onClick={() => router.back()}
-            aria-label="Go back"
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M15 18l-6-6 6-6" stroke="#2b2b2b" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+          <button type="button" className={styles.desktopBackBtn} onClick={() => router.back()} aria-label="Go back">
+            <IconBackArrow />
           </button>
           <div className={styles.desktopTitleBlock}>
             <h1 className={styles.desktopCardTitle}>{title}</h1>
@@ -117,45 +134,15 @@ export default function FatcaDocument() {
 
         <div className={styles.desktopCardBody}>
           <div className={styles.desktopUploadPreviewRow}>
-            {/* File chip */}
-            <div className={styles.fileChip}>
-              <img src={ASSET_FILE_ICON} alt="" aria-hidden="true" width={16} height={16} />
-              <span className={styles.fileChipName}>tincopy.jpeg</span>
-              <button
-                type="button"
-                className={styles.fileChipRemove}
-                onClick={() => setShowSheet(true)}
-                aria-label="Re-upload TIN document"
-              >
-                <img src={ASSET_CHIP_CLOSE} alt="" aria-hidden="true" width={10} height={10} />
-              </button>
-            </div>
-
-            {/* Dashed preview zone */}
-            <div className={styles.previewZone}>
-              <img
-                src={ASSET_TIN_IMAGE}
-                alt="TIN document preview"
-                className={styles.previewImg}
-                width={100}
-                height={137}
-              />
-            </div>
+            <FileChip filename={file.name} onRemove={handleReupload} />
+            <div className={styles.previewZone}>{previewContent}</div>
           </div>
 
           <div className={styles.desktopDoubleButtonWrapper}>
-            <button
-              type="button"
-              className={styles.desktopProceedBtn}
-              onClick={() => setShowAdditional(true)}
-            >
+            <button type="button" className={styles.desktopProceedBtn} onClick={() => setShowAdditional(true)}>
               Upload Additional Document
             </button>
-            <button
-              type="button"
-              className={styles.desktopOutlineBtn}
-              onClick={() => setShowSheet(true)}
-            >
+            <button type="button" className={styles.desktopOutlineBtn} onClick={handleReupload}>
               Re-upload
             </button>
           </div>
@@ -172,7 +159,7 @@ export default function FatcaDocument() {
       {showSheet && (
         <FatcaUploadSheet
           onClose={() => setShowSheet(false)}
-          onProceed={() => setShowSheet(false)}
+          onProceed={handleSheetProceed}
         />
       )}
 

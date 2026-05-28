@@ -20,6 +20,14 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     return 'Desktop';
   };
 
+  // Bootstrap JS bundle (Popper + Collapse/Modal/Dropdown handlers) — required
+  // for the data-bs-toggle="collapse" accordion buttons in HomeComponent.
+  // Loaded client-side only; the bundle touches `document` at import time,
+  // which crashes during SSR.
+  useEffect(() => {
+    import('bootstrap/dist/js/bootstrap.bundle.min.js');
+  }, []);
+
   useEffect(() => {
     // Clear service worker caches on load
     if ('caches' in window) {
