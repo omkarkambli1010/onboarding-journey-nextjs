@@ -4,7 +4,7 @@ import type { Toast } from 'primereact/toast';
 // Module-level ref assigned by the <Toast> component in providers.tsx
 export const toastRef = createRef<Toast>();
 
-type Opts = { autoClose?: number; summary?: string } | undefined;
+type Opts = { autoClose?: number; summary?: string; position?: string } | undefined;
 
 function show(
   severity: 'success' | 'info' | 'warn' | 'error',

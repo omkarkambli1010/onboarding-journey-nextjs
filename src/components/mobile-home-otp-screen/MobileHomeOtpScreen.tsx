@@ -34,15 +34,26 @@ export default function MobileHomeOtpScreen() {
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const mobile = typeof window !== 'undefined' ? sessionStorage.getItem('mobile') ?? '' : '';
-  const fullname = typeof window !== 'undefined' ? sessionStorage.getItem('NameSubmitted') ?? '' : '';
   const isWhatsApp = typeof window !== 'undefined' ? sessionStorage.getItem('otpChannel') === 'whatsapp' : false;
+  const applicationId = typeof window !== 'undefined' ? sessionStorage.getItem('applicationId') ?? '' : '';
+  const channel = isWhatsApp ? 'WhatsApp' : 'Sms';
 
   const isVerifyDisabled = otp.length !== 6;
+
+  // uiMetadata is a JSON string from the API carrying the next route. Returns '' if absent.
+  const parseRoute = (uiMetadata?: string): string => {
+    try {
+      return JSON.parse(uiMetadata ?? '{}').route ?? '';
+    } catch {
+      return '';
+    }
+  };
 
   useEffect(() => {
     document.title =
       'Open Demat Account - Free Demat & Trading Account Opening Online | SBI Securities';
-    startTimer();
+    // Send the OTP automatically when the page loads.
+    getMobileOtp(false);
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
@@ -75,15 +86,14 @@ export default function MobileHomeOtpScreen() {
   const getMobileOtp = async (isResend: boolean) => {
     showSpinner();
     try {
-      const response = await apiService.postRequest(
-        'SendMobileOTP',
-        { mobile, fullname, isResend },
-        hideSpinner,
-      );
+      const response = await apiService.sendNriOtp(applicationId, channel, hideSpinner);
+      hideSpinner();
       if (response) {
         startTimer();
         setOtp('');
-        toast.success('OTP sent successfully!', { position: 'bottom-center', autoClose: 2000 });
+        if (isResend) {
+          toast.success('OTP sent successfully!', { position: 'bottom-center', autoClose: 2000 });
+        }
       }
     } catch {
       hideSpinner();
@@ -91,32 +101,25 @@ export default function MobileHomeOtpScreen() {
   };
 
   const getMobileOtpVerify = async () => {
-    // TODO: Re-enable when API is ready
-    // showSpinner();
-    // try {
-    //   const clientid = sessionStorage.getItem('clientid') ?? '';
-    //   const response = await apiService.postRequest(
-    //     'VerifyMobileOTP',
-    //     { mobile, otp, clientid },
-    //     hideSpinner,
-    //   );
-    //   if (response) {
-    //     setIsRightOTP(true);
-    //     setIsWrongOTP(false);
-    //     if (response.token) sessionStorage.setItem('token', response.token);
-    //     const routes: string[] = response.routes ?? [];
-    //     sessionStorage.setItem('allowedRoutes', JSON.stringify(routes));
-    //     router.push(routes[0] ?? '/email');
-    //   } else {
-    //     setIsWrongOTP(true);
-    //     setIsRightOTP(false);
-    //     hideSpinner();
-    //   }
-    // } catch {
-    //   hideSpinner();
-    // }
-
-    router.push('/email');
+    showSpinner();
+    try {
+      const response = await apiService.verifyNriOtp(applicationId, channel, otp, hideSpinner);
+      hideSpinner();
+      if (response) {
+        setIsRightOTP(true);
+        setIsWrongOTP(false);
+        // Routing is driven by the API via uiMetadata; fall back to /email.
+        const nextRoute = parseRoute(response.uiMetadata);
+        router.push(nextRoute ? `/${nextRoute}` : '/email');
+      } else {
+        setIsWrongOTP(true);
+        setIsRightOTP(false);
+      }
+    } catch {
+      setIsWrongOTP(true);
+      setIsRightOTP(false);
+      hideSpinner();
+    }
   };
 
   const otpInputClass = `${styles.otpBox}${isWrongOTP ? ` ${styles.otpBoxError}` : isRightOTP ? ` ${styles.otpBoxSuccess}` : ''}`;

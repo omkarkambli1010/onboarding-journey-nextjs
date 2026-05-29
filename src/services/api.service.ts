@@ -5,17 +5,20 @@ import { toast } from '@/services/toast.service';
 
 // Equivalent to Angular's environment import
 const backendurl = process.env.NEXT_PUBLIC_BACKEND_URL ?? 'https://udn.sbisecurities.in/';
+const nriBackendurl = process.env.NEXT_PUBLIC_NRI_BACKEND_URL ?? 'https://udn.sbisecurities.in/nriapi';
 
 // API Service — equivalent to Angular APIService
 // Handles all HTTP communication with AES-encrypted payloads
 
 class APIService {
   private routeurl: string = backendurl;
+  private nriRouteurl: string = nriBackendurl;
 
   api: string = this.routeurl + 'diypwaapi/';
   esignapi: string = this.routeurl + 'EsignService/api/v1/esignstamp/getEsignPDFData';
   nomineeapi: string = this.routeurl + 'NomineeOptOutService/api/v1/nomineeservice/';
   msfapi: string = this.routeurl + 'msfpwaapi/';
+  nriapi: string = this.nriRouteurl + '/api/v1/';
 
   private getHeaders(withAuth = true) {
     const client_id =
@@ -194,6 +197,54 @@ class APIService {
     } catch (error) {
       return this.handleError(error, hideSpinner);
     }
+  }
+
+  private generateIdempotencyKey(): string {
+    const uuid =
+      typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    return `reg-001-${uuid}`;
+  }
+
+  // NRI API — sends raw (unencrypted) JSON. Used by registration and OTP endpoints.
+  private async postNri(
+    path: string,
+    data: any,
+    hideSpinner?: () => void,
+    extraHeaders?: Record<string, string>,
+  ): Promise<any> {
+    const url = this.nriapi + path;
+    const headers = { 'Content-Type': 'application/json', ...extraHeaders };
+
+    try {
+      const response = await axios.post(url, data, { headers });
+      return response.data;
+    } catch (error) {
+      return this.handleError(error, hideSpinner);
+    }
+  }
+
+  // Registration — requires an Idempotency-Key header.
+  async registerUser(data: any, hideSpinner?: () => void): Promise<any> {
+    return this.postNri('register', data, hideSpinner, {
+      'Idempotency-Key': this.generateIdempotencyKey(),
+    });
+  }
+
+  // Send an OTP for the given application/channel (e.g. "Sms", "WhatsApp").
+  async sendNriOtp(applicationId: string, channel: string, hideSpinner?: () => void): Promise<any> {
+    return this.postNri(`applications/${applicationId}/otp/send`, { channel }, hideSpinner);
+  }
+
+  // Verify the entered OTP code against the one sent for the application.
+  async verifyNriOtp(
+    applicationId: string,
+    channel: string,
+    code: string,
+    hideSpinner?: () => void,
+  ): Promise<any> {
+    return this.postNri(`applications/${applicationId}/otp/verify`, { channel, code }, hideSpinner);
   }
 
   async getRequest(controller: string, hideSpinner?: () => void): Promise<any> {

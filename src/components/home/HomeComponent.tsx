@@ -187,23 +187,47 @@ export default function HomeComponent() {
       if (savedMobile) {
         const e164 = savedMobile.startsWith('+') ? savedMobile : `+91${savedMobile}`;
         iti.setNumber(e164);
-        const isValid = iti.isValidNumber() === true;
+        const isValid = iti.isValidNumberPrecise() === true;
         setSendOtp((prev) => ({ ...prev, mobile: e164 }));
         setIsPhoneValid(isValid);
       }
 
       const handlePhoneChange = () => {
+        // India: mobile numbers must start with 6-9. Strip any leading 0-5
+        // (e.g. introduced via paste) before reading the value.
+        if (iti.getSelectedCountryData()?.iso2 === 'in' && phoneInputRef.current) {
+          const digits = phoneInputRef.current.value.replace(/\D/g, '');
+          const cleaned = digits.replace(/^[0-5]+/, '');
+          if (cleaned !== digits) {
+            iti.setNumber(cleaned ? `+91${cleaned}` : '');
+          }
+        }
+
         const fullNumber = iti.getNumber();
         const nationalInput = phoneInputRef.current?.value ?? '';
-        const isValid = iti.isValidNumber() === true;
+        const isValid = iti.isValidNumberPrecise() === true;
         setSendOtp((prev) => ({ ...prev, mobile: fullNumber }));
         setMobileDigitReq(nationalInput.length > 0 && !isValid);
         setIsPhoneValid(isValid);
       };
 
+      // Block typing 0-5 as the first digit of an Indian mobile number.
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key < '0' || e.key > '9') return; // only guard digit keys
+        if (iti.getSelectedCountryData()?.iso2 !== 'in') return;
+        const caret = phoneInputRef.current?.selectionStart ?? 0;
+        const digitsBeforeCaret = (phoneInputRef.current?.value ?? '')
+          .slice(0, caret)
+          .replace(/\D/g, '');
+        if (digitsBeforeCaret.length === 0 && e.key >= '0' && e.key <= '5') {
+          e.preventDefault();
+        }
+      };
+
       const inputEl = phoneInputRef.current;
       inputEl.addEventListener('input', handlePhoneChange);
       inputEl.addEventListener('countrychange', handlePhoneChange);
+      inputEl.addEventListener('keydown', handleKeyDown);
 
       // Prevent page scroll when wheeling inside the country dropdown list
       const countryListEl = inputEl.closest('.iti')?.querySelector('.iti__country-list') as HTMLElement | null;
@@ -217,6 +241,7 @@ export default function HomeComponent() {
       cleanupRef.fn = () => {
         inputEl.removeEventListener('input', handlePhoneChange);
         inputEl.removeEventListener('countrychange', handlePhoneChange);
+        inputEl.removeEventListener('keydown', handleKeyDown);
         countryListEl?.removeEventListener('wheel', stopPageScroll as EventListener);
         iti.destroy();
         if (intervalRef.current) clearInterval(intervalRef.current);
@@ -282,49 +307,61 @@ export default function HomeComponent() {
     }, 1000);
   };
 
-  const getMobileOtp = async (_isResend: boolean) => {
-    // TODO: Re-enable when API is ready
-    // showSpinner();
-    // try {
-    //   const payload = {
-    //     mobile: sendOtp.mobile,
-    //     utm_source: searchParams?.get('utm_source') || 'NA',
-    //     utm_medium: searchParams?.get('utm_medium') || 'NA',
-    //     utm_campaign: searchParams?.get('utm_campaign') || 'NA',
-    //     isResend,
-    //   };
-    //   const response = await apiService.postRequest('SendMobileOTP', payload, hideSpinner);
-    //   if (response) {
-    //     sessionStorage.setItem('mobile', sendOtp.mobile);
-    //     sessionStorage.setItem('clientid', response.clientid ?? '');
-    //     startTimer();
-    //     const modal = document.getElementById('mobileOTPModal');
-    //     if (modal) {
-    //       const bsModal = (window as any).bootstrap?.Modal?.getOrCreateInstance(modal);
-    //       bsModal?.show();
-    //     } else {
-    //       router.push('/mobile-home-otp');
-    //     }
-    //   }
-    // } catch {
-    //   hideSpinner();
-    // }
+  // uiMetadata is a JSON string from the register API carrying the next route, e.g.
+  // "{\"route\": \"mobile-home-otp\"}". Returns '' if missing/unparseable.
+  const parseRoute = (uiMetadata?: string): string => {
+    try {
+      return JSON.parse(uiMetadata ?? '{}').route ?? '';
+    } catch {
+      return '';
+    }
+  };
 
-    sessionStorage.setItem('mobile', sendOtp.mobile);
-    sessionStorage.setItem('accountType', accountType);
+  const handleGetStarted = async () => {
+    const isSemiDigital = accountType === 'semi-digital';
 
-    const isIndian = sendOtp.mobile.startsWith('+91');
-    // Store channel so the OTP screen knows how the code was sent
-    sessionStorage.setItem('otpChannel', isIndian ? 'sms' : 'whatsapp');
+    const payload = {
+      mobileNumber: sendOtp.mobile,
+      // ISO country code (e.g. "IN") from the selected dial-code flag.
+      countryCode: itiRef.current?.getSelectedCountryData()?.iso2?.toUpperCase() ?? '',
+      emailAddress: null,
+      journeyType: isSemiDigital ? 'NriSemiDigital' : 'NroDigital',
+      loginProvider: 'Mobile',
+      rmCode: rmAssisted && employeeId ? employeeId : null,
+      UtmSource: searchParams?.get('utm_source') || 'NA',
+      UtmCampaign: searchParams?.get('utm_campaign') || 'NA',
+    };
 
-    // TODO: Replace with real API call — API will return the correct route.
-    // Dummy routing based on account type selection:
-    //   Semi-Digital (NRE/NRO)  → email verification first
-    //   Digital (NRO, Aadhaar)  → mobile OTP first
-    if (accountType === 'semi-digital') {
-      router.push('/email');
-    } else {
-      router.push('/mobile-home-otp');
+    console.log('Register payload:', payload);
+
+    showSpinner();
+    try {
+      const response = await apiService.registerUser(payload, hideSpinner);
+      if (!response) {
+        hideSpinner();
+        return;
+      }
+
+      sessionStorage.setItem('mobile', sendOtp.mobile);
+      sessionStorage.setItem('accountType', accountType);
+      if (response.applicationId) {
+        sessionStorage.setItem('applicationId', response.applicationId);
+      }
+      if (response.applicationNumber) {
+        sessionStorage.setItem('applicationNumber', response.applicationNumber);
+      }
+      // Store channel so the OTP screen knows how the code was sent.
+      sessionStorage.setItem('otpChannel', sendOtp.mobile.startsWith('+91') ? 'sms' : 'whatsapp');
+
+      // Routing is driven by the API via uiMetadata (e.g. "email", "mobile-home-otp").
+      const nextRoute = parseRoute(response.uiMetadata);
+
+      hideSpinner();
+      if (nextRoute) {
+        router.push(`/${nextRoute}`);
+      }
+    } catch {
+      hideSpinner();
     }
   };
 
@@ -593,7 +630,7 @@ export default function HomeComponent() {
                       className={`btn ${styles.submitBtn}`}
                       disabled={isDisabledLoginBtn}
                       aria-disabled={isDisabledLoginBtn}
-                      onClick={() => getMobileOtp(false)}
+                      onClick={handleGetStarted}
                     >
                       Get Started
                     </button>
