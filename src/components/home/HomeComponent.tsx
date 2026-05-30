@@ -322,12 +322,11 @@ export default function HomeComponent() {
 
     const payload = {
       mobileNumber: sendOtp.mobile,
-      // ISO country code (e.g. "IN") from the selected dial-code flag.
       countryCode: itiRef.current?.getSelectedCountryData()?.iso2?.toUpperCase() ?? '',
-      emailAddress: null,
+      emailAddress: 'NA',
       journeyType: isSemiDigital ? 'NriSemiDigital' : 'NroDigital',
       loginProvider: 'Mobile',
-      rmCode: rmAssisted && employeeId ? employeeId : null,
+      rmCode: rmAssisted && employeeId ? employeeId : 'NA',
       UtmSource: searchParams?.get('utm_source') || 'NA',
       UtmCampaign: searchParams?.get('utm_campaign') || 'NA',
     };
@@ -350,13 +349,17 @@ export default function HomeComponent() {
       if (response.applicationNumber) {
         sessionStorage.setItem('applicationNumber', response.applicationNumber);
       }
-      // Store channel so the OTP screen knows how the code was sent.
       sessionStorage.setItem('otpChannel', sendOtp.mobile.startsWith('+91') ? 'sms' : 'whatsapp');
 
       // Routing is driven by the API via uiMetadata (e.g. "email", "mobile-home-otp").
       const nextRoute = parseRoute(response.uiMetadata);
 
       hideSpinner();
+      toastRef.current?.show({
+        severity: 'success',
+        detail: 'OTP sent successfully',
+        life: 3000,
+      });
       if (nextRoute) {
         router.push(`/${nextRoute}`);
       }

@@ -84,6 +84,11 @@ export default function MobileHomeOtpScreen() {
   const editMobileNumber = () => router.push('/');
 
   const getMobileOtp = async (isResend: boolean) => {
+    if (!applicationId) {
+      toast.error('Your session has expired, please start again.', { position: 'bottom-center', autoClose: 2000 });
+      router.push('/');
+      return;
+    }
     showSpinner();
     try {
       const response = await apiService.sendNriOtp(applicationId, channel, hideSpinner);
@@ -101,6 +106,11 @@ export default function MobileHomeOtpScreen() {
   };
 
   const getMobileOtpVerify = async () => {
+    if (!applicationId) {
+      toast.error('Your session has expired, please start again.', { position: 'bottom-center', autoClose: 2000 });
+      router.push('/');
+      return;
+    }
     showSpinner();
     try {
       const response = await apiService.verifyNriOtp(applicationId, channel, otp, hideSpinner);
@@ -108,17 +118,20 @@ export default function MobileHomeOtpScreen() {
       if (response) {
         setIsRightOTP(true);
         setIsWrongOTP(false);
+        toast.success('OTP verified successfully!', { position: 'bottom-center', autoClose: 2000 });
         // Routing is driven by the API via uiMetadata; fall back to /email.
         const nextRoute = parseRoute(response.uiMetadata);
         router.push(nextRoute ? `/${nextRoute}` : '/email');
       } else {
         setIsWrongOTP(true);
         setIsRightOTP(false);
+        toast.error('Invalid OTP, please try again.', { position: 'bottom-center', autoClose: 2000 });
       }
     } catch {
       setIsWrongOTP(true);
       setIsRightOTP(false);
       hideSpinner();
+      toast.error('Invalid OTP, please try again.', { position: 'bottom-center', autoClose: 2000 });
     }
   };
 

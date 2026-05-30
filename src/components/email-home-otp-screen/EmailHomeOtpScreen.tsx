@@ -68,6 +68,8 @@ export default function EmailHomeOtpScreen() {
   const utmMedium = searchParams.get('utm_medium') || 'NA';
   const utmCampaign = searchParams.get('utm_campaign') || 'NA';
 
+  const applicationId = typeof window !== 'undefined' ? sessionStorage.getItem('applicationId') ?? '' : '';
+
   const isVerifyDisabled = otp.length !== 6;
 
   useEffect(() => {
@@ -76,7 +78,8 @@ export default function EmailHomeOtpScreen() {
       emailRef.current = sessionStorage.getItem('email') || '';
       mobileRef.current = sessionStorage.getItem('mobile') || '';
     }
-    startTimerEmail();
+    // Send the email OTP automatically when the page loads.
+    getEmailOtp(false);
     return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
   }, []);
 
@@ -115,34 +118,26 @@ export default function EmailHomeOtpScreen() {
     }, 200);
   };
 
-  const getEmailOtp = async (isRetry: boolean) => {
+  const getEmailOtp = async (isResend: boolean) => {
+    if (!applicationId) {
+      toast.error('Your session has expired, please start again.', { position: 'bottom-center', autoClose: 2000 });
+      router.push('/');
+      return;
+    }
     showSpinner();
     setOtp('');
     setIsWrongOTP(false);
     setIsRightOTP(false);
     if (intervalRef.current) clearInterval(intervalRef.current);
-
-    const reqData = {
-      Flag: 'InsertOtpEmail',
-      emailid: emailRef.current,
-      mobileno: mobileRef.current,
-      isRetry,
-      utm_source: utmSource,
-      utm_medium: utmMedium,
-      utm_campaign: utmCampaign,
-      Formnumber: typeof window !== 'undefined' ? sessionStorage.getItem('FormNumber') : '',
-    };
     try {
-      const response = await apiService.postRequest('api/v1/oauth/service/otp/send', reqData, hideSpinner);
-      startTimerEmail();
-      if (response?.status === false) {
-        const msg = response.message;
-        if (msg === 'Internal server error') {
-          toast.error('Internal Server Error!', { position: 'bottom-center', autoClose: 2000 });
-        } else {
-          toast.warning(msg, { position: 'bottom-center', autoClose: 5000 });
+      const response = await apiService.sendNriOtp(applicationId, 'Email', hideSpinner);
+      hideSpinner();
+      if (response) {
+        startTimerEmail();
+        setOtp('');
+        if (isResend) {
+          toast.success('OTP sent successfully!', { position: 'bottom-center', autoClose: 2000 });
         }
-        hideSpinner();
       }
     } catch {
       hideSpinner();
@@ -150,63 +145,38 @@ export default function EmailHomeOtpScreen() {
   };
 
   const getEmailOtpVerify = async () => {
+    if (!applicationId) {
+      toast.error('Your session has expired, please start again.', { position: 'bottom-center', autoClose: 2000 });
+      router.push('/');
+      return;
+    }
     setIsWrongOTP(false);
     setIsRightOTP(false);
-
-    // TODO: Re-enable when API is ready
-    // const reqData = {
-    //   Flag: 'VerifyOTPEmail',
-    //   Formnumber: typeof window !== 'undefined' ? sessionStorage.getItem('FormNumber') : '',
-    //   emailid: emailRef.current,
-    //   mobileno: mobileRef.current,
-    //   isRetry: false,
-    //   otp,
-    //   utm_source: utmSource,
-    //   utm_medium: utmMedium,
-    //   utm_campaign: utmCampaign,
-    // };
-    // showSpinner();
-    // try {
-    //   const response = await apiService.postRequest('api/v1/oauth/service/otp/verify', reqData, hideSpinner);
-    //   if (response?.status === false) {
-    //     toast.error(response.message, { position: 'bottom-center', autoClose: 4000 });
-    //     return;
-    //   }
-    //   if (response?.message === 'OTP Verify successfully' && response?.status === true) {
-    //     if (typeof window !== 'undefined') sessionStorage.removeItem('email');
-    //     if (intervalRef.current) clearInterval(intervalRef.current);
-    //     setShowSuccessModal(true);
-    //     setTimeout(() => {
-    //       setShowSuccessModal(false);
-    //       router.push('/uploadProcess/1');
-    //       hideSpinner();
-    //     }, 2000);
-    //   } else if (response?.status === false) {
-    //     const msg = response?.message;
-    //     if (msg === 'Wrong Otp') {
-    //       setIsWrongOTP(true);
-    //     } else if (msg === 'OTP Limit Exceeded') {
-    //       toast.warning(msg, { position: 'bottom-center', autoClose: 2000 });
-    //     } else {
-    //       toast.info(msg, { position: 'bottom-center', autoClose: 2000 });
-    //     }
-    //   } else {
-    //     setTimeout(() => {
-    //       router.push('/email-home-textpage');
-    //       hideSpinner();
-    //     }, 200);
-    //     toast.error(response?.message, { position: 'bottom-center', autoClose: 3000 });
-    //   }
-    // } catch {
-    //   hideSpinner();
-    // }
-
-    if (intervalRef.current) clearInterval(intervalRef.current);
-    setShowSuccessModal(true);
-    setTimeout(() => {
-      setShowSuccessModal(false);
-      router.push('/uploadProcess/1');
-    }, 2000);
+    showSpinner();
+    try {
+      const response = await apiService.verifyNriOtp(applicationId, 'Email', otp, hideSpinner);
+      hideSpinner();
+      if (response) {
+        setIsRightOTP(true);
+        setIsWrongOTP(false);
+        if (typeof window !== 'undefined') sessionStorage.removeItem('email');
+        if (intervalRef.current) clearInterval(intervalRef.current);
+        setShowSuccessModal(true);
+        setTimeout(() => {
+          setShowSuccessModal(false);
+          router.push('/uploadProcess/1');
+        }, 2000);
+      } else {
+        setIsWrongOTP(true);
+        setIsRightOTP(false);
+        toast.error('Invalid OTP, please try again.', { position: 'bottom-center', autoClose: 2000 });
+      }
+    } catch {
+      setIsWrongOTP(true);
+      setIsRightOTP(false);
+      hideSpinner();
+      toast.error('Invalid OTP, please try again.', { position: 'bottom-center', autoClose: 2000 });
+    }
   };
 
   // Figma 0:19259 — wrong OTP: #ff2e00 border + text

@@ -59,7 +59,7 @@ export default function PassportDetails() {
   const router = useRouter();
   const [selected, setSelected] = useState<PassportType>('');
 
-  const handleBack = () => router.back();
+  const handleBack = () => router.push('/manual-document-screen');
 
   // Route to the all-in-one upload screen with the chosen type as a query
   // param so /passportUpload/upload can show it (or branch on it).
