@@ -63,6 +63,9 @@ export default function EmailHomeOtpScreen() {
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const emailRef = useRef('');
   const mobileRef = useRef('');
+  // Guards the auto-send against React StrictMode's double mount in dev, which
+  // would otherwise fire two OTP requests and trip the backend cooldown (OTP_001).
+  const otpSentRef = useRef(false);
 
   const utmSource = searchParams.get('utm_source') || 'NA';
   const utmMedium = searchParams.get('utm_medium') || 'NA';
@@ -78,8 +81,11 @@ export default function EmailHomeOtpScreen() {
       emailRef.current = sessionStorage.getItem('email') || '';
       mobileRef.current = sessionStorage.getItem('mobile') || '';
     }
-    // Send the email OTP automatically when the page loads.
-    getEmailOtp(false);
+    // Send the email OTP automatically when the page loads (once, even under StrictMode).
+    if (!otpSentRef.current) {
+      otpSentRef.current = true;
+      getEmailOtp(false);
+    }
     return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
   }, []);
 
@@ -169,13 +175,12 @@ export default function EmailHomeOtpScreen() {
       } else {
         setIsWrongOTP(true);
         setIsRightOTP(false);
-        toast.error('Invalid OTP, please try again.', { position: 'bottom-center', autoClose: 2000 });
       }
     } catch {
+      // The backend message is already toasted by apiService.handleError.
       setIsWrongOTP(true);
       setIsRightOTP(false);
       hideSpinner();
-      toast.error('Invalid OTP, please try again.', { position: 'bottom-center', autoClose: 2000 });
     }
   };
 

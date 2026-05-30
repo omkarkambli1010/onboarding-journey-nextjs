@@ -320,13 +320,15 @@ export default function HomeComponent() {
   const handleGetStarted = async () => {
     const isSemiDigital = accountType === 'semi-digital';
 
-    const payload = {
+    // emailAddress and rmCode are optional: the backend rejects the literal "NA"
+    // (COMMON_002) but accepts null/absent. Email is collected later on the email
+    // screen (which re-registers), and rmCode is null unless RM-assisted.
+    const payload: Record<string, string | null> = {
       mobileNumber: sendOtp.mobile,
       countryCode: itiRef.current?.getSelectedCountryData()?.iso2?.toUpperCase() ?? '',
-      emailAddress: 'NA',
       journeyType: isSemiDigital ? 'NriSemiDigital' : 'NroDigital',
       loginProvider: 'Mobile',
-      rmCode: rmAssisted && employeeId ? employeeId : 'NA',
+      rmCode: rmAssisted && employeeId ? employeeId : null,
       UtmSource: searchParams?.get('utm_source') || 'NA',
       UtmCampaign: searchParams?.get('utm_campaign') || 'NA',
     };
@@ -343,6 +345,10 @@ export default function HomeComponent() {
 
       sessionStorage.setItem('mobile', sendOtp.mobile);
       sessionStorage.setItem('accountType', accountType);
+      // Persist the register payload so the email-home-textpage can re-register
+      // with the entered email address (fields like countryCode/rmCode aren't
+      // otherwise stored).
+      sessionStorage.setItem('registerPayload', JSON.stringify(payload));
       if (response.applicationId) {
         sessionStorage.setItem('applicationId', response.applicationId);
       }

@@ -5,7 +5,19 @@ import { toast } from '@/services/toast.service';
 
 // Equivalent to Angular's environment import
 const backendurl = process.env.NEXT_PUBLIC_BACKEND_URL ?? 'https://udn.sbisecurities.in/';
+
+// ── NRI API base URL ─────────────────────────────────────────────────────────
+// Comment out the option you are NOT using (only one may be active at a time).
+
+// udn — call the backend directly (ACTIVE):
 const nriBackendurl = process.env.NEXT_PUBLIC_NRI_BACKEND_URL ?? 'https://udn.sbisecurities.in/nriapi';
+
+// localhost — same-origin proxy in dev to avoid browser CORS and follow backend
+// 307s server-side via src/app/nriapi/[...path]/route.ts (direct backend in prod):
+// const nriBackendurl =
+//   process.env.NEXT_PUBLIC_NRI_BACKEND_URL ??
+//   (process.env.NODE_ENV === 'development' ? '/nriapi' : 'https://udn.sbisecurities.in/nriapi');
+// ─────────────────────────────────────────────────────────────────────────────
 
 // API Service — equivalent to Angular APIService
 // Handles all HTTP communication with AES-encrypted payloads
@@ -78,6 +90,7 @@ class APIService {
     const msg =
       (errorData?.message ?? '') ||
       (errorData?.Message ?? '') ||
+      (errorData?.detail ?? '') || // NRI API surfaces the message in `detail`
       '';
 
     const formNumber =

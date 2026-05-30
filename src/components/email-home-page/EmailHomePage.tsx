@@ -1,10 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter/*, useSearchParams*/ } from 'next/navigation'; // TODO: Re-enable useSearchParams when API is ready
+import { useRouter } from 'next/navigation';
 import { useSpinner } from '@/components/spinner/Spinner';
-// import { toast } from '@/services/toast.service';         // TODO: Re-enable when API is ready
-// import apiService from '@/services/api.service'; // TODO: Re-enable when API is ready
+import apiService from '@/services/api.service';
 import navigationService from '@/services/navigation.service';
 import styles from './email-home-page.module.scss';
 
@@ -38,15 +37,10 @@ const isEmailValid = (v: string): boolean => {
 
 export default function EmailHomePage() {
   const router = useRouter();
-  // const searchParams = useSearchParams(); // TODO: Re-enable when API is ready
   const { show: showSpinner, hide: hideSpinner } = useSpinner();
 
   const [email, setEmail] = useState('');
   const [showError, setShowError] = useState(false);
-
-  // const utmSource = searchParams.get('utm_source') || 'NA';   // TODO: Re-enable when API is ready
-  // const utmMedium = searchParams.get('utm_medium') || 'NA';   // TODO: Re-enable when API is ready
-  // const utmCampaign = searchParams.get('utm_campaign') || 'NA'; // TODO: Re-enable when API is ready
 
   const hasError = showError && email.length > 0 && !isEmailValid(email);
   const isSendDisabled = !isEmailValid(email);
@@ -78,39 +72,32 @@ export default function EmailHomePage() {
     if (isSendDisabled) return;
     if (typeof window !== 'undefined') sessionStorage.setItem('email', email);
 
-    // TODO: Re-enable when API is ready
-    // showSpinner();
-    // const reqData = {
-    //   Flag: 'InsertOtpEmail',
-    //   emailid: email,
-    //   mobileno: typeof window !== 'undefined' ? sessionStorage.getItem('mobile') : '',
-    //   isRetry: false,
-    //   utm_source: utmSource,
-    //   utm_medium: utmMedium,
-    //   utm_campaign: utmCampaign,
-    //   Formnumber: typeof window !== 'undefined' ? sessionStorage.getItem('FormNumber') : '',
-    // };
-    // try {
-    //   const response = await apiService.postRequest('api/v1/oauth/service/otp/send', reqData, hideSpinner);
-    //   if (response?.status === true) {
-    //     setTimeout(() => {
-    //       router.push('/email-home-otp');
-    //       hideSpinner();
-    //     }, 200);
-    //   } else if (response?.status === false) {
-    //     const msg = response.message;
-    //     if (msg === 'Internal server error') {
-    //       toast.error('Internal Server Error!', { position: 'bottom-center', autoClose: 2000 });
-    //     } else {
-    //       toast.warning(msg, { position: 'bottom-center', autoClose: 5000 });
-    //     }
-    //     hideSpinner();
-    //   }
-    // } catch {
-    //   hideSpinner();
-    // }
+    // Re-register with the entered email. The base payload (mobileNumber,
+    // countryCode, journeyType, rmCode, utm…) was stored at the home step; we
+    // only swap in the real emailAddress here.
+    const stored = typeof window !== 'undefined' ? sessionStorage.getItem('registerPayload') : null;
+    const basePayload = stored ? JSON.parse(stored) : {};
+    const payload = { ...basePayload, emailAddress: email };
 
-    router.push('/email-home-otp');
+    showSpinner();
+    try {
+      const response = await apiService.registerUser(payload, hideSpinner);
+      if (!response) {
+        hideSpinner();
+        return;
+      }
+      if (response.applicationId) {
+        sessionStorage.setItem('applicationId', response.applicationId);
+      }
+      if (response.applicationNumber) {
+        sessionStorage.setItem('applicationNumber', response.applicationNumber);
+      }
+      // OTP is sent automatically on the email-home-otp screen.
+      hideSpinner();
+      router.push('/email-home-otp');
+    } catch {
+      hideSpinner();
+    }
   };
 
   const errorMessage = (

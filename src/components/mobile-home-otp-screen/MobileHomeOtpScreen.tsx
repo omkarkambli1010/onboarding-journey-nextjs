@@ -30,11 +30,23 @@ export default function MobileHomeOtpScreen() {
   const [isRightOTP, setIsRightOTP] = useState(false);
   const [timeroff, setTimeroff] = useState(true);
   const [displayMobile, setDisplayMobile] = useState(30);
+  // True once the backend reports OTP_002 ("Maximum resend limit reached"); we
+  // then hide the Resend OTP option since further sends are blocked.
+  const [maxResendReached, setMaxResendReached] = useState(false);
 
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  // Guards the page-load auto-send against React StrictMode's double mount in
+  // dev, which would otherwise fire two OTP requests and trip the cooldown.
+  const otpSentRef = useRef(false);
 
-  const mobile = typeof window !== 'undefined' ? sessionStorage.getItem('mobile') ?? '' : '';
-  const isWhatsApp = typeof window !== 'undefined' ? sessionStorage.getItem('otpChannel') === 'whatsapp' : false;
+  // mobile and isWhatsApp are rendered, so they must match the server's HTML on
+  // the first client render. sessionStorage only exists on the client, so start
+  // them empty and hydrate the real values in the effect below — reading during
+  // render produces server/client divergence and a hydration mismatch.
+  const [mobile, setMobile] = useState('');
+  const [isWhatsApp, setIsWhatsApp] = useState(false);
+  // applicationId is only used in handlers (never rendered), so a render-time
+  // read is safe and keeps it available synchronously for the auto-send below.
   const applicationId = typeof window !== 'undefined' ? sessionStorage.getItem('applicationId') ?? '' : '';
   const channel = isWhatsApp ? 'WhatsApp' : 'Sms';
 
@@ -52,8 +64,16 @@ export default function MobileHomeOtpScreen() {
   useEffect(() => {
     document.title =
       'Open Demat Account - Free Demat & Trading Account Opening Online | SBI Securities';
-    // Send the OTP automatically when the page loads.
-    getMobileOtp(false);
+    setMobile(sessionStorage.getItem('mobile') ?? '');
+    const whatsApp = sessionStorage.getItem('otpChannel') === 'whatsapp';
+    setIsWhatsApp(whatsApp);
+    // Send the OTP on page load (once, even under StrictMode's dev double-mount).
+    // The channel is read from sessionStorage here because the isWhatsApp state
+    // set above isn't reflected in `channel` until the next render.
+    if (!otpSentRef.current) {
+      otpSentRef.current = true;
+      getMobileOtp(false, whatsApp ? 'WhatsApp' : 'Sms');
+    }
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
@@ -83,7 +103,7 @@ export default function MobileHomeOtpScreen() {
 
   const editMobileNumber = () => router.push('/');
 
-  const getMobileOtp = async (isResend: boolean) => {
+  const getMobileOtp = async (isResend: boolean, otpChannel: string = channel) => {
     if (!applicationId) {
       toast.error('Your session has expired, please start again.', { position: 'bottom-center', autoClose: 2000 });
       router.push('/');
@@ -91,7 +111,7 @@ export default function MobileHomeOtpScreen() {
     }
     showSpinner();
     try {
-      const response = await apiService.sendNriOtp(applicationId, channel, hideSpinner);
+      const response = await apiService.sendNriOtp(applicationId, otpChannel, hideSpinner);
       hideSpinner();
       if (response) {
         startTimer();
@@ -100,8 +120,13 @@ export default function MobileHomeOtpScreen() {
           toast.success('OTP sent successfully!', { position: 'bottom-center', autoClose: 2000 });
         }
       }
-    } catch {
+    } catch (error: any) {
       hideSpinner();
+      // OTP_002 = resend limit reached → hide the Resend OTP option.
+      if (error?.response?.data?.errorCode === 'OTP_002') {
+        setMaxResendReached(true);
+        if (intervalRef.current) clearInterval(intervalRef.current);
+      }
     }
   };
 
@@ -125,13 +150,12 @@ export default function MobileHomeOtpScreen() {
       } else {
         setIsWrongOTP(true);
         setIsRightOTP(false);
-        toast.error('Invalid OTP, please try again.', { position: 'bottom-center', autoClose: 2000 });
       }
     } catch {
+      // The backend message is already toasted by apiService.handleError.
       setIsWrongOTP(true);
       setIsRightOTP(false);
       hideSpinner();
-      toast.error('Invalid OTP, please try again.', { position: 'bottom-center', autoClose: 2000 });
     }
   };
 
@@ -169,7 +193,11 @@ export default function MobileHomeOtpScreen() {
       {/* Resend row */}
       <div className={styles.resendRow}>
         <span className={styles.resendText}>Didn&apos;t receive the OTP?</span>
-        {timeroff ? (
+        {maxResendReached ? (
+          <button type="button" className={styles.resendBtn} onClick={() => router.push('/')}>
+            Home
+          </button>
+        ) : timeroff ? (
           <span className={styles.resendTimer}>Resend OTP : {displayMobile} sec</span>
         ) : (
           <button type="button" className={styles.resendBtn} onClick={() => getMobileOtp(true)}>
