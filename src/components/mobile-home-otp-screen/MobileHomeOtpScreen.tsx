@@ -35,9 +35,6 @@ export default function MobileHomeOtpScreen() {
   const [maxResendReached, setMaxResendReached] = useState(false);
 
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  // Guards the page-load auto-send against React StrictMode's double mount in
-  // dev, which would otherwise fire two OTP requests and trip the cooldown.
-  const otpSentRef = useRef(false);
 
   // mobile and isWhatsApp are rendered, so they must match the server's HTML on
   // the first client render. sessionStorage only exists on the client, so start
@@ -65,15 +62,10 @@ export default function MobileHomeOtpScreen() {
     document.title =
       'Open Demat Account - Free Demat & Trading Account Opening Online | SBI Securities';
     setMobile(sessionStorage.getItem('mobile') ?? '');
-    const whatsApp = sessionStorage.getItem('otpChannel') === 'whatsapp';
-    setIsWhatsApp(whatsApp);
-    // Send the OTP on page load (once, even under StrictMode's dev double-mount).
-    // The channel is read from sessionStorage here because the isWhatsApp state
-    // set above isn't reflected in `channel` until the next render.
-    if (!otpSentRef.current) {
-      otpSentRef.current = true;
-      getMobileOtp(false, whatsApp ? 'WhatsApp' : 'Sms');
-    }
+    setIsWhatsApp(sessionStorage.getItem('otpChannel') === 'whatsapp');
+    // The OTP is already sent during registration on the previous screen, so we
+    // do NOT call the send API on page load — just start the resend countdown.
+    startTimer();
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
@@ -113,20 +105,22 @@ export default function MobileHomeOtpScreen() {
     try {
       const response = await apiService.sendNriOtp(applicationId, otpChannel, hideSpinner);
       hideSpinner();
-      if (response) {
-        startTimer();
-        setOtp('');
-        if (isResend) {
-          toast.success('OTP sent successfully!', { position: 'bottom-center', autoClose: 2000 });
-        }
+      // Keep the countdown running regardless of the send status.
+      startTimer();
+      setOtp('');
+      if (response && isResend) {
+        toast.success('OTP sent successfully!', { position: 'bottom-center', autoClose: 2000 });
       }
     } catch (error: any) {
       hideSpinner();
-      // OTP_002 = resend limit reached → hide the Resend OTP option.
+      // OTP_002 = max resend limit reached → replace the timer with the Home option.
       if (error?.response?.data?.errorCode === 'OTP_002') {
         setMaxResendReached(true);
         if (intervalRef.current) clearInterval(intervalRef.current);
+        return;
       }
+      // Any other failure: keep the timer running so the user can retry resend.
+      startTimer();
     }
   };
 

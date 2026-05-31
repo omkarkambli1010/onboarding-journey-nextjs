@@ -10,13 +10,13 @@ const backendurl = process.env.NEXT_PUBLIC_BACKEND_URL ?? 'https://udn.sbisecuri
 // Comment out the option you are NOT using (only one may be active at a time).
 
 // udn — call the backend directly (ACTIVE):
-const nriBackendurl = process.env.NEXT_PUBLIC_NRI_BACKEND_URL ?? 'https://udn.sbisecurities.in/nriapi';
+// const nriBackendurl = process.env.NEXT_PUBLIC_NRI_BACKEND_URL ?? 'https://udn.sbisecurities.in/nriapi';
 
 // localhost — same-origin proxy in dev to avoid browser CORS and follow backend
 // 307s server-side via src/app/nriapi/[...path]/route.ts (direct backend in prod):
-// const nriBackendurl =
-//   process.env.NEXT_PUBLIC_NRI_BACKEND_URL ??
-//   (process.env.NODE_ENV === 'development' ? '/nriapi' : 'https://udn.sbisecurities.in/nriapi');
+const nriBackendurl =
+  process.env.NEXT_PUBLIC_NRI_BACKEND_URL ??
+  (process.env.NODE_ENV === 'development' ? '/nriapi' : 'https://udn.sbisecurities.in/nriapi');
 // ─────────────────────────────────────────────────────────────────────────────
 
 // API Service — equivalent to Angular APIService
@@ -246,8 +246,13 @@ class APIService {
   }
 
   // Send an OTP for the given application/channel (e.g. "Sms", "WhatsApp").
-  async sendNriOtp(applicationId: string, channel: string, hideSpinner?: () => void): Promise<any> {
-    return this.postNri(`applications/${applicationId}/otp/send`, { channel }, hideSpinner);
+  async sendNriOtp(
+    applicationId: string,
+    channel: string,
+    hideSpinner?: () => void,
+    extra?: Record<string, unknown>,
+  ): Promise<any> {
+    return this.postNri(`applications/${applicationId}/otp/send`, { channel, ...extra }, hideSpinner);
   }
 
   // Verify the entered OTP code against the one sent for the application.

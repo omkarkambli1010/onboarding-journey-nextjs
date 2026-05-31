@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSpinner } from '@/components/spinner/Spinner';
+import { toast } from '@/services/toast.service';
 import apiService from '@/services/api.service';
 import navigationService from '@/services/navigation.service';
 import styles from './email-home-page.module.scss';
@@ -72,29 +73,24 @@ export default function EmailHomePage() {
     if (isSendDisabled) return;
     if (typeof window !== 'undefined') sessionStorage.setItem('email', email);
 
-    // Re-register with the entered email. The base payload (mobileNumber,
-    // countryCode, journeyType, rmCode, utm…) was stored at the home step; we
-    // only swap in the real emailAddress here.
-    const stored = typeof window !== 'undefined' ? sessionStorage.getItem('registerPayload') : null;
-    const basePayload = stored ? JSON.parse(stored) : {};
-    const payload = { ...basePayload, emailAddress: email };
+    const applicationId =
+      typeof window !== 'undefined' ? sessionStorage.getItem('applicationId') ?? '' : '';
+    if (!applicationId) {
+      toast.error('Your session has expired, please start again.', { position: 'bottom-center', autoClose: 2000 });
+      router.push('/');
+      return;
+    }
 
     showSpinner();
     try {
-      const response = await apiService.registerUser(payload, hideSpinner);
-      if (!response) {
-        hideSpinner();
-        return;
-      }
-      if (response.applicationId) {
-        sessionStorage.setItem('applicationId', response.applicationId);
-      }
-      if (response.applicationNumber) {
-        sessionStorage.setItem('applicationNumber', response.applicationNumber);
-      }
-      // OTP is sent automatically on the email-home-otp screen.
+      // Send the email OTP directly (no re-register). Body: { channel, emailAddress }.
+      const response = await apiService.sendNriOtp(applicationId, 'Email', hideSpinner, {
+        emailAddress: email,
+      });
       hideSpinner();
-      router.push('/email-home-otp');
+      if (response) {
+        router.push('/email-home-otp');
+      }
     } catch {
       hideSpinner();
     }

@@ -12,19 +12,12 @@ import Lenis from 'lenis';
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const lenisRef = useRef<Lenis | null>(null);
 
-  const getDeviceType = (): 'Mobile' | 'Tablet' | 'Desktop' => {
-    if (typeof navigator === 'undefined') return 'Desktop';
-    const ua = navigator.userAgent;
-    if (/mobile/i.test(ua)) return 'Mobile';
-    if (/tablet/i.test(ua)) return 'Tablet';
-    return 'Desktop';
-  };
-
   // Bootstrap JS bundle (Popper + Collapse/Modal/Dropdown handlers) — required
   // for the data-bs-toggle="collapse" accordion buttons in HomeComponent.
   // Loaded client-side only; the bundle touches `document` at import time,
   // which crashes during SSR.
   useEffect(() => {
+    // @ts-expect-error — prebuilt bootstrap bundle ships no type declarations
     import('bootstrap/dist/js/bootstrap.bundle.min.js');
   }, []);
 

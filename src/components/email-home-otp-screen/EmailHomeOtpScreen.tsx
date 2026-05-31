@@ -59,13 +59,13 @@ export default function EmailHomeOtpScreen() {
   const [isWrongOTP, setIsWrongOTP] = useState(false);
   const [isRightOTP, setIsRightOTP] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  // True once the backend reports OTP_002 ("Maximum resend limit reached"); we
+  // then replace the Resend option with a Home button.
+  const [maxResendReached, setMaxResendReached] = useState(false);
 
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const emailRef = useRef('');
   const mobileRef = useRef('');
-  // Guards the auto-send against React StrictMode's double mount in dev, which
-  // would otherwise fire two OTP requests and trip the backend cooldown (OTP_001).
-  const otpSentRef = useRef(false);
 
   const utmSource = searchParams.get('utm_source') || 'NA';
   const utmMedium = searchParams.get('utm_medium') || 'NA';
@@ -81,11 +81,9 @@ export default function EmailHomeOtpScreen() {
       emailRef.current = sessionStorage.getItem('email') || '';
       mobileRef.current = sessionStorage.getItem('mobile') || '';
     }
-    // Send the email OTP automatically when the page loads (once, even under StrictMode).
-    if (!otpSentRef.current) {
-      otpSentRef.current = true;
-      getEmailOtp(false);
-    }
+    // The OTP is already sent during registration on the previous screen, so we
+    // do NOT call the send API on page load — just start the resend countdown.
+    startTimerEmail();
     return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
   }, []);
 
@@ -136,17 +134,26 @@ export default function EmailHomeOtpScreen() {
     setIsRightOTP(false);
     if (intervalRef.current) clearInterval(intervalRef.current);
     try {
-      const response = await apiService.sendNriOtp(applicationId, 'Email', hideSpinner);
+      const response = await apiService.sendNriOtp(applicationId, 'Email', hideSpinner, {
+        emailAddress: emailRef.current,
+      });
       hideSpinner();
-      if (response) {
-        startTimerEmail();
-        setOtp('');
-        if (isResend) {
-          toast.success('OTP sent successfully!', { position: 'bottom-center', autoClose: 2000 });
-        }
+      // Keep the countdown running regardless of the send status.
+      startTimerEmail();
+      setOtp('');
+      if (response && isResend) {
+        toast.success('OTP sent successfully!', { position: 'bottom-center', autoClose: 2000 });
       }
-    } catch {
+    } catch (error: any) {
       hideSpinner();
+      // OTP_002 = max resend limit reached → replace the timer with the Home option.
+      if (error?.response?.data?.errorCode === 'OTP_002') {
+        setMaxResendReached(true);
+        if (intervalRef.current) clearInterval(intervalRef.current);
+        return;
+      }
+      // Any other failure: keep the timer running so the user can retry resend.
+      startTimerEmail();
     }
   };
 
@@ -220,7 +227,11 @@ export default function EmailHomeOtpScreen() {
       {/* Resend row */}
       <div className={styles.resendRow}>
         <span className={styles.resendText}>Didn&apos;t receive the OTP?</span>
-        {timeroff1 ? (
+        {maxResendReached ? (
+          <button type="button" className={styles.resendBtn} onClick={() => router.push('/')}>
+            Home
+          </button>
+        ) : timeroff1 ? (
           <span className={styles.resendTimer}>Resend OTP ({displayEmail} sec)</span>
         ) : (
           <button type="button" className={styles.resendBtn} onClick={() => getEmailOtp(true)}>
