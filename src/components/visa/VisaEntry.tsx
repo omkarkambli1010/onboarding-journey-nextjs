@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Calendar } from 'primereact/calendar';
+import DateField from '@/components/date-field/DateField';
 import styles from './visa.module.scss';
 
 // VisaEntry — /visa entry screen (Figma node 0:119049 mobile, 0:119133 desktop).
@@ -70,15 +70,16 @@ export default function VisaEntry() {
         Select Visa Expiry
       </label>
       <div className={styles.expiryInputWrap}>
-        <Calendar
+        <DateField
           inputId={`${idSuffix}-visa-expiry`}
           value={isoToDate(expiryDate)}
-          onChange={(e) => setExpiryDate(dateToIso(e.value as Date | null))}
+          onChange={(d) => setExpiryDate(dateToIso(d))}
           dateFormat="dd/mm/yy"
-          placeholder="Select date"
+          placeholder="DD/MM/YYYY"
           showIcon
           iconPos="right"
           touchUI
+          panelClassName="p-prime-cal-sm"
           className={`p-prime-cal${expired ? ` ${styles.expiredCalendar}` : ''}`}
         />
         {expired && (

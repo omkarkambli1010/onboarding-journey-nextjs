@@ -2,7 +2,7 @@
 
 import { ReactNode, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Calendar } from 'primereact/calendar';
+import DateField from '@/components/date-field/DateField';
 import { FileUploadCard } from '@/components/file-upload/FileUploadCard';
 import type { UploadedFile } from '@/components/file-upload/fileUpload.types';
 import { toast } from '@/services/toast.service';
@@ -275,15 +275,16 @@ export default function PassportUploadAll() {
       </FieldRow>
 
       <FieldRow id={`${idPrefix}-dob`} label="Date of Birth" error={errors.dob}>
-        <Calendar
+        <DateField
           inputId={`${idPrefix}-dob`}
           value={isoToDate(dob)}
-          onChange={(e) => { setDob(dateToIso(e.value as Date | null)); onFieldChange('dob'); }}
+          onChange={(d) => { setDob(dateToIso(d)); onFieldChange('dob'); }}
           dateFormat="dd/mm/yy"
           placeholder="DD/MM/YYYY"
           showIcon
           iconPos="right"
           touchUI
+          panelClassName="p-prime-cal-sm"
           maxDate={new Date()}
           className={`p-prime-cal${errors.dob ? ' p-prime-cal-error' : ''}`}
         />
@@ -307,30 +308,32 @@ export default function PassportUploadAll() {
       </FieldRow>
 
       <FieldRow id={`${idPrefix}-issueDate`} label="Issue Date" error={errors.issueDate}>
-        <Calendar
+        <DateField
           inputId={`${idPrefix}-issueDate`}
           value={isoToDate(issueDate)}
-          onChange={(e) => { setIssueDate(dateToIso(e.value as Date | null)); onFieldChange('issueDate'); }}
+          onChange={(d) => { setIssueDate(dateToIso(d)); onFieldChange('issueDate'); }}
           dateFormat="dd/mm/yy"
           placeholder="DD/MM/YYYY"
           showIcon
           iconPos="right"
           touchUI
+          panelClassName="p-prime-cal-sm"
           maxDate={new Date()}
           className={`p-prime-cal${errors.issueDate ? ' p-prime-cal-error' : ''}`}
         />
       </FieldRow>
 
       <FieldRow id={`${idPrefix}-expiryDate`} label="Expiry Date" error={errors.expiryDate}>
-        <Calendar
+        <DateField
           inputId={`${idPrefix}-expiryDate`}
           value={isoToDate(expiryDate)}
-          onChange={(e) => { setExpiryDate(dateToIso(e.value as Date | null)); onFieldChange('expiryDate'); }}
+          onChange={(d) => { setExpiryDate(dateToIso(d)); onFieldChange('expiryDate'); }}
           dateFormat="dd/mm/yy"
           placeholder="DD/MM/YYYY"
           showIcon
           iconPos="right"
           touchUI
+          panelClassName="p-prime-cal-sm"
           minDate={isoToDate(issueDate) ?? undefined}
           className={`p-prime-cal${errors.expiryDate ? ' p-prime-cal-error' : ''}`}
         />

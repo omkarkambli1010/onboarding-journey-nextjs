@@ -2,7 +2,7 @@
 
 import { ReactNode, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Calendar } from 'primereact/calendar';
+import DateField from '@/components/date-field/DateField';
 import { FileUploadCard } from '@/components/file-upload/FileUploadCard';
 import type { UploadedFile } from '@/components/file-upload/fileUpload.types';
 import { toast } from '@/services/toast.service';
@@ -338,15 +338,16 @@ export default function VisaUpload() {
           </FieldRow>
 
           <FieldRow id="expiryDate" label="Expiry Date" error={errors.expiryDate}>
-            <Calendar
+            <DateField
               inputId="expiryDate"
               value={isoToDate(expiryDate)}
-              onChange={(e) => { setExpiryDate(dateToIso(e.value as Date | null)); onFieldChange('expiryDate'); }}
+              onChange={(d) => { setExpiryDate(dateToIso(d)); onFieldChange('expiryDate'); }}
               dateFormat="dd/mm/yy"
               placeholder="DD/MM/YYYY"
               showIcon
               iconPos="right"
               touchUI
+              panelClassName="p-prime-cal-sm"
               className={`p-prime-cal${errors.expiryDate ? ' p-prime-cal-error' : ''}${expired ? ` ${styles.expiredCalendar}` : ''}`}
             />
             {expired && !errors.expiryDate && (

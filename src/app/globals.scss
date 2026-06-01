@@ -2153,6 +2153,18 @@ section {
 // ── Calendar panel ────────────────────────────────────────────────────────────
 .p-datepicker.p-datepicker-touch-ui {
   width: min(400px, 94vw) !important;
+
+  // Compact, square-ish variant — opt in per Calendar via
+  // panelClassName="p-prime-cal-sm" (e.g. UploadProcess DOB). The touchUI panel
+  // is a body portal, so this must be a global override, not a CSS module class.
+  // PrimeReact's theme forces min-width: 80vw on the touch-ui panel, so width
+  // alone can't shrink it — we must also reset min-width. min(360px, 92vw) keeps
+  // it ~square on desktop (grid is ~385px tall) and responsive on small screens.
+  &.p-prime-cal-sm {
+    width: min(360px, 92vw) !important;
+    min-width: 0 !important;
+    max-width: 92vw !important;
+  }
   border-radius: 20px !important;
   border: none !important;
   box-shadow: 0 32px 80px rgba(0, 0, 0, 0.4) !important;

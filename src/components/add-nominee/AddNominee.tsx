@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { Calendar } from 'primereact/calendar';
+import DateField from '@/components/date-field/DateField';
 import { useSpinner } from '@/components/spinner/Spinner';
 import { toast } from '@/services/toast.service';
 import apiService from '@/services/api.service';
@@ -28,7 +28,7 @@ const RELATIONSHIP_OPTIONS = [
 
 const DOCUMENT_TYPE_OPTIONS = ['PAN Card', 'Aadhaar', 'Passport', 'Voter ID', 'Driving Licence'];
 
-type PrintPref = 'nomination' | 'name' | '';
+type PrintPref = 'yes' | 'no' | '';
 
 interface Nominee {
   firstName: string;
@@ -40,8 +40,6 @@ interface Nominee {
   email: string;
   dob: string;
   sameAsApplicant: boolean;
-  title2: boolean;
-  title3: boolean;
   addressLine1: string;
   addressLine2: string;
   addressLine3: string;
@@ -76,8 +74,6 @@ const blankNominee: Nominee = {
   email: '',
   dob: '',
   sameAsApplicant: true,
-  title2: false,
-  title3: false,
   addressLine1: '',
   addressLine2: '',
   addressLine3: '',
@@ -383,14 +379,7 @@ export default function AddNominee() {
     }
 
     // ── Print preference ───────────────────────────────────────────────────
-    if (!current.printPreference) e.printPreference = 'Select a print preference';
-
-    // ── Encashment authorisation (Optional Details — only if filled) ───────
-    if (current.encashPercentage) {
-      const encashNum = Number(current.encashPercentage);
-      if (Number.isNaN(encashNum) || encashNum < 1 || encashNum > 100)
-        e.encashPercentage = 'Encashment % must be between 1 and 100';
-    }
+    if (!current.printPreference) e.printPreference = 'Please select Yes or No';
 
     // ── Guardian (only when nominee is a minor) ────────────────────────────
     if (isMinor) {
@@ -535,15 +524,11 @@ export default function AddNominee() {
 
   const radioGroup = (
     <div className={styles.radioGroup}>
-      <p>
-        I / We want the details of my / our nominee to be printed in the statement of holding or
-        statement of account, provided to me/ us by the DP as follows; (please tick, as
-        appropriate)
-      </p>
+      <p>Nomination</p>
       <div className={styles.radiosRow}>
-        {(['nomination', 'name'] as PrintPref[]).map((value) => {
+        {(['yes', 'no'] as PrintPref[]).map((value) => {
           const selected = current.printPreference === value;
-          const label = value === 'nomination' ? 'Nomination (Yes/No)' : 'Nominee Name';
+          const label = value === 'yes' ? 'Yes' : 'No';
           return (
             <label
               key={value}
@@ -571,7 +556,7 @@ export default function AddNominee() {
   );
 
   const renderCheckbox = (
-    field: 'sameAsApplicant' | 'title2' | 'title3',
+    field: 'sameAsApplicant',
     label: string
   ) => (
     <label className={styles.checkboxRow}>
@@ -593,45 +578,6 @@ export default function AddNominee() {
   const checkboxGroup = (
     <div className={styles.checkboxGroup}>
       {renderCheckbox('sameAsApplicant', 'Nominee address is same as applicant address')}
-      {renderCheckbox('title2', 'title 2')}
-      {renderCheckbox('title3', 'title 3')}
-    </div>
-  );
-
-  // Optional Details — the "I hereby authorise…" declaration. The nominee name
-  // and number are derived from the in-flight form; the encashment percentage
-  // is the only editable value and is itself optional.
-  const authoriseNomineeNumber =
-    editingIndex !== null ? editingIndex + 1 : nominees.length + 1;
-
-  const optionalDetails = (
-    <div className={styles.authoriseRow}>
-      <p className={styles.authorisePara}>
-        I hereby authorise that{' '}
-        <span className={styles.authoriseValue}>
-          {nomineeFullName(current) || 'this nominee'}
-        </span>{' '}
-        <span className={styles.authoriseValue}>Nominee number {authoriseNomineeNumber}</span>{' '}
-        to operate my account on my behalf, in case of my incapacitation. He/she is authorised
-        to encash my assets up to{' '}
-        <input
-          type="text"
-          inputMode="numeric"
-          className={`${styles.encashInput}${
-            errors.encashPercentage ? ' ' + styles.encashInputErr : ''
-          }`}
-          placeholder="___"
-          maxLength={3}
-          value={current.encashPercentage}
-          onChange={(e) =>
-            updateCurrent('encashPercentage', e.target.value.replace(/[^0-9]/g, ''))
-          }
-          aria-label="Encashment percentage"
-        />
-        <span className={styles.authoriseValue}> %</span> of assets in the account.{' '}
-        <span className={styles.optionalTag}>(Optional)</span>
-      </p>
-      {errMsg('encashPercentage')}
     </div>
   );
 
@@ -862,15 +808,16 @@ export default function AddNominee() {
                     </label>
                     <div className={styles.fieldStack}>
                       <div className={styles.deskCalendarWrap}>
-                        <Calendar
+                        <DateField
                           inputId="desk-nom-dob"
                           value={strToDate(current.dob)}
-                          onChange={(e) => updateCurrent('dob', dateToStr(e.value as Date | null))}
+                          onChange={(d) => updateCurrent('dob', dateToStr(d))}
                           dateFormat="dd/mm/yy"
                           placeholder="DD/MM/YYYY"
                           showIcon
                           iconPos="right"
                           touchUI
+                          panelClassName="p-prime-cal-sm"
                           className={`p-prime-cal${errors.dob ? ' p-prime-cal-error' : ''}`}
                         />
                       </div>
@@ -1074,9 +1021,6 @@ export default function AddNominee() {
                   {/* Print preference radio */}
                   {radioGroup}
                   {errMsg('printPreference')}
-
-                  {/* Optional Details — encashment authorisation declaration */}
-                  {optionalDetails}
 
                   {/* Add Another (in-form, only when not at max) */}
                   {!showCountHeader && nominees.length === 0 && (
@@ -1302,15 +1246,16 @@ export default function AddNominee() {
               <label htmlFor="mob-nom-dob" className={styles.mobLabel}>
                 Date of Birth
               </label>
-              <Calendar
+              <DateField
                 inputId="mob-nom-dob"
                 value={strToDate(current.dob)}
-                onChange={(e) => updateCurrent('dob', dateToStr(e.value as Date | null))}
+                onChange={(d) => updateCurrent('dob', dateToStr(d))}
                 dateFormat="dd/mm/yy"
                 placeholder="DD/MM/YYYY"
                 showIcon
                 iconPos="right"
                 touchUI
+                panelClassName="p-prime-cal-sm"
                 className={`p-prime-cal${errors.dob ? ' p-prime-cal-error' : ''}`}
               />
               {errMsg('dob')}
@@ -1484,9 +1429,6 @@ export default function AddNominee() {
 
             {radioGroup}
             {errMsg('printPreference')}
-
-            {/* Optional Details — encashment authorisation declaration */}
-            {optionalDetails}
           </>
         )}
       </div>

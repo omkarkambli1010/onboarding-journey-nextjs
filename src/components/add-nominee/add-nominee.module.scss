@@ -440,8 +440,10 @@ $pageBg: #f8f8f8;
 // Print-preference radios
 .radioGroup {
   display: flex;
-  flex-direction: column;
-  gap: 16px;
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px 24px;
   width: 100%;
 
   > p {

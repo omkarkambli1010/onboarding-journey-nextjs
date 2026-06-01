@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Calendar } from 'primereact/calendar';
+import DateField from '@/components/date-field/DateField';
 import styles from './foreign-address.module.scss';
 
 // Convert 'YYYY-MM-DD' string → Date | null  (for Calendar value prop)
@@ -126,10 +126,10 @@ export default function ForeignAddress() {
         {/* Document Expiry Date */}
         <div className={styles.fieldGroup}>
           <label className={styles.fieldLabel} htmlFor="mob-expiry">Document Expiry Date</label>
-          <Calendar
+          <DateField
             inputId="mob-expiry"
             value={strToDate(expiryDate)}
-            onChange={(e) => setExpiryDate(dateToStr(e.value as Date | null))}
+            onChange={(d) => setExpiryDate(dateToStr(d))}
             dateFormat="dd/mm/yy"
             placeholder="DD/MM/YYYY"
             showIcon
@@ -330,10 +330,10 @@ export default function ForeignAddress() {
             <div className={styles.desktopFieldRow}>
               <p className={styles.desktopLabel}>Document Expiry Date</p>
               <div className={styles.deskCalendarWrap}>
-                <Calendar
+                <DateField
                   inputId="desk-expiry"
                   value={strToDate(expiryDate)}
-                  onChange={(e) => setExpiryDate(dateToStr(e.value as Date | null))}
+                  onChange={(d) => setExpiryDate(dateToStr(d))}
                   dateFormat="dd/mm/yy"
                   placeholder="DD/MM/YYYY"
                   showIcon

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { Calendar } from 'primereact/calendar';
+import DateField from '@/components/date-field/DateField';
 import { toast } from '@/services/toast.service';
 import { useSpinner } from '@/components/spinner/Spinner';
 import apiService from '@/services/api.service';
@@ -124,10 +124,10 @@ export default function BpSso() {
                 <label htmlFor="bpDob" className={styles.label}>
                   Date of Birth <span className={styles.required}>*</span>
                 </label>
-                <Calendar
+                <DateField
                   inputId="bpDob"
                   value={strToDate(dob)}
-                  onChange={(e) => { setDob(dateToStr(e.value as Date | null)); setDobError(''); }}
+                  onChange={(d) => { setDob(dateToStr(d)); setDobError(''); }}
                   dateFormat="dd/mm/yy"
                   placeholder="DD/MM/YYYY"
                   showIcon
