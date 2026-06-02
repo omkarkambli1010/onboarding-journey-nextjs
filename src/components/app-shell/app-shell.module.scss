@@ -1,7 +1,5 @@
-// AppShell module styles
-main {
-  min-height: calc(100vh - 90px);
-}
+// AppShell module styles — CSS Module, so every selector must be a local
+// class/id (no bare element selectors like `main`).
 
 // Build version stamp — unobtrusive, pinned bottom-right above page content.
 .appFooter {

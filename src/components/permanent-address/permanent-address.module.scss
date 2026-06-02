@@ -5,6 +5,8 @@
 //   0:43330 (front-mob)   0:43428 (front-web)
 //   0:44322 (back-mob)    0:44428 (back-web)
 
+@use 'sass:color';
+
 $primary:        #280071;
 $primary-hover:  #1a004d;
 $bg-page:        #f8f8f8;
@@ -583,7 +585,7 @@ $shadow-sheet:   3px 4px 10px 0px rgba(0, 0, 0, 0.15);
   justify-content: center;
   cursor: pointer;
 
-  &:hover { background: darken($bg-chip, 3%); }
+  &:hover { background: color.adjust($bg-chip, $lightness: -3%); }
 }
 
 // Figma: flex-col, gap-8 — three info lines

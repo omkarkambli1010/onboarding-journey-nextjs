@@ -4,8 +4,9 @@ import type { NextConfig } from 'next';
 // and next/image are prefixed with it. Set per environment via the env files:
 //   UAT  → NEXT_PUBLIC_BASE_PATH=/diynri          (udn.sbisecurities.in/diynri/)
 //   PROD → NEXT_PUBLIC_BASE_PATH=/open-nri-account (diy.sbisecurities.in/open-nri-account/)
-// Falls back to /diynri when unset (use '' for a root deploy / local dev).
-const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? '/diynri';
+// Defaults to '' (root) when unset, so local dev runs at http://localhost:<port>/
+// without any prefix. The build:uat / build:prod scripts inject the value above.
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
