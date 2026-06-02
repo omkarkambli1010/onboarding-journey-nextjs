@@ -2,3 +2,17 @@
 main {
   min-height: calc(100vh - 90px);
 }
+
+// Build version stamp — unobtrusive, pinned bottom-right above page content.
+.appFooter {
+  position: fixed;
+  right: 8px;
+  bottom: 4px;
+  z-index: 100;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: rgba(40, 0, 113, 0.45);
+  pointer-events: none;
+  user-select: none;
+}

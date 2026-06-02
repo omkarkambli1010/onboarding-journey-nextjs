@@ -3,7 +3,9 @@
 import { useEffect, useRef } from 'react';
 import Header from '@/components/header/Header';
 import Spinner from '@/components/spinner/Spinner';
+import { APP_VERSION } from '@/lib/version';
 import Lenis from 'lenis';
+import styles from './app-shell.module.scss';
 
 // AppShell — equivalent to Angular AppComponent
 // Handles: header visibility, back-button prevention, devtools blocking,
@@ -97,6 +99,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       <Header />
       <Spinner />
       <main>{children}</main>
+      <footer className={styles.appFooter}>v{APP_VERSION}</footer>
     </>
   );
 }

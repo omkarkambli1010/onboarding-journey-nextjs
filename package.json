@@ -1,11 +1,14 @@
 {
   "name": "onboarding-diy-pwa",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
-    "build:uat": "NODE_ENV=uat next build",
+    "version:bump": "node scripts/bump-version.mjs",
+    "assemble": "node scripts/assemble-standalone.mjs",
+    "build": "npm run version:bump && next build && npm run assemble",
+    "build:uat": "npm run version:bump && dotenv -e .env.uat -- next build && npm run assemble",
+    "build:prod": "npm run version:bump && dotenv -e .env.production -- next build && npm run assemble",
     "start": "next start",
     "lint": "next lint",
     "test": "jest"
@@ -52,6 +55,7 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@types/react-signature-canvas": "^1.0.6",
+    "dotenv-cli": "^7.4.2",
     "eslint": "^9.0.0",
     "eslint-config-next": "^15.3.0",
     "sass": "^1.85.0",

@@ -1,7 +1,18 @@
 import type { NextConfig } from 'next';
 
+// Deployment sub-path (Angular's base-href equivalent) so routes, _next assets
+// and next/image are prefixed with it. Set per environment via the env files:
+//   UAT  → NEXT_PUBLIC_BASE_PATH=/diynri          (udn.sbisecurities.in/diynri/)
+//   PROD → NEXT_PUBLIC_BASE_PATH=/open-nri-account (diy.sbisecurities.in/open-nri-account/)
+// Falls back to /diynri when unset (use '' for a root deploy / local dev).
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? '/diynri';
+
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  basePath: basePath || undefined,
+  assetPrefix: basePath || undefined,
+  // Exposed to the client so raw `/assets/...` URLs can be prefixed where needed.
+  env: { NEXT_PUBLIC_BASE_PATH: basePath },
   onDemandEntries: {
     maxInactiveAge: 60 * 1000,
     pagesBufferLength: 5,
@@ -9,8 +20,6 @@ const nextConfig: NextConfig = {
   sassOptions: {
     includePaths: ['./src'],
   },
-  // Equivalent to Angular's base-href for deployment sub-paths
-  // basePath: '/open-demat-account',
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 'diy.sbisecurities.in' },
