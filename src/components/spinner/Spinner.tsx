@@ -30,11 +30,16 @@ export function SpinnerProvider({ children }: { children: React.ReactNode }) {
     <SpinnerContext.Provider value={{ show, hide }}>
       {children}
       {visible && (
-        <div className={styles.spinnerOverlay} aria-live="polite" role="status">
-          <div className={styles.spinnerDots}>
-            <span></span>
-            <span></span>
-            <span></span>
+        <div className={styles.spinnerOverlay} aria-live="polite" role="status" aria-busy="true">
+          <div className={styles.brandLoader} aria-hidden="true">
+            <img
+              src="/assets/images/sbi-securities-logo.png"
+              alt=""
+              className={styles.brandLogo}
+            />
+            <div className={styles.progressTrack}>
+              <span className={styles.progressBar}></span>
+            </div>
           </div>
           <p className={styles.spinnerText}>Please Wait</p>
         </div>
