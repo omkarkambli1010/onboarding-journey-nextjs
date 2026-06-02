@@ -63,7 +63,7 @@ export default function AdditionalDocumentPreview() {
   useEffect(() => {
     const f = additionalDocumentStore.get();
     if (!f) {
-      router.replace('/oci/back');
+      router.replace('/oci/upload');
       return;
     }
     setFile(f);

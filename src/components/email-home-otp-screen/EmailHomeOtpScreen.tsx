@@ -58,6 +58,9 @@ export default function EmailHomeOtpScreen() {
   const [timeroff1, setTimeroff1] = useState(true);
   const [isWrongOTP, setIsWrongOTP] = useState(false);
   const [isRightOTP, setIsRightOTP] = useState(false);
+  // Re-triggerable flag for the wrong-OTP shake. Cleared on animationend so the
+  // next failed attempt can replay it even if isWrongOTP was already true.
+  const [shakeOtp, setShakeOtp] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   // True once the backend reports OTP_002 ("Maximum resend limit reached"); we
   // then replace the Resend option with a Home button.
@@ -182,11 +185,13 @@ export default function EmailHomeOtpScreen() {
       } else {
         setIsWrongOTP(true);
         setIsRightOTP(false);
+        setShakeOtp(true);
       }
     } catch {
       // The backend message is already toasted by apiService.handleError.
       setIsWrongOTP(true);
       setIsRightOTP(false);
+      setShakeOtp(true);
       hideSpinner();
     }
   };
@@ -208,13 +213,18 @@ export default function EmailHomeOtpScreen() {
       {/* OTP input */}
       <div className={styles.otpField}>
         <label className={styles.otpLabel}>Enter OTP</label>
-        <InputOtp
-          value={otp}
-          onChange={(e) => handleOtpChange(e.value as string)}
-          length={6}
-          integerOnly
-          pt={{ input: { root: { className: otpInputClass } } }}
-        />
+        <div
+          className={`${styles.otpInputWrap}${shakeOtp ? ` ${styles.shake}` : ''}`}
+          onAnimationEnd={() => setShakeOtp(false)}
+        >
+          <InputOtp
+            value={otp}
+            onChange={(e) => handleOtpChange(e.value as string)}
+            length={6}
+            integerOnly
+            pt={{ input: { root: { className: otpInputClass } } }}
+          />
+        </div>
         {/* Figma 0:19259 — inline error below OTP boxes */}
         {isWrongOTP && (
           <div className={styles.otpError}>

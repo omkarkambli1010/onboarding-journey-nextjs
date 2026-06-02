@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from './permanent-address.module.scss';
-import { MobileUploadModal, DesktopUploadModal } from './UploadModal';
 
 // Screen 1 — Select Address Proof Type
 // Figma: Onboarding-Mob-PermanentAddress-Noselection-Upload (0:44186)
@@ -38,17 +37,14 @@ function BackArrow() {
 export default function PermanentAddressSelect() {
   const router = useRouter();
   const [proofType, setProofType]         = useState('Driving License'); // pre-filled per Figma
-  const [showUploadModal, setShowUploadModal] = useState(false);
 
   // Button label mirrors selected type — Figma: "Upload 'Driving License' Front"
   const btnLabel = proofType ? `Upload '${proofType}' Front` : 'Upload Document Front';
-  // Modal title
-  const modalTitle = `Upload ${proofType || 'Driving license'} Front`;
 
-  // After confirming upload in modal → go to step-1 (front-uploaded screen)
-  const handleUploadConfirm = () => {
+  // Stash the chosen proof type and go to the all-in-one Front + Back upload.
+  const handleUpload = () => {
     if (proofType) sessionStorage.setItem('pa_proofType', proofType);
-    router.push('/permanentAddress/step-1');
+    router.push('/permanentAddress/upload');
   };
 
   // ── MOBILE ─────────────────────────────────────────────────────────────────
@@ -110,21 +106,11 @@ export default function PermanentAddressSelect() {
         <button
           type="button"
           className={styles.mobileProceedBtn}
-          onClick={() => setShowUploadModal(true)}
+          onClick={handleUpload}
         >
           {btnLabel}
         </button>
       </div>
-
-      {/* Mobile upload bottom sheet — shown when showUploadModal = true */}
-      {/* Figma: 0:44270 — bottom sheet with camera + upload + file info */}
-      {showUploadModal && (
-        <MobileUploadModal
-          title={modalTitle}
-          onClose={() => setShowUploadModal(false)}
-          onUpload={handleUploadConfirm}
-        />
-      )}
     </div>
   );
 
@@ -184,23 +170,13 @@ export default function PermanentAddressSelect() {
             <button
               type="button"
               className={styles.desktopProceedBtn}
-              onClick={() => setShowUploadModal(true)}
+              onClick={handleUpload}
             >
               {btnLabel}
             </button>
           </div>
         </div>
       </div>
-
-      {/* Desktop upload modal overlay — shown when showUploadModal = true */}
-      {/* Figma: 0:43914 — centered dialog over dimmed page */}
-      {showUploadModal && (
-        <DesktopUploadModal
-          title={modalTitle}
-          onClose={() => setShowUploadModal(false)}
-          onUpload={handleUploadConfirm}
-        />
-      )}
     </div>
   );
 

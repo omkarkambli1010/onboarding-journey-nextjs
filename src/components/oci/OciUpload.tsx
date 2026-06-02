@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from './oci.module.scss';
-import OciUploadSheet from './OciUploadSheet';
 
 // OciUpload — Screen 1: Document Type + Card No. form
 // Figma: Onboarding-Mob-OCI/PIO-Upload (0:38489 empty / 0:38815 filled)
@@ -37,7 +36,6 @@ export default function OciUpload() {
   const router = useRouter();
   const [docType, setDocType]   = useState<DocType>('');
   const [cardNo, setCardNo]     = useState('');
-  const [showSheet, setShowSheet] = useState(false);
 
   const handleBack = () => router.back();
 
@@ -50,7 +48,7 @@ export default function OciUpload() {
 
   const handleUploadClick = () => {
     if (isDisabled) return;
-    setShowSheet(true);
+    router.push('/oci/upload');
   };
 
   return (
@@ -201,15 +199,6 @@ export default function OciUpload() {
 
         </div>
       </div>
-
-      {/* ── Upload front sheet modal (renders inline over this page) ──────── */}
-      {showSheet && (
-        <OciUploadSheet
-          side="front"
-          onClose={() => setShowSheet(false)}
-          onProceed={() => router.push('/oci/front')}
-        />
-      )}
     </>
   );
 }

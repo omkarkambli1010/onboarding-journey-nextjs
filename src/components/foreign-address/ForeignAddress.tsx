@@ -62,7 +62,7 @@ export default function ForeignAddress() {
   const btnLabel = `Upload '${docType || 'Select'}' Front`;
 
   // Always navigate — no validation gating
-  const handleProceed = () => router.push('/oci/front');
+  const handleProceed = () => router.push('/oci/upload');
 
   // ── MOBILE ────────────────────────────────────────────────────────────────
   const mobileLayout = (

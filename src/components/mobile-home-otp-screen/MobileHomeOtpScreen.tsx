@@ -28,6 +28,9 @@ export default function MobileHomeOtpScreen() {
   const [otp, setOtp] = useState('');
   const [isWrongOTP, setIsWrongOTP] = useState(false);
   const [isRightOTP, setIsRightOTP] = useState(false);
+  // Re-triggerable flag for the wrong-OTP shake. Cleared on animationend so the
+  // next failed attempt can replay it even if isWrongOTP was already true.
+  const [shakeOtp, setShakeOtp] = useState(false);
   const [timeroff, setTimeroff] = useState(true);
   const [displayMobile, setDisplayMobile] = useState(30);
   // True once the backend reports OTP_002 ("Maximum resend limit reached"); we
@@ -144,11 +147,13 @@ export default function MobileHomeOtpScreen() {
       } else {
         setIsWrongOTP(true);
         setIsRightOTP(false);
+        setShakeOtp(true);
       }
     } catch {
       // The backend message is already toasted by apiService.handleError.
       setIsWrongOTP(true);
       setIsRightOTP(false);
+      setShakeOtp(true);
       hideSpinner();
     }
   };
@@ -169,13 +174,18 @@ export default function MobileHomeOtpScreen() {
       {/* OTP input */}
       <div className={styles.otpField}>
         <label className={styles.otpLabel}>Enter OTP</label>
-        <InputOtp
-          value={otp}
-          onChange={(e) => handleOtpChange(e.value as string)}
-          length={6}
-          integerOnly
-          pt={{ input: { root: { className: otpInputClass } } }}
-        />
+        <div
+          className={`${styles.otpInputWrap}${shakeOtp ? ` ${styles.shake}` : ''}`}
+          onAnimationEnd={() => setShakeOtp(false)}
+        >
+          <InputOtp
+            value={otp}
+            onChange={(e) => handleOtpChange(e.value as string)}
+            length={6}
+            integerOnly
+            pt={{ input: { root: { className: otpInputClass } } }}
+          />
+        </div>
         {isWrongOTP && (
           <div className={styles.otpError}>
             <img src="/assets/images/diy/invalid_otp.png" alt="" aria-hidden />

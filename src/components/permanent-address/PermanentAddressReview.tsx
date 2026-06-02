@@ -62,7 +62,7 @@ export default function PermanentAddressReview() {
           <button
             type="button"
             className={styles.mobileBackBtn}
-            onClick={() => router.push('/permanentAddress/step-1')}
+            onClick={() => router.push('/permanentAddress/upload')}
             aria-label="Go back"
           >
             <BackArrow />
@@ -93,7 +93,7 @@ export default function PermanentAddressReview() {
           <button
             type="button"
             className={styles.fileChipClose}
-            onClick={() => router.push('/permanentAddress/step-1')}
+            onClick={() => router.push('/permanentAddress/upload')}
             aria-label="Remove uploaded file"
           >
             <img src={ASSET_CLOSE_SM} alt="" width={10} height={10} aria-hidden="true" />
@@ -139,7 +139,7 @@ export default function PermanentAddressReview() {
         <button
           type="button"
           className={styles.mobileOutlineBtn}
-          onClick={() => router.push('/permanentAddress/step-1')}
+          onClick={() => router.push('/permanentAddress/upload')}
         >
           Re-upload
         </button>
@@ -159,7 +159,7 @@ export default function PermanentAddressReview() {
           <button
             type="button"
             className={styles.desktopBackBtn}
-            onClick={() => router.push('/permanentAddress/step-1')}
+            onClick={() => router.push('/permanentAddress/upload')}
             aria-label="Go back"
           >
             <BackArrow />
@@ -185,7 +185,7 @@ export default function PermanentAddressReview() {
               <button
                 type="button"
                 className={styles.fileChipClose}
-                onClick={() => router.push('/permanentAddress/step-1')}
+                onClick={() => router.push('/permanentAddress/upload')}
                 aria-label="Remove uploaded file"
               >
                 <img src={ASSET_CLOSE_SM} alt="" width={10} height={10} aria-hidden="true" />
@@ -218,7 +218,7 @@ export default function PermanentAddressReview() {
             <button
               type="button"
               className={styles.desktopOutlineBtn}
-              onClick={() => router.push('/permanentAddress/step-1')}
+              onClick={() => router.push('/permanentAddress/upload')}
             >
               Re-Upload
             </button>
