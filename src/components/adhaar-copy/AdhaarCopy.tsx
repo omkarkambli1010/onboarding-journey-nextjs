@@ -131,7 +131,7 @@ export default function AdhaarCopy() {
         <div className={styles.mobileCard}>
           <div className={styles.aadhaarImageWrap}>
             <img
-              src="/assets/images/diy/aadhar_card_sample_img.png"
+              src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/diy/aadhar_card_sample_img.png`}
               alt="Aadhaar card sample"
               width={328}
               height={207}
@@ -188,7 +188,7 @@ export default function AdhaarCopy() {
             <div className={styles.contentTop}>
               <div className={styles.aadhaarImageWrap}>
                 <img
-                  src="/assets/images/diy/aadhar_card_sample_img.png"
+                  src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/diy/aadhar_card_sample_img.png`}
                   alt="Aadhaar card sample"
                   width={328}
                   height={207}

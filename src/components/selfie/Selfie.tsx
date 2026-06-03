@@ -10,15 +10,15 @@ import { buildFaqUrl } from '@/lib/faq-link';
 import styles from './selfie.module.scss';
 
 const DOS = [
-  { img: '/assets/images/diy/good_lightening_icon.png', label: 'Good lighting' },
-  { img: '/assets/images/diy/white_bg_icon.png',        label: 'White background' },
-  { img: '/assets/images/diy/align_face_icon.png',      label: 'Align face in the centre' },
+  { img: `${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/diy/good_lightening_icon.png`, label: 'Good lighting' },
+  { img: `${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/diy/white_bg_icon.png`,        label: 'White background' },
+  { img: `${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/diy/align_face_icon.png`,      label: 'Align face in the centre' },
 ];
 
 const DONTS = [
-  { img: '/assets/images/diy/no_blurry_pic.png',   label: 'No blurry photo' },
-  { img: '/assets/images/diy/no_cap_icon.png',     label: 'No cap' },
-  { img: '/assets/images/diy/no_eyewear_icon.png', label: 'No eyewear' },
+  { img: `${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/diy/no_blurry_pic.png`,   label: 'No blurry photo' },
+  { img: `${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/diy/no_cap_icon.png`,     label: 'No cap' },
+  { img: `${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/diy/no_eyewear_icon.png`, label: 'No eyewear' },
 ];
 
 function BackArrow() {
@@ -224,7 +224,7 @@ export default function Selfie() {
           <div className={styles.mobContentCard}>
             {/* Illustration */}
             <div className={styles.mobIllustration}>
-              <img src="/assets/images/diy/selfie_illustration.png" alt="Selfie guide illustration" />
+              <img src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/diy/selfie_illustration.png`} alt="Selfie guide illustration" />
             </div>
 
             {/* Do's */}
@@ -302,7 +302,7 @@ export default function Selfie() {
 
                 {/* Left: illustration */}
                 <div className={styles.illustrationCol}>
-                  <img src="/assets/images/diy/selfie_illustration.png" alt="Selfie guide illustration" />
+                  <img src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/diy/selfie_illustration.png`} alt="Selfie guide illustration" />
                 </div>
 
                 {/* Right: guidelines */}
@@ -377,7 +377,7 @@ export default function Selfie() {
             <div className="mobile_css">
               <div className="back_cls">
                 <button type="button" onClick={goBack} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <img src="/assets/images/diy/ChevronLeft.png" alt="" aria-hidden="true" style={{ width: 15 }} /> Back
+                  <img src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/diy/ChevronLeft.png`} alt="" aria-hidden="true" style={{ width: 15 }} /> Back
                 </button>
                 <div className="mobile_header_padding">
                   <h5>Capture your selfie</h5>
@@ -433,7 +433,7 @@ export default function Selfie() {
 
                 {showWebcam && (
                   <button type="button" className={styles.captureBtn} onClick={capture} aria-label="Capture selfie">
-                    <img src="/assets/images/diy/camera-icon.png" alt="" aria-hidden="true" />
+                    <img src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/diy/camera-icon.png`} alt="" aria-hidden="true" />
                   </button>
                 )}
 

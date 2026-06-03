@@ -8,7 +8,7 @@ import styles from './esign.module.scss';
 // frame (140.0018 x 137.957), expressed as percentages so the composition
 // scales as one unit.
 
-const BASE = '/assets/images/diy/esign';
+const BASE = `${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/diy/esign`;
 
 type Layer = { src: string; top: number; left: number; width: number; height: number };
 

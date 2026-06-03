@@ -85,7 +85,7 @@ export default function Thankyou() {
                     <div className={styles.cardBody}>
                       <div className="text-center mb-3">
                         <Image
-                          src="/assets/images/diy/CheckCircle.png"
+                          src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/diy/CheckCircle.png`}
                           alt="Application submitted successfully"
                           width={48}
                           height={48}
@@ -131,7 +131,7 @@ export default function Thankyou() {
                     <hr className="desktop_css" />
                     <div className="text-center">
                       <Image
-                        src="/assets/images/diy/CheckCircle.png"
+                        src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/diy/CheckCircle.png`}
                         alt="Completed Icon"
                         width={80}
                         height={80}
@@ -166,7 +166,7 @@ export default function Thankyou() {
                 <form aria-label="Error Form" method="post">
                   <div className="text-center">
                     <Image
-                      src="/assets/images/diy/invalid_icon.png"
+                      src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/diy/invalid_icon.png`}
                       alt="Error Icon"
                       width={80}
                       height={80}

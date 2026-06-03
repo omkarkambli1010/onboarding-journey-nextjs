@@ -33,7 +33,7 @@ export function SpinnerProvider({ children }: { children: React.ReactNode }) {
         <div className={styles.spinnerOverlay} aria-live="polite" role="status" aria-busy="true">
           <div className={styles.brandLoader} aria-hidden="true">
             <img
-              src="/assets/images/sbi-securities-logo.png"
+              src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/sbi-securities-logo.png`}
               alt=""
               className={styles.brandLogo}
             />

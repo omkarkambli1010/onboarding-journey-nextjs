@@ -133,7 +133,7 @@ export default function UploadPan() {
                       <img src={imagePreview} alt="PAN card preview" style={{ maxWidth: '100%', maxHeight: 300, borderRadius: 8 }} />
                     ) : (
                       <div>
-                        <img src="/assets/images/diy/upload-icon.png" alt="Upload" />
+                        <img src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/diy/upload-icon.png`} alt="Upload" />
                         <p>Click to upload your PAN card</p>
                         <p style={{ fontSize: 12, color: '#999' }}>Supported formats: JPG, PNG, PDF</p>
                       </div>

@@ -216,6 +216,9 @@ section {
   --iti-flag-width: 20px;
   --iti-flag-count: 244;
   --iti-flag-height: calc(var(--iti-flag-width) * 3 / 4);
+  // Bare-path defaults (local dev / root deploy). Under a sub-path deploy these
+  // two vars are overridden at runtime in AppShell with the basePath prefix —
+  // CSS can't read process.env, so the prefix must be injected via JS.
   --iti-path-flags-1x: url('/assets/intl-tel-input/flags.webp');
   --iti-path-flags-2x: url('/assets/intl-tel-input/flags@2x.webp');
   --iti-hover-color: rgba(0, 0, 0, 0.05);
@@ -452,6 +455,35 @@ section {
 .iti__za { --iti-flag-offset: -241 }
 .iti__zm { --iti-flag-offset: -242 }
 .iti__zw { --iti-flag-offset: -243 }
+
+// Territories/overseas-region flags omitted from the original hand-copied CSS
+// (e.g. Western Sahara). Offsets taken verbatim from intl-tel-input v28's
+// dist/css/intlTelInput.css so they align with the existing 244-flag sprite.
+.iti__ax { --iti-flag-offset: -14 }
+.iti__bl { --iti-flag-offset: -25 }
+.iti__bq { --iti-flag-offset: -29 }
+.iti__cc { --iti-flag-offset: -37 }
+.iti__cw { --iti-flag-offset: -51 }
+.iti__cx { --iti-flag-offset: -52 }
+.iti__do { --iti-flag-offset: -59 }
+.iti__eh { --iti-flag-offset: -64 }
+.iti__gf { --iti-flag-offset: -78 }
+.iti__gg { --iti-flag-offset: -79 }
+.iti__gp { --iti-flag-offset: -85 }
+.iti__io { --iti-flag-offset: -102 }
+.iti__mf { --iti-flag-offset: -137 }
+.iti__mq { --iti-flag-offset: -146 }
+.iti__nf { --iti-flag-offset: -159 }
+.iti__nu { --iti-flag-offset: -166 }
+.iti__pf { --iti-flag-offset: -171 }
+.iti__pm { --iti-flag-offset: -176 }
+.iti__re { --iti-flag-offset: -183 }
+.iti__sh { --iti-flag-offset: -194 }
+.iti__sj { --iti-flag-offset: -196 }
+.iti__sx { --iti-flag-offset: -206 }
+.iti__tk { --iti-flag-offset: -214 }
+.iti__wf { --iti-flag-offset: -236 }
+.iti__yt { --iti-flag-offset: -240 }
 
 // intl-tel-input core structural styles (flattened — no CSS nesting)
 .iti { position: relative; display: inline-block; width: 100%; }
@@ -1575,7 +1607,10 @@ section {
 
           &::before {
             content: '';
-            background-image: url('/assets/images/diy/blue-dot.png');
+            // --blue-dot-url is set at runtime in AppShell with the deploy
+            // basePath prefix (CSS url()s can't be rewritten by Next). The
+            // inline fallback keeps local dev / root deploys working.
+            background-image: var(--blue-dot-url, url('/assets/images/diy/blue-dot.png'));
             background-size: contain;
             background-repeat: no-repeat;
             position: absolute;

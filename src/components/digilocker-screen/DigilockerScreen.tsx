@@ -89,7 +89,7 @@ export default function DigilockerScreen() {
           {/* Figma: DigiLocker logo (98×24) + Need Help? pill — space-between */}
           <div className={styles.mobileDigiRow}>
             <Image
-              src="/assets/images/diy/digilocker_img.png"
+              src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/diy/digilocker_img.png`}
               alt="DigiLocker"
               width={98}
               height={24}
@@ -121,7 +121,7 @@ export default function DigilockerScreen() {
             </p>
             <div className={styles.aadhaarImageWrap}>
               <Image
-                src="/assets/images/diy/aadhar_card_sample_img.png"
+                src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/diy/aadhar_card_sample_img.png`}
                 alt="Sample Aadhaar card"
                 width={226}
                 height={143}
@@ -141,7 +141,7 @@ export default function DigilockerScreen() {
             </p>
             <div className={styles.gifWrap}>
               <Image
-                src="/assets/images/diy/digilocker_toogle_video.gif"
+                src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/diy/digilocker_toogle_video.gif`}
                 alt="DigiLocker document selection guide"
                 width={312}
                 height={82}
@@ -187,7 +187,7 @@ export default function DigilockerScreen() {
             {/* DigiLocker logo stacked above title, flex-1 */}
             <div className={styles.desktopHeaderMid}>
               <Image
-                src="/assets/images/diy/digilocker_img.png"
+                src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/diy/digilocker_img.png`}
                 alt="DigiLocker"
                 width={98}
                 height={24}
@@ -219,7 +219,7 @@ export default function DigilockerScreen() {
               </p>
               <div className={styles.aadhaarImageWrap}>
                 <Image
-                  src="/assets/images/diy/aadhar_card_sample_img.png"
+                  src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/diy/aadhar_card_sample_img.png`}
                   alt="Sample Aadhaar card"
                   width={226}
                   height={143}
@@ -239,7 +239,7 @@ export default function DigilockerScreen() {
               </p>
               <div className={styles.gifWrap}>
                 <Image
-                  src="/assets/images/diy/digilocker_toogle_video.gif"
+                  src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/diy/digilocker_toogle_video.gif`}
                   alt="DigiLocker document selection guide"
                   width={358}
                   height={94}

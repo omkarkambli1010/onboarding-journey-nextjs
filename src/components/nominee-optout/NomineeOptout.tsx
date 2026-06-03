@@ -52,7 +52,7 @@ export default function NomineeOptout() {
             <div className="mobile_css">
               <div className="back_cls">
                 <div onClick={backToNominee} style={{ cursor: 'pointer' }}>
-                  <img src="/assets/images/diy/ChevronLeft.png" alt="" aria-hidden="true" /> Back
+                  <img src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/diy/ChevronLeft.png`} alt="" aria-hidden="true" /> Back
                 </div>
                 <div className="d-flex flex-column align-items-start gap-2">
                   <h5>Nominee Opt-Out</h5>

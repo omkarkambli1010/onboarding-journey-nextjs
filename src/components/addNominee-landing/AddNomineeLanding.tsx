@@ -11,7 +11,7 @@ import styles from './addNominee-landing.module.scss';
 // Figma desktop: node 0:43797 ; mobile: node 0:43519.
 
 const DESKTOP_MQ = '(min-width: 992px)';
-const FAMILY_ILLUSTRATION = '/assets/images/diy/asian-family.png';
+const FAMILY_ILLUSTRATION = `${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/diy/asian-family.png`;
 
 function BackArrow() {
   return (

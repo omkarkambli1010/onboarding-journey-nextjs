@@ -188,7 +188,7 @@ export default function MobileHomeOtpScreen() {
         </div>
         {isWrongOTP && (
           <div className={styles.otpError}>
-            <img src="/assets/images/diy/invalid_otp.png" alt="" aria-hidden />
+            <img src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/diy/invalid_otp.png`} alt="" aria-hidden />
             <span>Please enter the valid 6 digit OTP sent to your mobile number.</span>
           </div>
         )}

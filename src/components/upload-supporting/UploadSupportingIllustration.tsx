@@ -7,7 +7,7 @@ import styles from './upload-supporting.module.scss';
 // The 5 SVG fragments live in /public/assets/images/diy/upload-supporting/.
 // Insets match Figma's exported positions (top right bottom left).
 
-const BASE = '/assets/images/diy/upload-supporting';
+const BASE = `${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/diy/upload-supporting`;
 
 type Layer = { src: string; top: number; right: number; bottom: number; left: number };
 

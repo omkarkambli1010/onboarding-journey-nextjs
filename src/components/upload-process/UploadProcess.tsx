@@ -28,7 +28,7 @@ const dateToStr = (d: Date | null | undefined): string => {
 //        1:5501 — mobile verifying bottom sheet
 // Route: /uploadProcess/[formNumber]
 
-const ASSET_LOADING = '/assets/images/diy/loading.gif';
+const ASSET_LOADING = `${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/diy/loading.gif`;
 
 // ── Chevron icon for accordion ────────────────────────────────────────────────
 function ChevronSvg({ open }: { open: boolean }) {

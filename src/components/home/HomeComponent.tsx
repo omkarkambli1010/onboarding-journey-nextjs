@@ -8,6 +8,7 @@ import { Splide, SplideSlide } from '@splidejs/react-splide';
 import { Toast } from 'primereact/toast';
 import type { Iti } from 'intl-tel-input';
 import { useSpinner } from '@/components/spinner/Spinner';
+import { asset } from '@/lib/asset';
 import apiService from '@/services/api.service';
 import moengagesdkService from '@/services/moengagesdk.service';
 import styles from './home.module.scss';
@@ -54,35 +55,35 @@ const RESPONSIVE_VIDEO_OPTIONS = [
 const WHY_DEMAT_CARDS = [
   {
     imgs: [
-      { src: '/assets/images/why-demat/sbi-legacy-2.svg', inset: '0.01% 7.49% 0 7.46%' },
+      { src: `${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/why-demat/sbi-legacy-2.svg`, inset: '0.01% 7.49% 0 7.46%' },
     ],
     alt: "SBI's Legacy and Trust",
     label: "SBI's Legacy and Trust",
   },
   {
     imgs: [
-      { src: '/assets/images/why-demat/community-2.svg', inset: '14.58% 1% 14.56% 0.99%' },
+      { src: `${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/why-demat/community-2.svg`, inset: '14.58% 1% 14.56% 0.99%' },
     ],
     alt: 'Community of 4+ million investors',
     label: 'Community of 4+ million investors',
   },
   {
     imgs: [
-      { src: '/assets/images/why-demat/products-2.svg', inset: '0.7% 0.7% 0.68% 0.73%' },
+      { src: `${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/why-demat/products-2.svg`, inset: '0.7% 0.7% 0.68% 0.73%' },
     ],
     alt: 'Invest in multiple products with a single app',
     label: 'Invest in multiple products with a single app',
   },
   {
     imgs: [
-      { src: '/assets/images/why-demat/branches-2.svg', inset: '4.1% 0.83% 4.11% 0.8%' },
+      { src: `${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/why-demat/branches-2.svg`, inset: '4.1% 0.83% 4.11% 0.8%' },
     ],
     alt: 'Wide Network of 80+ Branches across India',
     label: 'Wide Network of 80+ Branches across India',
   },
   {
     imgs: [
-      { src: '/assets/images/why-demat/research-2.svg', inset: '0 0 0 0.01%' },
+      { src: `${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/why-demat/research-2.svg`, inset: '0 0 0 0.01%' },
     ],
     alt: 'Research recommended stocks',
     label: 'Research recommended stocks',
@@ -456,7 +457,7 @@ export default function HomeComponent() {
                 <div className={styles.phoneContainer}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src="/assets/images/diy/home-phone-mockup.png"
+                    src={asset(`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/diy/home-phone-mockup.png`)}
                     alt="SBI Securities Trading App"
                     className={styles.phoneMockup}
                   />
@@ -669,7 +670,7 @@ export default function HomeComponent() {
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
                           key={i}
-                          src={img.src}
+                          src={asset(img.src)}
                           alt={i === 0 ? card.alt : ''}
                           className={styles.iconLayer}
                           style={{ inset: img.inset }}
@@ -697,11 +698,11 @@ export default function HomeComponent() {
               <h2>Easy Demat Account Opening Process</h2>
               <div className={styles.cardAlign}>
                 {[
-                  { src: '/assets/images/diy/add-user.png', alt: 'Sign Up For SBI Demat Account', label: 'Sign Up' },
-                  { src: '/assets/images/diy/verify-bank.png', alt: 'Verify Your Bank Account', label: 'Verify Bank A/C' },
-                  { src: '/assets/images/diy/select-plan.png', alt: 'Select Brokerage Plan', label: 'Select Plan' },
-                  { src: '/assets/images/diy/upload-doc.png', alt: 'Upload Documents for Demat Account', label: 'Upload Documents' },
-                  { src: '/assets/images/diy/esign.png', alt: 'E-sign for your Demat Account', label: 'E-Sign' },
+                  { src: `${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/diy/add-user.png`, alt: 'Sign Up For SBI Demat Account', label: 'Sign Up' },
+                  { src: `${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/diy/verify-bank.png`, alt: 'Verify Your Bank Account', label: 'Verify Bank A/C' },
+                  { src: `${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/diy/select-plan.png`, alt: 'Select Brokerage Plan', label: 'Select Plan' },
+                  { src: `${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/diy/upload-doc.png`, alt: 'Upload Documents for Demat Account', label: 'Upload Documents' },
+                  { src: `${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/diy/esign.png`, alt: 'E-sign for your Demat Account', label: 'E-Sign' },
                 ].reduce<React.ReactNode[]>((acc, card, idx, arr) => {
                   acc.push(
                     <div key={card.label} className={styles.cardCls}>
@@ -712,7 +713,7 @@ export default function HomeComponent() {
                   if (idx < arr.length - 1) {
                     acc.push(
                       <div key={`arrow-${idx}`} className={styles.cardClsArrow}>
-                        <Image src="/assets/images/diy/Line.png" alt="" width={30} height={10} aria-hidden draggable={false} />
+                        <Image src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/diy/Line.png`} alt="" width={30} height={10} aria-hidden draggable={false} />
                       </div>
                     );
                   }
@@ -737,11 +738,11 @@ export default function HomeComponent() {
               </h2>
               <div className={styles.cardAlign}>
                 {[
-                  { src: '/assets/images/diy/pancardicon.png', alt: 'Identity Proof', subheading: 'Identity Proof', label: 'PAN Card' },
-                  { src: '/assets/images/diy/addressprooficon-1.png', alt: 'Address Proof', subheading: 'Address Proof', label: 'Aadhar Card' },
-                  { src: '/assets/images/diy/nominee-icon.png', alt: 'Add Nominee', subheading: 'Nominee Addition', label: "Nominee's Proof of Identity" },
-                  { src: '/assets/images/diy/signatureicon-1.png', alt: 'Add Your Signature', subheading: 'Signature', label: 'Sign on a White paper' },
-                  { src: '/assets/images/diy/cancelled-cheque.png', alt: 'Cancelled Cheque', subheading: 'Cancelled cheque', label: 'Only if bank verification fails' },
+                  { src: `${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/diy/pancardicon.png`, alt: 'Identity Proof', subheading: 'Identity Proof', label: 'PAN Card' },
+                  { src: `${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/diy/addressprooficon-1.png`, alt: 'Address Proof', subheading: 'Address Proof', label: 'Aadhar Card' },
+                  { src: `${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/diy/nominee-icon.png`, alt: 'Add Nominee', subheading: 'Nominee Addition', label: "Nominee's Proof of Identity" },
+                  { src: `${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/diy/signatureicon-1.png`, alt: 'Add Your Signature', subheading: 'Signature', label: 'Sign on a White paper' },
+                  { src: `${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/diy/cancelled-cheque.png`, alt: 'Cancelled Cheque', subheading: 'Cancelled cheque', label: 'Only if bank verification fails' },
                 ].map((card) => (
                   <div key={card.subheading} className={styles.cardCls}>
                     <div>
@@ -807,7 +808,7 @@ export default function HomeComponent() {
                     <div className={styles.testimonialCard}>
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
-                        src="/assets/images/trust-section/quote-icon.svg"
+                        src={asset(`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/trust-section/quote-icon.svg`)}
                         alt=""
                         className={styles.quoteIcon}
                         draggable={false}
@@ -816,7 +817,7 @@ export default function HomeComponent() {
                       <span className={styles.testimonialAuthor}>-{item.author}</span>
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
-                        src="/assets/images/trust-section/line-divider.svg"
+                        src={asset(`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/trust-section/line-divider.svg`)}
                         alt=""
                         className={styles.testimonialLine}
                         draggable={false}

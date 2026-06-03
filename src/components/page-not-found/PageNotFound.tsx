@@ -10,7 +10,7 @@ export default function PageNotFound() {
         <div className="row">
           <div className="col-12 d-flex justify-content-center">
             <Image
-              src="/assets/images/diy/404-page.png"
+              src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/diy/404-page.png`}
               alt="404 Page Not Found"
               width={400}
               height={300}

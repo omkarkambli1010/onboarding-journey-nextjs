@@ -513,7 +513,7 @@ export default function Declaration() {
     return (
       <div className={styles.preferenceDeniedWrap} aria-label="Declaration Denied">
         <div className={styles.preferenceDeniedInner}>
-          <img src="/assets/images/diy/TradePreference.png" alt="Trade Preference" />
+          <img src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/diy/TradePreference.png`} alt="Trade Preference" />
           <h5>You have selected the option to open account with Physical Application.</h5>
           <p>
             Please contact us on{' '}

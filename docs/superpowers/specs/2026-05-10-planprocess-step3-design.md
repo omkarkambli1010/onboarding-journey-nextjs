@@ -45,9 +45,9 @@ Both the mobile "Selected" tab button and the desktop "Proceed" card button alre
 ```ts
 const PLAN_NAMES = ['Basic', 'Special', 'Premium'];
 const PLAN_ICONS = [
-  '/assets/plan-icons/plan-icon-basic.svg',
-  '/assets/plan-icons/plan-icon-special.svg',
-  '/assets/plan-icons/plan-icon-premium.svg',
+  `${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/plan-icons/plan-icon-basic.svg`,
+  `${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/plan-icons/plan-icon-special.svg`,
+  `${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/plan-icons/plan-icon-premium.svg`,
 ];
 ```
 

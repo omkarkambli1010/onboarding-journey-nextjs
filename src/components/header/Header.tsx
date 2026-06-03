@@ -32,7 +32,7 @@ export default function Header() {
           style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
         >
           <Image
-            src="/assets/images/sbi-securities-logo.png"
+            src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/sbi-securities-logo.png`}
             alt="SBI Securities Logo"
             width={160}
             height={48}

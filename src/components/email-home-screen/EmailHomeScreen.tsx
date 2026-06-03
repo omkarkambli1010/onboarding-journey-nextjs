@@ -163,7 +163,7 @@ export default function EmailHomeScreen() {
   const googleButton = (
     <button type="button" className={styles.googleBtn} onClick={signInWithGoogle}>
       <img
-        src="/assets/images/diy/google_icon_mini.png"
+        src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/diy/google_icon_mini.png`}
         alt="Google"
         className={styles.googleIcon}
       />

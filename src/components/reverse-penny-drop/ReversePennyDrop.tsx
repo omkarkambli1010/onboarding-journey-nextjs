@@ -341,7 +341,7 @@ export default function ReversePennyDrop() {
                 <div className="mobile_css">
                   <div className="back_cls">
                     <div onClick={backToPersonalSix} style={{ cursor: 'pointer' }}>
-                      <img src="/assets/images/diy/ChevronLeft.png" alt="" aria-hidden="true" /> Back
+                      <img src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/diy/ChevronLeft.png`} alt="" aria-hidden="true" /> Back
                     </div>
                     <div className="mobile_header_padding">
                       <div className="help_faq_css">
@@ -523,7 +523,7 @@ export default function ReversePennyDrop() {
                   <div className="back_cls">
                     {rejectStatus !== 'R' && (
                       <div onClick={backToPersonalFive} style={{ cursor: 'pointer' }}>
-                        <img src="/assets/images/diy/ChevronLeft.png" alt="" aria-hidden="true" /> Back
+                        <img src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/diy/ChevronLeft.png`} alt="" aria-hidden="true" /> Back
                       </div>
                     )}
                     <div className="d-flex flex-column align-items-start gap-2">
@@ -559,7 +559,7 @@ export default function ReversePennyDrop() {
                     </div>
                     <hr className="desktop_css" />
                     <div className="text-center">
-                      <img className="m-auto" src="/assets/images/diy/successful-tick.png" alt="Bank account verified successfully" />
+                      <img className="m-auto" src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/diy/successful-tick.png`} alt="Bank account verified successfully" />
                     </div>
                     <div className="pan_confirmation">
                       <p>Account No: <span className="fw-semibold">{accountNumber}</span></p>
@@ -591,7 +591,7 @@ export default function ReversePennyDrop() {
             <div className="row">
               <form aria-label="Bank Verification Failed" method="post">
                 <div className="text-center">
-                  <img className="m-auto" src="/assets/images/diy/unsuccessful-tick.png" alt="Verification unsuccessful" />
+                  <img className="m-auto" src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/diy/unsuccessful-tick.png`} alt="Verification unsuccessful" />
                 </div>
                 <div className="pan_confirmation">
                   <p>We are unable to proceed with the bank details that you have selected.</p>
@@ -616,7 +616,7 @@ export default function ReversePennyDrop() {
               </div>
               <div className="modal-body">
                 <div className="img_preview text-center">
-                  <img src="/assets/images/diy/invalid-details.png" alt="Warning: account name mismatch" />
+                  <img src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/diy/invalid-details.png`} alt="Warning: account name mismatch" />
                 </div>
                 <div className="text-center">
                   <span className="textfont_css">Oops!</span><br />

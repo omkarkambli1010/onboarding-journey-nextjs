@@ -79,7 +79,7 @@ export default function Fnothankyou() {
 
                 <div className="text-center">
                   <Image
-                    src="/assets/images/diy/Featured_tick.png"
+                    src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/diy/Featured_tick.png`}
                     alt="FNO Verified successfully"
                     width={80}
                     height={80}
@@ -89,7 +89,7 @@ export default function Fnothankyou() {
                   </p>
                   <div className="text-center my-4">
                     <Image
-                      src="/assets/images/diy/thank-you-screen.png"
+                      src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/diy/thank-you-screen.png`}
                       alt="FNO Application submitted"
                       width={280}
                       height={200}
@@ -122,7 +122,7 @@ export default function Fnothankyou() {
                 <h5 className="text-center my-3">Thank you</h5>
                 <div className="text-center">
                   <Image
-                    src="/assets/images/diy/invalid_icon.png"
+                    src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/diy/invalid_icon.png`}
                     alt="Error Icon"
                     width={80}
                     height={80}

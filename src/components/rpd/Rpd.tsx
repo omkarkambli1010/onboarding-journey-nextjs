@@ -227,7 +227,7 @@ export default function Rpd() {
               </div>
               <div className="modal-body">
                 <div className="img_preview text-center">
-                  <img src="/assets/images/diy/invalid-details.png" alt="Warning: account name mismatch" />
+                  <img src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/diy/invalid-details.png`} alt="Warning: account name mismatch" />
                 </div>
                 <div className="text-center">
                   <span className="textfont_css">Oops!</span><br />

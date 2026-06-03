@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react';
 import Header from '@/components/header/Header';
 import Spinner from '@/components/spinner/Spinner';
 import { APP_VERSION } from '@/lib/version';
+import { asset } from '@/lib/asset';
 import Lenis from 'lenis';
 import styles from './app-shell.module.scss';
 
@@ -21,6 +22,17 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // @ts-expect-error — prebuilt bootstrap bundle ships no type declarations
     import('bootstrap/dist/js/bootstrap.bundle.min.js');
+  }, []);
+
+  // Prefix CSS-referenced images with the deploy basePath. Plain CSS url()s are
+  // static and Next can't rewrite them for a sub-path deploy (e.g. /open-nri-account),
+  // so we resolve them with asset() and expose them as :root CSS variables that
+  // globals.scss consumes via var(). No-op at the root path (local dev).
+  useEffect(() => {
+    const root = document.documentElement.style;
+    root.setProperty('--iti-path-flags-1x', `url('${asset(`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/intl-tel-input/flags.webp`)}')`);
+    root.setProperty('--iti-path-flags-2x', `url('${asset(`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/intl-tel-input/flags@2x.webp`)}')`);
+    root.setProperty('--blue-dot-url', `url('${asset(`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/diy/blue-dot.png`)}')`);
   }, []);
 
   useEffect(() => {

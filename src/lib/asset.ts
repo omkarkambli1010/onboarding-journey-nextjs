@@ -2,7 +2,7 @@
 //
 // Next.js auto-prefixes `basePath`/`assetPrefix` for next/image (<Image>),
 // next/link, and the router. Raw references it does NOT touch — e.g. plain
-// <img src="/assets/...">, inline style background-image url(), new Image(),
+// <img src=`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/...`>, inline style background-image url(), new Image(),
 // and direct window.location assignments. Wrap those with asset() so they
 // resolve correctly when the app is served under a sub-path (e.g. /diynri).
 //

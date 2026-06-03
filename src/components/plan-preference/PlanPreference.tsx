@@ -9,9 +9,9 @@ import styles from './plan-preference.module.scss';
 const PLAN_NAMES = ['Basic', 'Special', 'Premium'];
 
 const PLAN_ICONS = [
-  '/assets/plan-icons/plan-icon-basic.svg',
-  '/assets/plan-icons/plan-icon-special.svg',
-  '/assets/plan-icons/plan-icon-premium.svg',
+  `${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/plan-icons/plan-icon-basic.svg`,
+  `${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/plan-icons/plan-icon-special.svg`,
+  `${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/plan-icons/plan-icon-premium.svg`,
 ];
 
 type BenefitKind = 'solid' | 'carry' | 'open';
@@ -136,7 +136,7 @@ function DesktopBenefitItem({ type, text, sub }: { type: BenefitKind; text: stri
   if (type === 'carry') {
     return (
       <div className={styles.dBenefitCarry}>
-        <img src="/assets/plan-icons/done-carry.svg" alt="" className={styles.dBenefitCarryIcon} width={12} height={12} />
+        <img src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/plan-icons/done-carry.svg`} alt="" className={styles.dBenefitCarryIcon} width={12} height={12} />
         <div className={styles.dBenefitCarryText}>
           <p>{'₹20/Order on Carry Forward '}</p>
           <p>Options</p>
@@ -148,7 +148,7 @@ function DesktopBenefitItem({ type, text, sub }: { type: BenefitKind; text: stri
     return (
       <div className={`${styles.dBenefitItem} ${styles.dBenefitItemTop}`}>
         <div className={styles.dBenefitOpenWrap}>
-          <img src="/assets/plan-icons/done-open.svg" alt="" width={10} height={10} />
+          <img src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/plan-icons/done-open.svg`} alt="" width={10} height={10} />
         </div>
         <div className={styles.dBenefitTextMulti}>
           <span>{text}</span>
@@ -160,7 +160,7 @@ function DesktopBenefitItem({ type, text, sub }: { type: BenefitKind; text: stri
   return (
     <div className={styles.dBenefitItem}>
       <div className={styles.dBenefitIconWrap}>
-        <img src="/assets/plan-icons/done-solid.svg" alt="" width={12} height={12} />
+        <img src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/plan-icons/done-solid.svg`} alt="" width={12} height={12} />
       </div>
       <span className={styles.dBenefitText}>{text}</span>
     </div>

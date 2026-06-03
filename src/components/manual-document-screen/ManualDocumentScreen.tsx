@@ -73,7 +73,7 @@ export default function ManualDocumentScreen() {
         <div className={styles.mobileCard}>
           <div className={styles.illustrationMobile}>
             <Image
-              src="/assets/images/diy/upload-docs-illustration.png"
+              src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/diy/upload-docs-illustration.png`}
               alt="Upload documents illustration"
               width={210}
               height={160}
@@ -109,7 +109,7 @@ export default function ManualDocumentScreen() {
             <div className={styles.desktopContentRow}>
               <div className={styles.illustrationDesktop}>
                 <Image
-                  src="/assets/images/diy/upload-docs-illustration.png"
+                  src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/diy/upload-docs-illustration.png`}
                   alt="Upload documents illustration"
                   width={267}
                   height={200}

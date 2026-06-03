@@ -55,7 +55,7 @@ export default function Nominee() {
                   onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') goToAddNominee(); }}
                 >
                   <div className="pan_details_align">
-                    <img src="/assets/images/diy/nominee-icon.png" alt="" width={40} aria-hidden="true" />
+                    <img src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/diy/nominee-icon.png`} alt="" width={40} aria-hidden="true" />
                     <div className="upload_css">
                       <h5>Add Nominee</h5>
                       <p className="sub_title">Add up to 3 nominees for your Demat account</p>
@@ -72,7 +72,7 @@ export default function Nominee() {
                   onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') goToOptOut(); }}
                 >
                   <div className="pan_details_align">
-                    <img src="/assets/images/diy/addressprooficon-1.png" alt="" width={40} aria-hidden="true" />
+                    <img src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/diy/addressprooficon-1.png`} alt="" width={40} aria-hidden="true" />
                     <div className="upload_css">
                       <h5>Skip / Opt-Out</h5>
                       <p className="sub_title">Continue without adding a nominee</p>

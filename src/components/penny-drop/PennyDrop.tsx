@@ -128,7 +128,7 @@ export default function PennyDrop() {
                 <div className="mobile_css">
                   <div className="back_cls" onClick={BackToSix} style={{ cursor: 'pointer' }}>
                     <div>
-                      <img src="/assets/images/diy/ChevronLeft.png" alt="Previous Page" aria-hidden="true" /> Back
+                      <img src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/diy/ChevronLeft.png`} alt="Previous Page" aria-hidden="true" /> Back
                     </div>
                     <div className="mobile_header_padding">
                       <div className="help_faq_css">
@@ -219,7 +219,7 @@ export default function PennyDrop() {
                 <div className="mobile_css">
                   <div className="back_cls">
                     <div onClick={BackToPennyDropOne} style={{ cursor: 'pointer' }}>
-                      <img src="/assets/images/diy/ChevronLeft.png" alt="Previous Page" aria-hidden="true" /> Back
+                      <img src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/diy/ChevronLeft.png`} alt="Previous Page" aria-hidden="true" /> Back
                     </div>
                     <div className="mobile_header_padding">
                       <div className="help_faq_css">

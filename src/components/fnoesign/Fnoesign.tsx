@@ -89,7 +89,7 @@ export default function Fnoesign() {
             {errorMsg && (
               <div className={styles.errorState}>
                 <Image
-                  src="/assets/images/diy/invalid_icon.png"
+                  src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/images/diy/invalid_icon.png`}
                   alt="Error"
                   width={80}
                   height={80}
