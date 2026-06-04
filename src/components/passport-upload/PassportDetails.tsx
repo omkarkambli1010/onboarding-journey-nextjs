@@ -7,7 +7,9 @@ import styles from './passport-upload.module.scss';
 // PassportDetails — Passport type selection screen
 // Figma: Onboarding-Mob-Passportdetails (0:35835) + desktop (0:35923)
 
-type PassportType = 'Indian' | 'Foreign Country' | '';
+// Value carried in the URL / sent to the API. The Foreign option is labelled
+// "Foreign Country" in the UI but must travel as just "Foreign".
+type PassportType = 'Indian' | 'Foreign' | '';
 
 // ─── SVG: back arrow ────────────────────────────────────────────────────────
 function IconBackArrow() {
@@ -100,7 +102,7 @@ export default function PassportDetails() {
             <p className={styles.selectTypeLabel}>Select Passport Type</p>
             <div className={styles.radioGroup}>
               <RadioOption label="Indian" value="Indian" selected={selected} onSelect={setSelected} />
-              <RadioOption label="Foreign Country" value="Foreign Country" selected={selected} onSelect={setSelected} />
+              <RadioOption label="Foreign Country" value="Foreign" selected={selected} onSelect={setSelected} />
             </div>
           </div>
         </div>
@@ -146,7 +148,7 @@ export default function PassportDetails() {
                 <p className={styles.selectTypeLabel}>Select Passport Type</p>
                 <div className={styles.radioGroup}>
                   <RadioOption label="Indian" value="Indian" selected={selected} onSelect={setSelected} />
-                  <RadioOption label="Foreign Country" value="Foreign Country" selected={selected} onSelect={setSelected} />
+                  <RadioOption label="Foreign Country" value="Foreign" selected={selected} onSelect={setSelected} />
                 </div>
               </div>
             </div>

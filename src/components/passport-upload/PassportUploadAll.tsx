@@ -1,10 +1,12 @@
 'use client';
 
 import { ReactNode, useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import DateField from '@/components/date-field/DateField';
 import { FileUploadCard } from '@/components/file-upload/FileUploadCard';
 import type { UploadedFile } from '@/components/file-upload/fileUpload.types';
+import { COUNTRIES } from '@/components/country-select/countries';
+import { apiService } from '@/services/api.service';
 import { toast } from '@/services/toast.service';
 import styles from './passport-upload.module.scss';
 
@@ -97,6 +99,42 @@ const formatDateForDisplay = (iso: string): string => {
   return m ? `${m[3]}/${m[2]}/${m[1]}` : iso;
 };
 
+// API dates may arrive as yyyy-mm-dd, dd/mm/yyyy, or a parseable string — coerce
+// to the yyyy-mm-dd the form fields expect. Returns '' when unparseable.
+const normalizeIso = (s: string): string => {
+  if (!s) return '';
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  const dmy = s.match(/^(\d{2})[/-](\d{2})[/-](\d{4})$/);
+  if (dmy) return `${dmy[3]}-${dmy[2]}-${dmy[1]}`;
+  const d = new Date(s);
+  return Number.isNaN(d.getTime()) ? '' : dateToIso(d);
+};
+
+// Defensive read of the first non-empty value across candidate keys — the GET
+// /passport response field names aren't pinned down, so we accept common casings.
+const pickField = (o: Record<string, unknown> | undefined, ...keys: string[]): string => {
+  if (!o) return '';
+  for (const k of keys) {
+    const v = o[k];
+    if (v != null && v !== '') return String(v);
+  }
+  return '';
+};
+
+// Resolve an arbitrary nationality string from the API (a country name, an
+// iso2 code, or a demonym like "Indian") to a canonical country name from
+// COUNTRIES so the dropdown shows it as selected. Falls back to raw if unmatched.
+const resolveCountryName = (raw: string): string => {
+  const q = raw.trim().toLowerCase();
+  if (!q) return '';
+  const exact = COUNTRIES.find((c) => c.name.toLowerCase() === q || c.iso2 === q);
+  if (exact) return exact.name;
+  const fuzzy = COUNTRIES.find(
+    (c) => q.startsWith(c.name.toLowerCase()) || c.name.toLowerCase().startsWith(q),
+  );
+  return fuzzy ? fuzzy.name : raw;
+};
+
 // ── Icons ───────────────────────────────────────────────────────────────────
 function IconBackArrow() {
   return (
@@ -152,9 +190,75 @@ function FieldRow({
 
 export default function PassportUploadAll() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Passport type chosen on /passportUpload/details and carried in ?type=
+  // ("Indian" | "Foreign"). Sent verbatim to the upload API.
+  const passportType = searchParams.get('type') ?? 'Indian';
 
   const [frontFiles, setFrontFiles] = useState<UploadedFile[]>([]);
   const [backFiles,  setBackFiles]  = useState<UploadedFile[]>([]);
+
+  // Map a GET /passport response onto the seven form fields. Unrecognised /
+  // missing values are left untouched (mock OCR fills any remaining gaps).
+  const applyPassportDetails = (raw: unknown) => {
+    const r = (raw ?? {}) as Record<string, unknown>;
+    const d = (r.passport ?? r.data ?? r) as Record<string, unknown>;
+
+    const name = pickField(d, 'holderName', 'fullName', 'name');
+    const dobV = pickField(d, 'dob', 'dateOfBirth');
+    const pno  = pickField(d, 'passportNumber', 'number');
+    const iss  = pickField(d, 'issueDate', 'dateOfIssue');
+    const exp  = pickField(d, 'expiryDate', 'dateOfExpiry');
+    const nat  = pickField(d, 'nationality');
+    const gen  = pickField(d, 'gender', 'sex');
+
+    if (name) setFullName(name);
+    if (dobV) setDob(normalizeIso(dobV));
+    if (pno)  setPassportNumber(pno);
+    if (iss)  setIssueDate(normalizeIso(iss));
+    if (exp)  setExpiryDate(normalizeIso(exp));
+    if (nat)  setNationality(resolveCountryName(nat));
+    if (gen)  setGender(gen);
+  };
+
+  // Real upload — fires when the user confirms the crop (Crop & Continue). The
+  // cropped image becomes Front/BackFile in a multipart POST; the API's status
+  // message ("Uploaded Successfully!") is surfaced via a toast. After a Front
+  // upload we also GET /passport to pull the parsed details into the form.
+  const makeUploadFn =
+    (field: 'FrontFile' | 'BackFile') =>
+    async (file: File, onProgress: (p: number) => void) => {
+      const applicationId =
+        typeof window !== 'undefined' ? sessionStorage.getItem('applicationId') ?? '' : '';
+      if (!applicationId) {
+        // No application context — don't fire a malformed applications//passport
+        // request. Surface it and mark the file as failed (thrown error → error state).
+        toast.error('Your session has expired, please start again.');
+        throw new Error('Missing application ID');
+      }
+      // A fresh Front upload re-locks the editor until its GET details arrive.
+      if (field === 'FrontFile') {
+        setDetailsFetched(false);
+        setFrontEditMode(false);
+      }
+      const res = await apiService.uploadPassportFile(
+        applicationId,
+        field,
+        file,
+        passportType,
+        onProgress,
+      );
+      onProgress(100);
+      const message = res?.message ?? res?.detail ?? 'Uploaded Successfully!';
+      toast.success(message);
+
+      if (field === 'FrontFile') {
+        const details = await apiService.getPassport(applicationId);
+        applyPassportDetails(details);
+        setDetailsFetched(true);
+      }
+    };
 
   // Blank by default — read-only "—" until mock OCR fires on upload success.
   const [fullName,       setFullName]       = useState('');
@@ -167,11 +271,15 @@ export default function PassportUploadAll() {
 
   const [errors, setErrors] = useState<FieldErrors>({});
 
-  // Both sections render the same 7 fields against shared state, but each
-  // section has its own pencil/Save toggle so the user can choose which side
-  // to edit from. Editing in one is reflected in the other.
+  // The Front section owns the 7 detail fields with a pencil/Save toggle; the
+  // Back section is upload-only, so only Front has an edit mode.
   const [frontEditMode, setFrontEditMode] = useState(false);
-  const [backEditMode,  setBackEditMode]  = useState(false);
+
+  // The edit/pencil toggle stays disabled until the Front image uploads
+  // successfully AND the GET /passport details have been fetched into the form.
+  const [detailsFetched, setDetailsFetched] = useState(false);
+  // True while a Save (POST /passport) is in flight.
+  const [savingDetails, setSavingDetails] = useState(false);
 
   const frontUploaded = frontFiles.some(f => f.status === 'success');
   const backUploaded  = backFiles.some(f => f.status === 'success');
@@ -185,7 +293,7 @@ export default function PassportUploadAll() {
     setPassportNumber(v => v || 'IND121233H');
     setIssueDate(v => v || '2020-03-04');
     setExpiryDate(v => v || '2030-03-04');
-    setNationality(v => v || 'Indian');
+    setNationality(v => v || 'India');
     setGender(v => v || 'Male');
   };
 
@@ -212,7 +320,9 @@ export default function PassportUploadAll() {
     if (errors[key]) setErrors((prev) => ({ ...prev, [key]: undefined }));
   };
 
-  const handleBack = () => router.back();
+  // Always return to the passport-type selection (Indian / Foreign), not just
+  // the previous history entry.
+  const handleBack = () => router.push('/passportUpload/details');
 
   const handleProceed = () => {
     const current: PassportDetails = {
@@ -227,18 +337,68 @@ export default function PassportUploadAll() {
     router.push('/esign');
   };
 
+  // Front pencil/Save toggle. Pencil → enter edit mode (no API). Save →
+  // validate, POST the edited details to /passport, then exit edit mode.
+  const handleFrontEditToggle = async () => {
+    if (!frontEditMode) {
+      setFrontEditMode(true);
+      return;
+    }
+
+    const current: PassportDetails = {
+      fullName, dob, passportNumber, issueDate, expiryDate, nationality, gender,
+    };
+    const errs = validateDetails(current);
+    setErrors(errs);
+    if (Object.keys(errs).length > 0) {
+      toast.error('Please fix the highlighted fields and try again');
+      return;
+    }
+
+    const applicationId =
+      typeof window !== 'undefined' ? sessionStorage.getItem('applicationId') ?? '' : '';
+    if (!applicationId) {
+      toast.error('Your session has expired, please start again.');
+      return;
+    }
+
+    setSavingDetails(true);
+    try {
+      const res = await apiService.updatePassport(applicationId, {
+        holderName: fullName,
+        dob,
+        passportNumber,
+        issueDate,
+        expiryDate,
+        nationality,
+        gender,
+      });
+      toast.success(res?.message ?? 'Details updated successfully');
+      setFrontEditMode(false);
+    } catch {
+      // apiService.handleError already surfaced the backend message.
+    } finally {
+      setSavingDetails(false);
+    }
+  };
+
   const inputCls = (key: keyof PassportDetails) =>
     `${styles.fieldInput}${errors[key] ? ` ${styles.fieldInputError}` : ''}`;
 
-  // Section header — title left, pencil/Save toggle right.
+  // Section header — title left, pencil/Save toggle right. The toggle can be
+  // disabled until the upload + details fetch make editing meaningful.
   function SectionHeader({
     title,
     editing,
     onToggle,
+    disabled = false,
+    saving = false,
   }: {
     title: string;
     editing: boolean;
     onToggle: () => void;
+    disabled?: boolean;
+    saving?: boolean;
   }) {
     return (
       <div className={styles.sectionHeader}>
@@ -247,11 +407,13 @@ export default function PassportUploadAll() {
           type="button"
           className={styles.editToggleBtn}
           onClick={onToggle}
+          disabled={disabled || saving}
+          aria-disabled={disabled || saving}
           aria-label={editing ? 'Save details' : 'Edit details'}
           aria-pressed={editing}
-          title={editing ? 'Save' : 'Edit'}
+          title={disabled ? 'Upload your passport front to edit' : editing ? 'Save' : 'Edit'}
         >
-          {editing ? 'Save' : <IconEdit />}
+          {editing ? (saving ? 'Saving…' : 'Save') : <IconEdit />}
         </button>
       </div>
     );
@@ -340,15 +502,18 @@ export default function PassportUploadAll() {
       </FieldRow>
 
       <FieldRow id={`${idPrefix}-nationality`} label="Nationality" error={errors.nationality}>
-        <input
+        <select
           id={`${idPrefix}-nationality`}
-          type="text"
           value={nationality}
           onChange={(e) => { setNationality(e.target.value); onFieldChange('nationality'); }}
-          className={inputCls('nationality')}
+          className={`${styles.fieldSelect}${errors.nationality ? ` ${styles.fieldInputError}` : ''}`}
           aria-invalid={!!errors.nationality}
-          autoComplete="country-name"
-        />
+        >
+          <option value="">Select country</option>
+          {COUNTRIES.map((c) => (
+            <option key={c.iso2} value={c.name}>{c.name}</option>
+          ))}
+        </select>
       </FieldRow>
 
       <FieldRow id={`${idPrefix}-gender`} label="Gender" error={errors.gender}>
@@ -389,7 +554,9 @@ export default function PassportUploadAll() {
       <SectionHeader
         title="Upload Passport Front"
         editing={frontEditMode}
-        onToggle={() => setFrontEditMode((v) => !v)}
+        onToggle={handleFrontEditToggle}
+        disabled={!detailsFetched}
+        saving={savingDetails}
       />
 
       <FileUploadCard
@@ -399,6 +566,7 @@ export default function PassportUploadAll() {
         sizeErrorMessage={SIZE_ERR}
         typeErrorMessage={TYPE_ERR}
         cropImages
+        uploadFn={makeUploadFn('FrontFile')}
         onFilesChange={setFrontFiles}
       />
 
@@ -407,15 +575,13 @@ export default function PassportUploadAll() {
   );
 
   // ─── Back section ────────────────────────────────────────────────────────
-  // Mirrors Front: same SectionHeader (own pencil/Save), upload card, and the
-  // same 7 fields against shared state — editing in either side updates both.
+  // Upload only — no edit/pencil toggle and no detail fields. The passport
+  // details live under the Front section (populated from the GET there).
   const backSection = (
     <div className={styles.section}>
-      <SectionHeader
-        title="Upload Passport Back"
-        editing={backEditMode}
-        onToggle={() => setBackEditMode((v) => !v)}
-      />
+      <div className={styles.sectionHeader}>
+        <p className={styles.sectionTitle}>Upload Passport Back</p>
+      </div>
 
       <FileUploadCard
         acceptedTypes={ACCEPTED_TYPES}
@@ -424,10 +590,9 @@ export default function PassportUploadAll() {
         sizeErrorMessage={SIZE_ERR}
         typeErrorMessage={TYPE_ERR}
         cropImages
+        uploadFn={makeUploadFn('BackFile')}
         onFilesChange={setBackFiles}
       />
-
-      {backEditMode ? renderEditFields('back') : readOnlyFields}
     </div>
   );
 

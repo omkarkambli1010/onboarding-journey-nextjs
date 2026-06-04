@@ -265,6 +265,64 @@ class APIService {
     return this.postNri(`applications/${applicationId}/otp/verify`, { channel, code }, hideSpinner);
   }
 
+  // Passport upload — multipart/form-data. Sends one of FrontFile / BackFile /
+  // TranslationFile per call along with the passportType ("Indian" | "Foreign").
+  // The browser sets the multipart boundary, so we must NOT set Content-Type.
+  async uploadPassportFile(
+    applicationId: string,
+    field: 'FrontFile' | 'BackFile' | 'TranslationFile',
+    file: File,
+    passportType: string,
+    onProgress?: (p: number) => void,
+    hideSpinner?: () => void,
+  ): Promise<any> {
+    const url = `${this.nriapi}applications/${applicationId}/passport/upload`;
+    const form = new FormData();
+    form.append(field, file);
+    form.append('IdempotencyKey', this.generateIdempotencyKey());
+    form.append('passportType', passportType);
+
+    try {
+      const response = await axios.post(url, form, {
+        headers: { accept: '*/*' },
+        onUploadProgress: (e) => {
+          if (onProgress && e.total) onProgress((e.loaded / e.total) * 100);
+        },
+      });
+      return response.data;
+    } catch (error) {
+      return this.handleError(error, hideSpinner);
+    }
+  }
+
+  // Passport details — GET the parsed/stored passport for an application.
+  async getPassport(applicationId: string, hideSpinner?: () => void): Promise<any> {
+    const url = `${this.nriapi}applications/${applicationId}/passport`;
+    try {
+      const response = await axios.get(url, { headers: { accept: '*/*' } });
+      return response.data;
+    } catch (error) {
+      return this.handleError(error, hideSpinner);
+    }
+  }
+
+  // Passport details — save user-edited details (raw JSON) back to the application.
+  async updatePassport(
+    applicationId: string,
+    data: Record<string, unknown>,
+    hideSpinner?: () => void,
+  ): Promise<any> {
+    const url = `${this.nriapi}applications/${applicationId}/passport`;
+    try {
+      const response = await axios.post(url, data, {
+        headers: { 'Content-Type': 'application/json', accept: '*/*' },
+      });
+      return response.data;
+    } catch (error) {
+      return this.handleError(error, hideSpinner);
+    }
+  }
+
   async getRequest(controller: string, hideSpinner?: () => void): Promise<any> {
     const url = this.api + controller;
     const headers = this.getHeaders();
