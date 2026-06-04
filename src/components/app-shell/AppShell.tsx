@@ -44,9 +44,35 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         .catch((e) => console.error('Error clearing caches:', e));
     }
 
-    // Prevent back button navigation
+    // Disable the BROWSER Back/Forward buttons while keeping the in-app back
+    // arrows working — across all browsers.
+    //
+    // How: the native Back button (and swipe-back gesture) fires `popstate`
+    // WITHOUT calling history.back(); programmatic navigation — router.back(),
+    // router.forward() — goes THROUGH window.history.back()/forward()/go(). So
+    // we wrap those three methods to set an "allow" flag, and on popstate we let
+    // the navigation pass only when the flag is set; otherwise we re-push the
+    // current URL, pinning the user in place. router.push() uses pushState and
+    // never fires popstate, so it is unaffected. This means the existing
+    // router.back() arrows keep working without any per-component changes.
     history.pushState(null, '', location.href);
-    window.onpopstate = () => history.go(1);
+
+    let allowPop = false;
+    const origBack = window.history.back.bind(window.history);
+    const origForward = window.history.forward.bind(window.history);
+    const origGo = window.history.go.bind(window.history);
+    window.history.back = () => { allowPop = true; origBack(); };
+    window.history.forward = () => { allowPop = true; origForward(); };
+    window.history.go = (delta?: number) => { allowPop = true; origGo(delta); };
+
+    const handlePopState = () => {
+      if (allowPop) {
+        allowPop = false; // programmatic nav (router.back/forward) — let it through
+        return;
+      }
+      history.pushState(null, '', location.href); // native Back/Forward — block
+    };
+    window.addEventListener('popstate', handlePopState);
 
     // Smooth scrolling with Lenis
     const lenis = new Lenis({ duration: 2.0, smoothWheel: true });
@@ -78,7 +104,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       lenis.destroy();
       document.removeEventListener('touchstart', handleTouchStart);
       document.removeEventListener('touchend', handleTouchEnd);
-      window.onpopstate = null;
+      window.removeEventListener('popstate', handlePopState);
+      window.history.back = origBack;
+      window.history.forward = origForward;
+      window.history.go = origGo;
     };
   }, []);
 

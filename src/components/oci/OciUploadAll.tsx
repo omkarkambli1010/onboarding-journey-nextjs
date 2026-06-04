@@ -41,7 +41,7 @@ export default function OciUploadAll() {
 
   const isDisabled = !frontUploaded || !backUploaded;
 
-  const handleBack = () => router.back();
+  const handleBack = () => router.push('/oci');
 
   // Mirrors the old OciBack flow — opens the Additional Document modal overlay.
   const handleProceed = () => {
